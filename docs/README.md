@@ -11,12 +11,12 @@ The code is developed and tested mostly under Windows. Some of libraries were sp
  
 ### How to install?
 I wanted to make the installation really simple. All you need is to insert
-```
+```c
 #define IR_IMPLEMENT
 ```
 before all the libraries, but only in one file - if you do it twice, the compiler might detect multiple implementations. If you want to manage yourself, which files the compiler needs to compile - try using
-```
-#define IR_%FILENAME_IN_UPPER_CASE%_IMPLEMENT
+```c
+#define IR_ ## FILENAME_IN_UPPER_CASE ## _IMPLEMENT
 ```
 It could be helpful if you build some libraries or compile using object files. Also it is preferable to make a separate file for implementation so that the compiler must not do the same job every time.
 
@@ -27,8 +27,8 @@ The code is pretty self-documented. Every header file contains one, less often s
 The library is written following some principles:
  - The library does not claim to be full or serious.
  - The library does not claim to be new. I am sure that it's functionality was already implemented numerous times.
- - The library does not use any interpretable languages. You will not see any calls of Python functions.
+ - The library does not use any interpretable languages, it is fully native.
  - The library is old-fashioned. You will see a lot of C-style typecasts but no *std* code.
  - There is no code in headers. Only definitions.
 
-####### P.S. My code is not dirty, it is alternatively clean.
+###### P.S. My code is not dirty, it is alternatively clean.
