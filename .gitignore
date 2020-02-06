@@ -1,0 +1,56 @@
+#Copy-paste from github:
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.lib
+
+# Packages #
+############
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+#Meta-chan specific:
+/_trash/
+/_source/
+/_lib/
+/_sandbox/
+**/doxygen/
+
+#Visual Studio Specific:
+/*/.vs
+**/*VCXPROJ*
+**/*.SLN
+**/Debug/
+**/Release/
+**/x64
+
+#Delphi project. Too many exceptions, add later
+/Ironic/Myola_GUI/
