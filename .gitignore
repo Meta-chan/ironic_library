@@ -37,13 +37,6 @@
 ehthumbs.db
 Thumbs.db
 
-#Meta-chan specific:
-/_trash/
-/_source/
-/_lib/
-/_sandbox/
-**/doxygen/
-
 #Visual Studio Specific:
 /*/.vs
 **/*VCXPROJ*
@@ -52,5 +45,5 @@ Thumbs.db
 **/Release/
 **/x64
 
-#Delphi project. Too many exceptions, add later
-/Ironic/Myola_GUI/
+#Ironic database files:
+**/*.idt
