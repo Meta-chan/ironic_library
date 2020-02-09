@@ -14,8 +14,8 @@
 #ifndef IR_DATABASE_TABLE
 #define IR_DATABASE_TABLE
 
-#include "ir_database/ir_database.h"
 #include <Windows.h>
+#include "ir_database.h"
 #include "ir_openmap.h"
 
 namespace ir
@@ -88,7 +88,7 @@ namespace ir
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_DATABASE_TABLE_IMPLEMENT))
-	#include "ir_database/ir_database_table_implementation.h"
+	#include "implementation/ir_database_table_implementation.h"
 #endif
 
 #endif	//#ifndef IR_DATABASE_TABLE

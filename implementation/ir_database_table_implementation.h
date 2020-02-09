@@ -48,13 +48,13 @@ ir::ec ir::TableDatabase::_openfile(const Settings *settings)
 		return ec::ec_invalid_signature;
 
 	//Check settings
-	if (settings == nullptr)
+	if (settings != nullptr)
 	{
 		if (!_validsettings(settings)) return ec::ec_database_invalid_settings;
 	}
 	else
 	{
-		if ((memcmp(&header->settings, settings, sizeof(Settings)) != 0) || !_validsettings(&_settings)) return ec::ec_database_invalid_settings;
+		if ((memcmp(&header->settings, settings, sizeof(Settings)) != 0) || !_validsettings(settings)) return ec::ec_database_invalid_settings;
 	}
 	_settings = header->settings;
 

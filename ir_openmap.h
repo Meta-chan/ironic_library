@@ -48,7 +48,7 @@ namespace ir
 }
 
 #if (defined(IR_OPENMAP_IMPLEMENT) || defined(IR_IMPLEMENT))
-	#include "ir_openmap_implementation.h"
+	#include "implementation/ir_openmap_implementation.h"
 #endif
 
 #endif	//#ifndef IR_OPENMAP

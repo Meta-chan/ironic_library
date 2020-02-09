@@ -55,7 +55,7 @@ namespace ir
 };
 
 #if (defined(IR_DATABASE_IMPLEMENT) || defined(IR_IMPLEMENT))
-	#include "ir_database/ir_database_implementation.h"
+	#include "implementation/ir_database_implementation.h"
 #endif
 
 #endif	//#ifndef IR_DATABASE

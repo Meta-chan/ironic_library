@@ -8,7 +8,8 @@
 	Reinventing bicycles since 2020
 */
 
-//ir_plot - light plotting library with only one function
+//ir_plot - plotting library with only one function.
+//The function returns after you close the plot window
 
 #ifndef IR_PLOT
 #define IR_PLOT
@@ -33,7 +34,7 @@ namespace ir
 };
 
 #if (defined(IR_IMPLEMENT) || defined (IR_PLOT_IMPLEMENT))
-	#include "ir_plot_implementation.h"
+	#include "implementation/ir_plot_implementation.h"
 #endif
 
 #endif	//#ifndef IR_PLOT

@@ -46,7 +46,7 @@ namespace ir
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_NEURO_IMPLEMENT))
-	#include "ir_neuro_implementation.h"
+	#include "implementation/ir_neuro_implementation.h"
 #endif
 
 #endif	//#ifndef IR_NEURO
