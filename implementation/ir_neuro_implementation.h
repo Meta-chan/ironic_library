@@ -16,65 +16,130 @@
 #include <random>
 #include <time.h>
 #include <math.h>
+#include "ir_resource.h"
 
-ir::Neuro::Neuro(unsigned int nlayers, const unsigned int *layers, ec *code)
+class MemFreer { public: static void free(void *mem) { ::free(mem); } };
+typedef ir::Resource<float*, MemFreer, nullptr> FloatResource;
+typedef ir::Resource<char*, MemFreer, nullptr> CharResource;
+typedef ir::Resource<unsigned int*, MemFreer, nullptr> UintResource;
+
+class FileFreer { public: static void free(FILE *file) { ::fclose(file); } };
+typedef ir::Resource<FILE*, FileFreer, nullptr> FileResource;
+
+ir::ec ir::Neuro::_init(unsigned int nlayers, const unsigned int *layers, FILE *file)
 {
 	_nlayers = nlayers;
 
 	//Initializing _layers (n)
-	if (nlayers < 2) { *code = ec::ec_neuro_invalid_layers; return; }
+	if (nlayers < 2) return ec::ec_neuro_invalid_layers;
 	for (unsigned int i = 0; i < nlayers; i++)
 	{
-		if (layers[i] == 0) { *code = ec::ec_neuro_invalid_layers; return; }
+		if (layers[i] == 0) return ec::ec_neuro_invalid_layers;
 	}
 	_layers = (unsigned int*)malloc(nlayers * sizeof(unsigned int));
-	if (_layers == nullptr) { *code = ec::ec_alloc; return; }
+	if (_layers == nullptr) return ec::ec_alloc;
 	memcpy(_layers, layers, nlayers * sizeof(unsigned int));
 
 	//Initializing _weights (n - 1)
 	_weights = (float**)malloc((nlayers - 1) * sizeof(float*));
-	if (_weights == nullptr) { *code = ec::ec_alloc; return; }
+	if (_weights == nullptr) return ec::ec_alloc;
 	memset(_weights, 0, (nlayers - 1) * sizeof(float));
 
 	std::default_random_engine generator;
 	generator.seed(time(NULL));
 	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+	
 	for (unsigned int i = 0; i < (nlayers - 1); i++)
 	{
 		//Marixes are always one element wider than given because of adjustment
-		_weights[i] = (float *)malloc((layers[i] + 1) * layers[i + 1] * sizeof(float));
-		if (_weights[i] == nullptr) { *code = ec::ec_alloc; return; }
-
-		for (unsigned int k = 0; k < (layers[i] + 1) * layers[i + 1]; k++)
+		unsigned int weightssize = (layers[i] + 1) * layers[i + 1];
+		_weights[i] = (float *)malloc(weightssize * sizeof(float));
+		if (_weights[i] == nullptr) return ec::ec_alloc;
+		
+		if (file != nullptr)
+		{ 
+			if (fread(_weights[i], sizeof(float), weightssize, file) != weightssize) return ec::ec_read_file;
+		}
+		else
 		{
-			_weights[i][k] = distribution(generator);
+			for (unsigned int k = 0; k < weightssize; k++)
+			{
+				_weights[i][k] = distribution(generator);
+			}
 		}
 	}
 
 	//Initializing _outputs (n)
 	_outputs = (float**)malloc(nlayers * sizeof(float*));
-	if (_outputs == nullptr) { *code = ec::ec_alloc; return; }
+	if (_outputs == nullptr) return ec::ec_alloc;
 	memset(_outputs, 0, nlayers * sizeof(float));
 
 	for (unsigned int i = 0; i < nlayers; i++)
 	{
 		_outputs[i] = (float *)malloc(layers[i] * sizeof(float));
-		if (_outputs[i] == nullptr) { *code = ec::ec_alloc; return; }
+		if (_outputs[i] == nullptr) return ec::ec_alloc;
 	}
 
 	//Initializing _errors (n - 1)
 	_errors = (float**)malloc((nlayers - 1) * sizeof(float*));
-	if (_errors == nullptr) { *code = ec::ec_alloc; return; }
+	if (_errors == nullptr) return ec::ec_alloc;
 	memset(_errors, 0, (nlayers - 1) * sizeof(float));
 
 	for (unsigned int i = 0; i < (nlayers - 1); i++)
 	{
 		_errors[i] = (float *)malloc(layers[i + 1] * sizeof(float));
-		if (_errors[i] == nullptr) { *code = ec::ec_alloc; return; }
+		if (_errors[i] == nullptr) return ec::ec_alloc;
 	}
 
 	_ok = true;
-	*code = ec::ec_ok;
+	return ec::ec_ok;
+};
+
+ir::Neuro::Neuro(unsigned int nlayers, const unsigned int *layers, ec *code)
+{
+	ec c = _init(nlayers, layers, nullptr);
+	if (code != nullptr) *code = c;
+};
+
+ir::Neuro::Neuro(const syschar *filepath, ec *code)
+{
+	#ifdef _WIN32
+		FileResource file = _wfopen(filepath, L"rb");
+	#else
+		FileResource file = fopen(filepath, "rb");
+	#endif
+
+	if (file.it == nullptr)
+	{
+		if (code != nullptr) *code = ec::ec_open_file;
+		return;
+	}
+
+	FileHeader header;
+	if (fread(&header, sizeof(FileHeader), 1, file.it) == 0 ||
+		memcmp(header.signature, "INR", 3) != 0 ||
+		header.version != 0)
+	{
+		if (code != nullptr) *code = ec::ec_invalid_signature;
+		return;
+	}
+
+	unsigned int nlayers;
+	if (fread(&nlayers, sizeof(unsigned int), 1, file.it) == 0)
+	{
+		if (code != nullptr) *code = ec::ec_read_file;
+		return;
+	}
+
+	UintResource layers = (unsigned int*)malloc(nlayers * sizeof(unsigned int));
+	if (fread(layers.it, sizeof(unsigned int), nlayers, file.it) < nlayers)
+	{
+		if (code != nullptr) *code = ec::ec_read_file;
+		return;
+	}
+
+	ec c = _init(nlayers, layers.it, file.it);
+	if (code != nullptr) *code = c;
 };
 
 void ir::Neuro::_freevectors(float **vector, unsigned int n)
@@ -179,6 +244,34 @@ ir::ec ir::Neuro::backward(const float *input, const float *output, const float 
 	{
 		//Corrigating weights for matrix between [i] and [i + 1] from output of layer [i] and error of [i + 1]
 		_corrigate(koef, _layers[i], (i == 0 && !_holdinput) ? input : _outputs[i], _layers[i + 1], _errors[i], _weights[i]);
+	}
+
+	return ec::ec_ok;
+};
+
+ir::ec ir::Neuro::save(const syschar *filepath)
+{
+	if (!_ok) return ec::ec_object_not_ok;
+
+	#ifdef _WIN32
+		FileResource file = _wfopen(filepath, L"wb");
+	#else
+		FileResource file = fopen(filepath, "wb");
+	#endif
+
+	if (file.it == nullptr) return ec::ec_create_file;
+
+	FileHeader header;
+	memcpy(header.signature, "INR", 3);
+	header.version = 0;
+	if (fwrite(&header, sizeof(FileHeader), 1, file.it) == 0) return ec::ec_write_file;
+
+	if (fwrite(&_nlayers, sizeof(unsigned int), _nlayers, file.it) < _nlayers) return ec::ec_write_file;
+
+	for (unsigned int i = 0; i < (_nlayers - 1); i++)
+	{
+		unsigned int matrixsize = (_layers[i] + 1) * _layers[i + 1];
+		if (fwrite(_weights[i], sizeof(float), matrixsize, file.it) < matrixsize) return ec::ec_write_file;
 	}
 
 	return ec::ec_ok;
