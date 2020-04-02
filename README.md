@@ -5,6 +5,7 @@ The code presented here is some pieces of my home projects, that might be helpfu
  - ir_database - simple ultra-light databases
  - ir_neuro - ultra-light neural network
  - ir_plot - ultra-light plotting function
+ - ir_resource - very helpful class wrapper aroud non-class things
 
 ### Platforms
 The code is developed and tested mostly under Windows. Some of libraries were specially tested under Linux. Some are cross-platform by chance. Some need just several corrections and renamings to make them work on your platform. Some are really stuck to WinAPI and could be barely ported. It that case, I beg your pardon.
