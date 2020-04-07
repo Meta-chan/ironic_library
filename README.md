@@ -2,10 +2,11 @@
 The code presented here is some pieces of my home projects, that might be helpful to others. Here you will find:
  - ir_md5 - MD5 hash algorithm
  - ir_openmap - helpful mapping function
- - ir_database - simple ultra-light databases
- - ir_neuro - ultra-light neural network
- - ir_plot - ultra-light plotting function
- - ir_resource - very helpful class wrapper aroud non-class things
+ - ir_n2st_database - number to string table database, light and simple
+ - ir_neuro - neural network
+ - ir_plot - plotting function
+ - ir_resource - helpful class wrapper aroud non-class things
+ - ir_utf - encoding library
 
 ### Platforms
 The code is developed and tested mostly under Windows. Some of libraries were specially tested under Linux. Some are cross-platform by chance. Some need just several corrections and renamings to make them work on your platform. Some are really stuck to WinAPI and could be barely ported. It that case, I beg your pardon.
@@ -29,7 +30,6 @@ The library is written following some principles:
  - The library does not claim to be full or serious.
  - The library does not claim to be new. I am sure that it's functionality was already implemented numerous times.
  - The library does not use any interpretable languages, it is fully native.
- - The library is old-fashioned. You will see a lot of C-style typecasts but no *std* code.
- - There is no code in headers. Only definitions.
+ - The library is old-fashioned. You will see a lot of C-style typecasts and very little *std* code.
 
 ###### P.S. My code is not dirty, it is alternatively clean.

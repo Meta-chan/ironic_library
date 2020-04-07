@@ -23,12 +23,16 @@ enum ir_ec : unsigned int
 
 {
 	ec_ok = 0,
+	ec_other = 1,
 
 	//common sector
 	ec_alloc,
 	ec_null,
 	ec_create_file,
 	ec_open_file,
+	ec_read_file,
+	ec_write_file,
+	ec_seek_file,
 	ec_path_is_directory,
 	ec_path_is_file,
 	ec_invalid_signature,
@@ -38,22 +42,21 @@ enum ir_ec : unsigned int
 	ec_windows_register_class,
 	ec_windows_create_window,
 	ec_windows_getmessage,
+	ec_windows_createthread,
 
 	//openmap sector
 	ec_openmap,
 
-	//ir_database sector
-	ec_database_not_ok,
-	ec_database_no_write_access,
-	ec_database_not_exists,
-	ec_database_already_exists,
-	ec_database_overflow,
-	ec_database_invalid_settings,
-	ec_database_invalid_size,
+	//databases and registers sector
+	ec_key_not_exists,
+	ec_key_already_exists,
 
 	//ir_neuro sector
 	ec_neuro_invalid_layers,
-	ec_neuro_invalid_forward
+	ec_neuro_invalid_forward,
+
+	//opengl
+	ec_opengl
 };
 
 #ifdef __cplusplus

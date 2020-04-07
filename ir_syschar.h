@@ -8,19 +8,18 @@
 	Reinventing bicycles since 2020
 */
 
-#ifndef IR_DATABASE_IMPLEMENTATION
-#define IR_DATABASE_IMPLEMENTATION
-
-ir::Database::Data::Data() : size(0), data(nullptr)
-{
-};
-
-ir::Database::Data::Data(unsigned int size, const void *data) : size(size), data(data)
-{
-};
-
-ir::Database::~Database()
-{
-};
-
-#endif	//#ifndef IR_DATABASE_IMPLEMENTATION
+#ifndef IR_SYSCHAR
+#define IR_SYSCHAR
+	
+	namespace ir
+	{
+		#ifdef _WIN32
+			typedef wchar_t syschar;
+			#define SS(_TEXT) L ## _TEXT
+		#else
+			typedef char syschar;
+			#define SS(_TEXT) _TEXT
+		#endif
+	}
+	
+#endif	//#ifndef IR_SYSCHAR
