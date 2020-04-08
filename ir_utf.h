@@ -59,6 +59,9 @@ unsigned int utf_recode(struct UTF_Codec *codec1, const void *string1, unsigned 
 //Same as above, but returns a new allocated string, which can be freed with free(void) from stdlib.h
 void *utf_alloc_recode(struct UTF_Codec *codec1, const void *string1, unsigned int errcode, struct UTF_Codec *codec2);
 
+//Same as above, but returns a pointer to internal buffer. Be carefull, the buffer may intersect with previous returned value
+void *utf_buffer_recode(struct UTF_Codec *codec1, const void *string1, unsigned int errcode, struct UTF_Codec *codec2);
+
 //Initializes the library
 void utf_init(void);
 
@@ -71,6 +74,7 @@ extern struct UTF_Codec utf_utf8;	//UTF8
 extern struct UTF_Codec utf_utf16;	//UTF16
 extern struct UTF_Codec utf_utf32;	//UTF32
 extern struct UTF_Codec utf_1251;	//Windows-1251 (cyrillic)
+extern struct UTF_Codec utf_866;	//DOS-866 (cyrillic)
 
 #if (defined(IR_IMPLEMENT) || defined(IR_UTF_IMPLEMENT))
 	#include "implementation/ir_utf_implementation.h"

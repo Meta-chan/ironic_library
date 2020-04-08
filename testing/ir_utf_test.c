@@ -5,40 +5,52 @@
 	#include <Windows.h>
 #endif
 
-//The test in absolutely not convenient, but the library works.
-//You have to believe me.
-//Everyting here depend on compiler, the encoding in which the file was saved, the phase of the moon etc.
-//But it works
+//So, algorithm of Visual studio compiler:
+//UTF8, no BOM -> strings in normal UTF8, wide strings are trash
+//UTF8/UTF16LE/UTF16BE, with BOM -> VS tries to convert source in host encoding (1251 in my case)
+//If convertion fails, '?' is used
+//Wide strings are normal UTF16 Little Endian
+
+//So, for test the source must be saved in UTF8 without BOM
+//It is the most predictable and cross-latform case
+
+void printutf32(unsigned int *s)
+{
+	while (*s != 0)
+	{
+		printf("%u ", *s);
+		s++;
+	}
+};
+
 int main(void)
 {
+	const unsigned char *hello = "Hello Привет こんにちは!";
+	
 	utf_init();
-	utf_1251.init();
 	utf_c.init();
 	utf_utf8.init();
 	utf_utf16.init();
 	utf_utf32.init();
+	utf_1251.init();
+	utf_866.init();
 	
-	const char *hello = "Hello World! Привет, мир! こんにちは世界!\n";
-	const wchar_t *hellow = L"Hello World! Привет, мир! こんにちは世界!\n";
+	printf("Original: %s\n", hello);
+	printf("C: %s\n", utf_buffer_recode(&utf_utf8, hello, '*', &utf_c));
+	printf("UTF8: %s\n", utf_buffer_recode(&utf_utf8, hello, '*', &utf_utf8));
+	printf("UTF16: %ls\n", utf_buffer_recode(&utf_utf8, hello, '*', &utf_utf16));
+	printf("UTF32: "); printutf32((unsigned int*)utf_buffer_recode(&utf_utf8, hello, '*', &utf_utf32)); printf("\n");
+	printf("1251: %s\n", utf_buffer_recode(&utf_utf8, hello, '*', &utf_1251));
+	printf("866: %s\n", utf_buffer_recode(&utf_utf8, hello, '*', &utf_866));
 
-	printf("Original: %s", hello);
-	wprintf(L"Original W: %ls", hellow);
-	printf("utf_c: %s", utf_alloc_recode(&utf_utf8, hello, '*', &utf_c));
-	printf("utf_1251: %s", utf_alloc_recode(&utf_utf8, hello, '*', &utf_1251));
-	printf("utf_utf8: %s", utf_alloc_recode(&utf_utf8, hello, '*', &utf_utf8));
-	wprintf(L"utf_utf16: %ls", utf_alloc_recode(&utf_utf8, hello, '*', &utf_utf16));
-	
 	#ifdef _WIN32
-		printf("WriteConsole, original w: ");
-		WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), hellow, wcslen(hellow), NULL, NULL);
-		printf("WriteConsole, utf_utf16: ");
-		WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), utf_alloc_recode(&utf_utf8, hello, '*', &utf_utf16),
-			wcslen(hellow), NULL, NULL);
+		const wchar_t *whello = (wchar_t*)utf_buffer_recode(&utf_utf8, hello, '*', &utf_utf16);
+		DWORD written;
+		WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), whello, wcslen(whello), &written, (LPVOID)0);
 	#endif
-	
-		unsigned int *u32 = (unsigned int*)utf_alloc_recode(&utf_utf8, hello, '*', &utf_utf32);
-	while (*u32 != 0) {	printf("%u ", *u32); u32++; }
-	printf("\n");
+
+	utf_free();
+	getchar();
 
 	return 0;
 };

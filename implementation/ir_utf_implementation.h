@@ -12,12 +12,39 @@
 #define IR_UTF_IMPLEMENTATION
 
 #include <stdlib.h>
+#include <string.h>
 
 struct UTF_Codec utf_c;
 struct UTF_Codec utf_utf8;
 struct UTF_Codec utf_utf16;
 struct UTF_Codec utf_utf32;
 struct UTF_Codec utf_1251;
+struct UTF_Codec utf_866;
+
+struct
+{
+	void *data;
+	unsigned int reserved;
+} utf_buffer;
+
+unsigned char reserve(void **pdata, unsigned int *preserved, unsigned int toreserve)
+{
+	if (*preserved < toreserve)
+	{
+		void *data;
+		memcpy(&data, pdata, sizeof(void*));
+		if (data == (void*)0) data = malloc(toreserve);
+		else data = realloc(data, toreserve);
+		memcpy(pdata, &data, sizeof(void*));
+		if (data == (void*)0)
+		{
+			*preserved = 0;
+			return 0;
+		}
+		else *preserved = toreserve;
+	}
+	return 1;
+};
 
 #pragma region ASCII
 
@@ -357,6 +384,111 @@ unsigned char utf_1251_init(void)
 
 #pragma endregion
 
+#pragma region 866
+
+const unsigned short int utf_866_symbols1[0x30] =
+{
+	0x2591,	0x2592,	0x2593,	0x2502,	0x2524,	0x2561,	0x2562,	0x2556,	0x2555,	0x2563,	0x2551,	0x2557,	0x255D,	0x255C,	0x255B,	0x2510,
+	0x2514,	0x2534,	0x252C,	0x251C,	0x2500,	0x253C,	0x255E,	0x255F,	0x255A,	0x2554,	0x2569,	0x2566,	0x2560,	0x2550,	0x256C,	0x2567,
+	0x2568,	0x2564,	0x2565,	0x2559,	0x2558,	0x2552,	0x2553,	0x256B,	0x256A,	0x2518,	0x250C,	0x2588,	0x2584,	0x258C,	0x2590,	0x2580
+};
+
+const unsigned short int utf_866_symbols2[0x10] =
+{
+	0x401,	0x451,	0x404,	0x454,	0x407,	0x457,	0x40E,	0x45E,	0xB0,	0x2219,	0xB7,	0x221A,	0x2116,	0xA4,	0x25A0,	0xA0
+};
+
+unsigned int utf_866_charsize()
+{
+	return 1;
+};
+
+unsigned int utf_866_encode(unsigned int code, void *symbols, unsigned int errcode)
+{
+	char *s = (char*)symbols;
+
+	if (code < 0x80)
+	{
+		if (s != (void*)0) s[0] = code;
+		return 1;
+	}
+	else if (code >= 0x410 && code < 0x440)
+	{
+		if (s != (void*)0) s[0] = code - 0x410 + 0x80;
+		return 1;
+	}
+	else if (code >= 0x440 && code < 0x450)
+	{
+		if (s != (void*)0) s[0] = code - 0x440 + 0xE0;
+		return 1;
+	}
+	else if (code >= 0xA0 && code <= 0x2593)
+	{
+		//can be optimized with binar search
+		for (unsigned int i = 0; i < 0x30; i++)
+		{
+			if (utf_866_symbols1[i] == code)
+			{
+				if (s != (void*)0) s[0] = 0xB0 + i;
+				return 1;
+			}
+		}
+
+		for (unsigned int i = 0; i < 0x10; i++)
+		{
+			if (utf_866_symbols2[i] == code)
+			{
+				if (s != (void*)0) s[0] = 0xF0 + i;
+				return 1;
+			}
+		}
+
+		return utf_866_encode(errcode, symbols, ' ');
+	}
+	else return utf_866_encode(errcode, symbols, ' ');
+};
+
+unsigned int utf_866_decode(const void *string, unsigned int *nsymbols)
+{
+	const char *s = (const char*)string;
+	if (nsymbols != (void*)0) *nsymbols = 1;
+	if (s[0] < 0x80)
+	{
+		return s[0];
+	}
+	else if (s[0] < 0xB0)
+	{
+		return s[0] - 0x80 + 0x410;
+	}
+	else if (s[0] < 0xE0)
+	{
+		return utf_866_symbols1[s[0] - 0xB0];
+	}
+	else if (s[0] < 0xF0)
+	{
+		return s[0] - 0xE0 + 0x440;
+	}
+	else
+	{
+		return utf_866_symbols2[s[0] - 0xF0];
+	}
+};
+
+void utf_866_free(void)
+{
+};
+
+unsigned char utf_866_init(void)
+{
+	utf_866.charsize = utf_866_charsize;
+	utf_866.encode = utf_866_encode;
+	utf_866.decode = utf_866_decode;
+	utf_866.free = utf_866_free;
+	return 1;
+};
+
+#pragma endregion
+
 unsigned int utf_recode(struct UTF_Codec *codec1, const void *string1, unsigned int errcode, struct UTF_Codec *codec2, void *string2)
 {
 	const char *s1 = (const char *)string1;
@@ -388,6 +520,17 @@ void *utf_alloc_recode(struct UTF_Codec *codec1, const void *string1, unsigned i
 	return result;
 };
 
+void *utf_buffer_recode(struct UTF_Codec *codec1, const void *string1, unsigned int errcode, struct UTF_Codec *codec2)
+{
+	unsigned int size = codec2->charsize() * (utf_recode(codec1, string1, errcode, codec2, (void*)0) + codec2->encode(0, (void*)0, errcode));
+	if (reserve(&utf_buffer.data, &utf_buffer.reserved, size))
+	{
+		utf_recode(codec1, string1, errcode, codec2, utf_buffer.data);
+		return utf_buffer.data;
+	}
+	else return (void*)0;
+};
+
 //INIT AND FREE
 void utf_init(void)
 {
@@ -396,6 +539,7 @@ void utf_init(void)
 	utf_utf16.init = utf_utf16_init;
 	utf_utf32.init = utf_utf32_init;
 	utf_1251.init = utf_1251_init;
+	utf_866.init = utf_866_init;
 };
 
 void utf_free(void)
@@ -405,6 +549,13 @@ void utf_free(void)
 	utf_utf16_free();
 	utf_utf32_free();
 	utf_1251_free();
+	utf_866_free();
+	if (utf_buffer.data != (void*)0)
+	{
+		free(utf_buffer.data);
+		utf_buffer.data = (void*)0;
+		utf_buffer.reserved = 0;
+	}
 };
 
 #endif	//#ifndef IR_UTF_IMPLEMENTATION
