@@ -18,6 +18,7 @@
 #include "ir_errorcode.h"
 #include "ir_syschar.h"
 #include "ir_block.h"
+#include "ir_reserve.h"
 #include <stdio.h>
 
 namespace ir
@@ -75,7 +76,7 @@ namespace ir
 		//void *_rammetafile			= nullptr;
 		bool _ok						= false;
 		unsigned int _count				= 0;
-		ir::BufferBlock _buffer;	//need to replace with openmap!
+		ir::Block _buffer;	//need to replace with openmap!
 
 	public:
 	

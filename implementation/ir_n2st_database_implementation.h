@@ -150,7 +150,7 @@ ir::ec ir::N2STDatabase::read(unsigned int number, ConstBlock *data)
 	{
 		if (fread(&size, size - 251, 1, _file) == 0) return ec::ec_key_not_exists; //size > 5151, no heck
 	}
-	if (!_buffer.reserve(size)) return ec::ec_alloc;
+	if (!reserve(&_buffer.data, &_buffer.size, size)) return ec::ec_alloc;
 	if (size != 0 && fread(_buffer.data, size, 1, _file) == 0) return ec::ec_key_not_exists;
 	
 	data->data = _buffer.data;

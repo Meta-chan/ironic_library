@@ -13,18 +13,6 @@
 
 namespace ir
 {
-	class BufferBlock
-	{
-	public:
-		unsigned int used;
-		unsigned int reserved;
-		void *data;
-		
-		BufferBlock();
-		bool reserve(unsigned int newsize);
-		void free();
-	};
-
 	class Block
 	{
 	public:
@@ -33,7 +21,6 @@ namespace ir
 		
 		Block();
 		Block(unsigned int size, void *data);
-		Block(BufferBlock bufferblock);
 	};
 
 	class ConstBlock
@@ -45,7 +32,6 @@ namespace ir
 		ConstBlock();
 		ConstBlock(unsigned int size, const void *data);
 		ConstBlock(Block block);
-		ConstBlock(BufferBlock bufferblock);
 	};
 };
 

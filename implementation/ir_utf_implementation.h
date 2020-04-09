@@ -13,6 +13,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "ir_reserve.h"
 
 struct UTF_Codec utf_c;
 struct UTF_Codec utf_utf8;
@@ -26,25 +27,6 @@ struct
 	void *data;
 	unsigned int reserved;
 } utf_buffer;
-
-unsigned char reserve(void **pdata, unsigned int *preserved, unsigned int toreserve)
-{
-	if (*preserved < toreserve)
-	{
-		void *data;
-		memcpy(&data, pdata, sizeof(void*));
-		if (data == (void*)0) data = malloc(toreserve);
-		else data = realloc(data, toreserve);
-		memcpy(pdata, &data, sizeof(void*));
-		if (data == (void*)0)
-		{
-			*preserved = 0;
-			return 0;
-		}
-		else *preserved = toreserve;
-	}
-	return 1;
-};
 
 #pragma region ASCII
 
