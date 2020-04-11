@@ -17,6 +17,7 @@
 	#include <share.h>
 #endif
 #include "ir_resource.h"
+#include "ir_reserve.h"
 
 class MemFreer{ public: static void free(void *mem) { ::free(mem); } };
 typedef ir::Resource<ir::syschar*, MemFreer, nullptr> StringResource;
@@ -39,7 +40,7 @@ ir::ec ir::N2STDatabase::_openfile(const syschar *filepath, bool meta, accessmod
 		switch (amode)
 		{
 		case accessmode::access_new:
-			file = fpen(filepath, "w+b"); break;
+			file = fopen(filepath, "w+b"); break;
 		case accessmode::access_readwrite:
 			file = fopen(filepath, "a+b"); break;
 		case accessmode::access_read:
@@ -90,7 +91,11 @@ ir::ec ir::N2STDatabase::_openfile(const syschar *filepath, bool meta, accessmod
 
 ir::ec ir::N2STDatabase::_init(const syschar *filepath, accessmode amode)
 {
-	unsigned int pathlen = wcslen(filepath);
+	#ifdef _WIN32
+		unsigned int pathlen = wcslen(filepath);
+	#else
+		unsigned int pathlen = strlen(filepath);
+	#endif
 	StringResource metafilepath = (syschar*)malloc((pathlen + 2) * sizeof(syschar));
 	if (metafilepath.it == nullptr) return ec::ec_alloc;
 	memcpy(metafilepath.it, filepath, pathlen * sizeof(syschar));
@@ -234,7 +239,7 @@ ir::N2STDatabase::~N2STDatabase()
 	if (_metafile != nullptr)
 	{
 		fseek(_metafile, offsetof(MetaFileHeader, count), SEEK_SET);
-		fwrite(_metafile, sizeof(unsigned int), 1, _metafile);
+		fwrite(&_count, sizeof(unsigned int), 1, _metafile);
 		fclose(_metafile);
 	}
 };

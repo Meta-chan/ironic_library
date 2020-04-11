@@ -37,7 +37,7 @@ unsigned int utf_c_charsize()
 
 unsigned int utf_c_encode(unsigned int code, void *symbols, unsigned int errcode)
 {
-	char *s = (char*)symbols;
+	unsigned char *s = (unsigned char*)symbols;
 	if (code < 0x80)
 	{
 		if (s != (void*)0) s[0] = code;
@@ -48,7 +48,7 @@ unsigned int utf_c_encode(unsigned int code, void *symbols, unsigned int errcode
 
 unsigned int utf_c_decode(const void *string, unsigned int *nsymbols)
 {
-	const char *s = (const char*)string;
+	const unsigned char *s = (const unsigned char*)string;
 	unsigned int nskipped = 0;
 	while (1)
 	{
@@ -89,7 +89,7 @@ unsigned int utf_utf8_charsize()
 
 unsigned int utf_utf8_encode(unsigned int code, void *symbols, unsigned int errcode)
 {
-	char *s = (char*)symbols;
+	unsigned char *s = (unsigned char*)symbols;
 	if (code < 0x80)
 	{
 		if (s != (void*)0) s[0] = code;
@@ -130,7 +130,7 @@ unsigned int utf_utf8_encode(unsigned int code, void *symbols, unsigned int errc
 
 unsigned int utf_utf8_decode(const void *string, unsigned int *nsymbols)
 {
-	const char *s = (const char*)string;
+	const unsigned char *s = (const unsigned char*)string;
 	unsigned int nskipped = 0;
 	while (1)
 	{
@@ -186,7 +186,7 @@ unsigned int utf_utf16_charsize()
 
 unsigned int utf_utf16_encode(unsigned int code, void *symbols, unsigned int errcode)
 {
-	wchar_t *s = (wchar_t*)symbols;
+	unsigned short int *s = (unsigned short int*)symbols;
 	if (code < 0x10000 && !(code >= 0xD800 && code < 0xE000))
 	{
 		if (s != (void*)0) s[0] = code;
@@ -206,7 +206,7 @@ unsigned int utf_utf16_encode(unsigned int code, void *symbols, unsigned int err
 
 unsigned int utf_utf16_decode(const void *string, unsigned int *nsymbols)
 {
-	const char *s = (const char*)string;
+	const unsigned short int *s = (const unsigned short int*)string;
 	unsigned int nskipped = 0;
 	while (1)
 	{
@@ -294,7 +294,7 @@ unsigned int utf_1251_charsize()
 
 unsigned int utf_1251_encode(unsigned int code, void *symbols, unsigned int errcode)
 {
-	char *s = (char*)symbols;
+	unsigned char *s = (unsigned char*)symbols;
 	
 	if (code < 0x80)
 	{
@@ -324,7 +324,7 @@ unsigned int utf_1251_encode(unsigned int code, void *symbols, unsigned int errc
 
 unsigned int utf_1251_decode(const void *string, unsigned int *nsymbols)
 {
-	const char *s = (const char*)string;
+	const unsigned char *s = (const unsigned char*)string;
 	unsigned int nskipped = 0;
 	while (1)
 	{
@@ -387,7 +387,7 @@ unsigned int utf_866_charsize()
 
 unsigned int utf_866_encode(unsigned int code, void *symbols, unsigned int errcode)
 {
-	char *s = (char*)symbols;
+	unsigned char *s = (unsigned char*)symbols;
 
 	if (code < 0x80)
 	{
@@ -432,7 +432,7 @@ unsigned int utf_866_encode(unsigned int code, void *symbols, unsigned int errco
 
 unsigned int utf_866_decode(const void *string, unsigned int *nsymbols)
 {
-	const char *s = (const char*)string;
+	const unsigned char *s = (const unsigned char*)string;
 	if (nsymbols != (void*)0) *nsymbols = 1;
 	if (s[0] < 0x80)
 	{
@@ -473,8 +473,8 @@ unsigned char utf_866_init(void)
 
 unsigned int utf_recode(struct UTF_Codec *codec1, const void *string1, unsigned int errcode, struct UTF_Codec *codec2, void *string2)
 {
-	const char *s1 = (const char *)string1;
-	char *s2 = (char *)string2;
+	const unsigned char *s1 = (const unsigned char *)string1;
+	unsigned char *s2 = (unsigned char *)string2;
 	unsigned int c1 = codec1->charsize();
 	unsigned int c2 = codec2->charsize();
 	unsigned int i1 = 0;

@@ -12,6 +12,7 @@
 #define IR_RESERVE_IMPLEMENTATION
 
 #include <string.h>
+#include <stdlib.h>
 
 unsigned char reserve(void **pdata, unsigned int *preserved, unsigned int toreserve)
 {
