@@ -106,14 +106,14 @@ namespace ir
 		ec _checkfile();
 		ec _checkmetafile();
 		ec _openfile(const syschar *filepath, bool meta, createmode cmode);
-		ec _init(const syschar *filepath, createmode cmode, rammode rmode);
+		ec _init(const syschar *filepath, createmode cmode);
 		
 		ec _find(ConstBlock key, unsigned int *metaoffset, unsigned int *dataoffset);
 		ec _rehash(unsigned int newmetasize);
 
 	public:
 
-		S2STDatabase(const syschar *filepath, createmode cmode, rammode rmode, ec *code);
+		S2STDatabase(const syschar *filepath, createmode cmode, ec *code);
 		unsigned int count();
 		unsigned int tablesize();
 		ec setrammode(rammode rmode);

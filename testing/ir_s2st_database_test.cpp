@@ -39,7 +39,7 @@ void test_read(const char *key, const char *rightdata, ir::ec rightcode)
 int main()
 {
 	ir::ec code;
-	database = new ir::S2STDatabase(L"database.idt", ir::S2STDatabase::access_new, ir::S2STDatabase::rammode_no, &code);
+	database = new ir::S2STDatabase(L"database.idt", ir::S2STDatabase::new_always, &code);
 
 	if (code == ir::ec::ec_ok)
 	{

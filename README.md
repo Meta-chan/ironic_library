@@ -2,7 +2,7 @@
 The code presented here is some pieces of my home projects, that might be helpful to others. Here you will find:
  - ir_md5 - MD5 hash algorithm
  - ir_openmap - helpful mapping function
- - ir_n2st_database - number to string table database, light and simple
+ - ir_n2st_database, ir_s2st_database - number to string and string to string table databases
  - ir_neuro - neural network
  - ir_plot - plotting function
  - ir_resource - helpful class wrapper aroud non-class things

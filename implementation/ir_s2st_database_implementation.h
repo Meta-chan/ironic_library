@@ -95,7 +95,7 @@ ir::ec ir::S2STDatabase::_readpointer(void **p, unsigned int offset, unsigned in
 
 ir::ec ir::S2STDatabase::_metaread(unsigned int *keyoffset, unsigned int index)
 {
-	if (index >= _filesize) return ec::ec_read_file;
+	if (index >= _tablesize) return ec::ec_read_file;
 
 	if (_rammode == rammode::rammode_all)
 	{
@@ -137,6 +137,7 @@ ir::ec ir::S2STDatabase::_metawrite(unsigned int keyoffset, unsigned int index)
 
 ir::ec ir::S2STDatabase::_readsize(unsigned int offset, unsigned int *size, unsigned int *headersize)
 {
+	*size = 0;
 	ec code = _read(size, offset, sizeof(char));
 	if (code != ec::ec_ok) return code;
 	if (*size > 251)
@@ -171,7 +172,8 @@ ir::ec ir::S2STDatabase::_writeblock(ConstBlock data, unsigned int *offset)
 	}
 	else
 	{
-		if (_write(&data.size, _filesize, sizeof(char)) == 0) return ec::ec_write_file;
+		ec code = _write(&data.size, _filesize, sizeof(char));
+		if (code != ec::ec_ok) return code;
 	}
 
 	return _write(data.data, _filesize, data.size);
@@ -185,6 +187,9 @@ ir::ec ir::S2STDatabase::_checkfile()
 		memcmp(header.signature, "IS2STDF", 7) != 0						||
 		header.version != 0) return ec::ec_invalid_signature;
 	
+	if (fseek(_file, 0, SEEK_END) != 0) return ec::ec_seek_file;
+	_filesize = ftell(_file) - sizeof(MetaFileHeader);
+
 	return ec::ec_ok;
 };
 
@@ -208,7 +213,11 @@ ir::ec ir::S2STDatabase::_checkmetafile()
 ir::ec ir::S2STDatabase::_openfile(const syschar *filepath, bool meta, createmode cmode)
 {
 	FILE **file = meta ? &_metafile : &_file;
-	*file = _wfsopen(filepath, L"rb", _SH_DENYNO);
+	#ifdef _WIN32
+		*file = _wfsopen(filepath, L"rb", _SH_DENYNO);
+	#else
+		*file = fopen(filepath, "rb");
+	#endif
 	ec check = ec::ec_ok;
 	bool exists = false;
 	
@@ -256,31 +265,42 @@ ir::ec ir::S2STDatabase::_openfile(const syschar *filepath, bool meta, createmod
 
 	if (createnew)
 	{
-		*file = _wfsopen(filepath, L"wb", _SH_DENYNO);
+		#ifdef _WIN32
+			*file = _wfsopen(filepath, L"w+b", _SH_DENYNO);
+		#else
+			*file = fopen(filepath, "w+b");
+		#endif
 		if (*file == nullptr) return ec::ec_create_file;
 		if (meta)
 		{
 			MetaFileHeader header;
 			if (fwrite(&header, sizeof(MetaFileHeader), 1, *file) == 0) return ec::ec_write_file;
-			_metapointer = 0;
-			_count = 0;
-			_delcount = 0;
+			unsigned int nulloffset = 0;
+			if (fwrite(&nulloffset, sizeof(unsigned int), 1, *file) == 0) return ec::ec_write_file;
+			_metapointer = 1;
+			_tablesize = 1;
 		}
 		else
 		{
 			FileHeader header;
 			if (fwrite(&header, sizeof(FileHeader), 1, *file) == 0) return ec::ec_write_file;
 			_filepointer = sizeof(FileHeader);
+			_filesize = sizeof(FileHeader);
 		}
 	}
 	else
 	{
-		*file = _wfsopen(filepath, L"w+b", _SH_DENYNO);
+		#ifdef _WIN32
+			*file = _wfsopen(filepath, L"r+b", _SH_DENYNO);
+		#else
+			*file = fopen(filepath, "r+b");
+		#endif
 		if (*file == nullptr) return ec::ec_create_file;
 	}
+	return ec::ec_ok;
 }
 
-ir::ec ir::S2STDatabase::_init(const syschar *filepath, createmode cmode, rammode rmode)
+ir::ec ir::S2STDatabase::_init(const syschar *filepath, createmode cmode)
 {
 	#ifdef _WIN32
 		unsigned int pathlen = wcslen(filepath);
@@ -298,9 +318,6 @@ ir::ec ir::S2STDatabase::_init(const syschar *filepath, createmode cmode, rammod
 	if (code != ec::ec_ok) return code;
 
 	code = _openfile(metafilepath.it, true, cmode);
-	if (code != ec::ec_ok) return code;
-
-	code = setrammode(rmode);
 	if (code != ec::ec_ok) return code;
 
 	_ok = true;
@@ -339,7 +356,8 @@ ir::ec ir::S2STDatabase::_find(ConstBlock key, unsigned int *index, unsigned int
 		{
 			//Check if key matches
 			//Read key size
-			unsigned int keysize, headersize;
+			unsigned int keysize = 0;
+			unsigned int headersize = 0;
 			ec code = _readsize(keyoffset, &keysize, &headersize);
 			if (code != ec::ec_ok) return code;
 	
@@ -408,6 +426,7 @@ ir::ec ir::S2STDatabase::_rehash(unsigned int newtablesize)
 	{
 		if (fseek(_metafile, sizeof(MetaFileHeader), SEEK_SET) != 0) return ec::ec_seek_file;
 		if (fwrite(table.it, sizeof(unsigned int), newtablesize, _metafile) < newtablesize) return ec::ec_write_file;
+		_metapointer = newtablesize;
 	}
 	else
 	{
@@ -421,9 +440,9 @@ ir::ec ir::S2STDatabase::_rehash(unsigned int newtablesize)
 	return ec::ec_ok;
 };
 
-ir::S2STDatabase::S2STDatabase(const syschar *filepath, createmode cmode, rammode rmode, ec *code)
+ir::S2STDatabase::S2STDatabase(const syschar *filepath, createmode cmode, ec *code)
 {
-	ec c = _init(filepath, cmode, rmode);
+	ec c = _init(filepath, cmode);
 	if (code != nullptr) *code = c;
 };
 
@@ -441,18 +460,21 @@ unsigned int ir::S2STDatabase::tablesize()
 
 ir::ec ir::S2STDatabase::setrammode(rammode rmode)
 {
+	if (!_ok) return ec::ec_object_not_ok;
+
 	//Read meta
 	if (_rammode == rammode::rammode_no && rmode != rammode::rammode_no)
 	{
 		_rammetafile = (unsigned int *)malloc(_tablesize * sizeof(unsigned int));
-		fseek(_metafile, sizeof(MetaFileHeader), SEEK_SET);
-		fread(_rammetafile, _tablesize, sizeof(unsigned int), _metafile);
+		if (_rammetafile == nullptr) return ec::ec_alloc;
+		if (fseek(_metafile, sizeof(MetaFileHeader), SEEK_SET) != 0) return ec::ec_seek_file;;
+		if (fread(_rammetafile, _tablesize, sizeof(unsigned int), _metafile) < _tablesize) return ec::ec_read_file;
 	}
 	//Write meta
 	else if (_rammode != rammode::rammode_no && rmode == rammode::rammode_no)
 	{
-		fseek(_metafile, sizeof(MetaFileHeader), SEEK_SET);
-		fwrite(_rammetafile, _tablesize, sizeof(unsigned int), _metafile);
+		if (fseek(_metafile, sizeof(MetaFileHeader), SEEK_SET) != 0) return ec::ec_seek_file;
+		if (fwrite(_rammetafile, _tablesize, sizeof(unsigned int), _metafile) < _tablesize) return ec::ec_write_file;
 		free(_rammetafile);
 		_rammetafile = nullptr;
 	}
@@ -461,14 +483,15 @@ ir::ec ir::S2STDatabase::setrammode(rammode rmode)
 	if (_rammode != rammode::rammode_all && rmode == rammode::rammode_all)
 	{
 		_ramfile = malloc(_filesize * sizeof(unsigned int));
-		fseek(_file, sizeof(MetaFileHeader), SEEK_SET);
-		fread(_ramfile, _filesize, sizeof(unsigned int), _file);
+		if (_ramfile == nullptr) return ec::ec_alloc;
+		if (fseek(_file, sizeof(MetaFileHeader), SEEK_SET) != 0) return ec::ec_seek_file;;
+		if (fread(_ramfile, _filesize, 1, _file) < _filesize) return ec::ec_read_file;;
 	}
 	//Write data
 	else if (_rammode == rammode::rammode_all && rmode != rammode::rammode_all)
 	{
-		fseek(_file, sizeof(MetaFileHeader), SEEK_SET);
-		fwrite(_ramfile, _filesize, sizeof(unsigned int), _file);
+		if (fseek(_file, sizeof(MetaFileHeader), SEEK_SET) != 0) return ec::ec_seek_file;;
+		if (fwrite(_ramfile, _filesize, 1, _file) < _filesize) return ec::ec_write_file;
 		free(_ramfile);
 		_ramfile = nullptr;
 	}
@@ -514,8 +537,8 @@ ir::ec ir::S2STDatabase::insert(ConstBlock key, ConstBlock data, insertmode mode
 	ec code = _find(key, &index, &olddataoffset);
 	if (code != ec::ec_ok) return code;
 	
-	if (mode == insertmode::insert_existing && olddataoffset > 1) return ec::ec_key_not_exists;
-	if (mode == insertmode::insert_not_existing && olddataoffset <= 1) return ec::ec_key_already_exists;
+	if (mode == insertmode::insert_existing && olddataoffset <= 1) return ec::ec_key_not_exists;
+	if (mode == insertmode::insert_not_existing && olddataoffset > 1) return ec::ec_key_already_exists;
 
 	//Write key
 	unsigned int newkeyoffset = 0;
@@ -554,13 +577,24 @@ ir::ec ir::S2STDatabase::delet(ConstBlock key, deletemode mode)
 		else return ec::ec_ok;
 	}
 
-	//Write 1 to metafile
-	if (fseek(_metafile, index, SEEK_SET) != 0) return ec::ec_seek_file;
-	unsigned int newkeyoffset = 1;	//Optimize! May write 0 if next if 0!
-	if (fwrite(&newkeyoffset, sizeof(unsigned int), 1, _metafile) == 0) return ec::ec_write_file;
-
+	//Write 1 or 0 to metafile
+	unsigned int nextkeyoffset = 0;
+	code = _metaread(&nextkeyoffset, (index + 1) & (_tablesize - 1));
+	if (code != ec::ec_ok) return code;
+	
+	if (nextkeyoffset == 0)
+	{
+		code = _metawrite(0, index);
+		if (code != ec::ec_ok) return code;
+	}
+	else
+	{
+		code = _metawrite(1, index);
+		if (code != ec::ec_ok) return code;
+		_delcount++;
+	}
 	_count--;
-	_delcount++;
+
 	return ec::ec_ok;
 };
 
