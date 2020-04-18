@@ -39,7 +39,7 @@ void test_read(const char *key, const char *rightdata, ir::ec rightcode)
 int main()
 {
 	ir::ec code;
-	database = new ir::S2STDatabase(L"database.idt", ir::S2STDatabase::new_always, &code);
+	database = new ir::S2STDatabase(L"database.idt", ir::S2STDatabase::create_new_always, &code);
 
 	if (code == ir::ec::ec_ok)
 	{
@@ -58,4 +58,5 @@ int main()
 		test_insert("Rarity", "Applejack", ir::S2STDatabase::insert_always, ir::ec::ec_ok);
 	}
 	delete database;
+	getchar();
 };

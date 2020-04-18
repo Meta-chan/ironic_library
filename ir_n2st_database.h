@@ -14,7 +14,7 @@
 #ifndef IR_N2ST_DATABASE
 #define IR_N2ST_DATABASE
 
-#define _CRT_SECURE_NO_WARNINGS
+#include "ir_database.h"
 #include "ir_errorcode.h"
 #include "ir_syschar.h"
 #include "ir_block.h"
@@ -23,37 +23,8 @@
 
 namespace ir
 {
-	class N2STDatabase
+	class N2STDatabase : public Database
 	{
-	public:
-		
-		enum accessmode
-		{
-			access_new,
-			access_readwrite,
-			access_read
-		};
-
-		enum insertmode
-		{
-			insert_always,
-			insert_existing,
-			insert_not_existing
-		};
-
-		enum deletemode
-		{
-			delete_always,
-			delete_existing
-		};
-
-		enum rammode
-		{
-			rammode_no,
-			rammode_metafile,
-			rammode_all
-		};
-
 	private:
 		
 		struct FileHeader
@@ -69,26 +40,48 @@ namespace ir
 			unsigned int count			= 0;
 		};
 		
-		//rammode _rmode				= rammode::ram_no;
+		//File
+		unsigned int _filepointer		= 0;		//dublicates ftell
+		unsigned int _filesize			= 0;		//dublicated fseek && ftell
 		FILE *_file						= nullptr;
-		//void *_ramfile				= nullptr;
+		void *_ramfile					= nullptr;
+		bool _holdfile					= false;
+
+		//Metafile
+		unsigned int _tablesize			= 0;		//dublicates ftell
+		unsigned int _metapointer		= 0;		//dublicated fseek && ftell
 		FILE *_metafile					= nullptr;
-		//void *_rammetafile			= nullptr;
+		unsigned int *_rammetafile		= nullptr;
+		bool _holdmeta					= false;
+
 		bool _ok						= false;
+		bool _writeaccess				= false;
 		unsigned int _count				= 0;
 		ir::Block _buffer;	//need to replace with openmap!
 
+		ec _read(void *buffer, unsigned int offset, unsigned int size);
+		ec _write(const void *buffer, unsigned int offset, unsigned int size);
+		ec _readpointer(void **p, unsigned int offset, unsigned int size);
+		ec _metaread(unsigned int *keyoffset, unsigned int index);
+		ec _metawrite(unsigned int keyoffset, unsigned int index);
+
+		ec _readsize(unsigned int headeroffset, unsigned int *datasize, unsigned int *headersize);
+		ec _writeblock(ConstBlock data, unsigned int *offset);
+
+		ec _checkfile(const syschar *filepath);
+		ec _checkmetafile(const syschar *filepath);
+		ec _openwrite(const syschar *filepath, const syschar *metafilepath, bool createnew);
+		ec _init(const syschar *filepath, createmode cmode);
+
 	public:
-	
-		ec _openfile(const syschar *filepath, bool meta, accessmode amode);
-		ec _init(const syschar *filepath, accessmode amode);
-		N2STDatabase(const syschar *filepath, accessmode amode, rammode rmode, ec *code);
+
+		N2STDatabase(const syschar *filepath, createmode mode, ec *code);
 		unsigned int count();
 		unsigned int tablesize();
-		ec setrammode(rammode rmode);
-		ec read(unsigned int number, ConstBlock *data);
-		ec insert(unsigned int number, ConstBlock adata, insertmode imode = insert_always);
-		ec delet(unsigned int number, deletemode dmode = delete_always);
+		ec setrammode(bool holdfile, bool holdmeta);
+		ec read(unsigned int index, ConstBlock *data);
+		ec insert(unsigned int index, ConstBlock data, insertmode mode = insert_always);
+		ec delet(unsigned int index, deletemode mode = delete_always);
 		~N2STDatabase();
 	};
 };

@@ -39,25 +39,24 @@ void test_read(unsigned int key, const char *rightdata, ir::ec rightcode)
 int main()
 {
 	ir::ec code;
-	database = new ir::N2STDatabase(SS("C:\\Users\\Dell E7240\\Desktop\\Dialog"),
-		ir::N2STDatabase::accessmode::access_new,
-		ir::N2STDatabase::rammode::rammode_no,
-		&code);
+	database = new ir::N2STDatabase(SS("database.idt"), ir::Database::create_new_always, &code);
 
 	if (code == ir::ec::ec_ok)
 	{
 		printf("N2STDatabase initialized\n");
 		test_insert(1, "Sweety Belle", ir::N2STDatabase::insert_always, ir::ec::ec_ok);
 		test_insert(2, "Luna", ir::N2STDatabase::insert_not_existing, ir::ec::ec_ok);
-		test_insert(2, "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", ir::N2STDatabase::insert_always, ir::ec::ec_ok);
-		test_insert(8, "Applebloom", ir::N2STDatabase::insert_not_existing, ir::ec::ec_key_already_exists);
-		test_read(2, "Sweety Belle", ir::ec::ec_ok);
+		char longstr[300]; for (unsigned int i = 0; i < 299; i++) longstr[i] = '0'; longstr[299] = '\0';
+		test_insert(2, longstr, ir::N2STDatabase::insert_always, ir::ec::ec_ok);
+		test_insert(8, "Applebloom", ir::N2STDatabase::insert_not_existing, ir::ec::ec_ok);
+		test_read(2, longstr, ir::ec::ec_ok);
 		test_read(3, nullptr, ir::ec::ec_key_not_exists);
-		test_insert(1, "", ir::N2STDatabase::insert_not_existing, ir::ec::ec_ok);
-		test_read(4, "", ir::ec::ec_ok);
+		test_insert(1, "", ir::N2STDatabase::insert_not_existing, ir::ec::ec_key_already_exists);
+		test_read(4, "", ir::ec::ec_key_not_exists);
+		test_insert(7, "Applejack", ir::N2STDatabase::insert_existing, ir::ec::ec_key_not_exists);
+		test_insert(7, "Applejack", ir::N2STDatabase::insert_not_existing, ir::ec::ec_ok);
 		test_insert(7, "Applejack", ir::N2STDatabase::insert_not_existing, ir::ec::ec_key_already_exists);
-		test_insert(7, "Applejack", ir::N2STDatabase::insert_existing, ir::ec::ec_ok);
-		test_insert(7, "Applejack", ir::N2STDatabase::insert_always, ir::ec::ec_ok);
 	}
 	delete database;
+	getchar();
 };

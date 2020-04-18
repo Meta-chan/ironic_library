@@ -14,49 +14,16 @@
 #ifndef IR_S2ST_DATABASE
 #define IR_S2ST_DATABASE
 
-#define _CRT_SECURE_NO_WARNINGS
 #include "ir_errorcode.h"
 #include "ir_syschar.h"
 #include "ir_block.h"
-#include "ir_reserve.h"
+#include "ir_database.h"
 #include <stdio.h>
 
 namespace ir
 {
-	class S2STDatabase
+	class S2STDatabase : public Database
 	{
-	public:
-
-		enum insertmode
-		{
-			insert_always,
-			insert_existing,
-			insert_not_existing
-		};
-
-		enum deletemode
-		{
-			delete_always,
-			delete_existing
-		};
-
-		enum rammode
-		{
-			rammode_no,
-			rammode_meta,
-			rammode_all
-		};
-
-		enum createmode
-		{
-			readonly,
-			new_never,
-			new_if_no,
-			new_if_corrupted,
-			new_if_no_or_corrupted,
-			new_always
-		};
-
 	private:
 		
 		struct FileHeader
@@ -78,21 +45,20 @@ namespace ir
 		unsigned int _filesize			= 0;		//dublicated fseek && ftell
 		FILE *_file						= nullptr;
 		void *_ramfile					= nullptr;
-		
+		bool _holdfile					= false;
+
 		//Metafile
 		unsigned int _tablesize			= 0;		//dublicates ftell
 		unsigned int _metapointer		= 0;		//dublicated fseek && ftell
 		FILE *_metafile					= nullptr;
 		unsigned int *_rammetafile		= nullptr;
+		bool _holdmeta					= false;
 
-		rammode _rammode				= rammode::rammode_no;
 		bool _ok						= false;
 		bool _writeaccess				= false;
 		unsigned int _count				= 0;
 		unsigned int _delcount			= 0;
 		ir::Block _buffer;	//need to replace with openmap!
-
-	private:
 
 		ec _read(void *buffer, unsigned int offset, unsigned int size);
 		ec _write(const void *buffer, unsigned int offset, unsigned int size);
@@ -103,9 +69,9 @@ namespace ir
 		ec _readsize(unsigned int headeroffset, unsigned int *datasize, unsigned int *headersize);
 		ec _writeblock(ConstBlock data, unsigned int *offset);
 		
-		ec _checkfile();
-		ec _checkmetafile();
-		ec _openfile(const syschar *filepath, bool meta, createmode cmode);
+		ec _checkfile(const syschar *filepath);
+		ec _checkmetafile(const syschar *filepath);
+		ec _openwrite(const syschar *filepath, const syschar *metafilepath, bool createnew);
 		ec _init(const syschar *filepath, createmode cmode);
 		
 		ec _find(ConstBlock key, unsigned int *metaoffset, unsigned int *dataoffset);
@@ -113,13 +79,14 @@ namespace ir
 
 	public:
 
-		S2STDatabase(const syschar *filepath, createmode cmode, ec *code);
+		S2STDatabase(const syschar *filepath, createmode mode, ec *code);
 		unsigned int count();
 		unsigned int tablesize();
-		ec setrammode(rammode rmode);
+		ec setrammode(bool holdfile, bool holdmeta);
+		ec directread(unsigned int index, ConstBlock *key, ConstBlock *data);
 		ec read(ConstBlock key, ConstBlock *data);
-		ec insert(ConstBlock key, ConstBlock adata, insertmode imode = insert_always);
-		ec delet(ConstBlock key, deletemode dmode = delete_always);
+		ec insert(ConstBlock key, ConstBlock data, insertmode mode = insert_always);
+		ec delet(ConstBlock key, deletemode mode = delete_always);
 		~S2STDatabase();
 	};
 };
