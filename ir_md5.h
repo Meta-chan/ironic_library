@@ -27,7 +27,7 @@
 //Or unsigned char hash[16]
 
 #if (defined(IR_MD5_IMPLEMENT) || defined(IR_IMPLEMENT))
-	#include "ir_md5_implementation.h"
+	#include "implementation/ir_md5_implementation.h"
 #endif
 
 #endif //#ifndef IR_MD5

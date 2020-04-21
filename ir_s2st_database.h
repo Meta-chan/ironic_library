@@ -34,7 +34,7 @@ namespace ir
 
 		struct MetaFileHeader
 		{
-			unsigned char signature[7]	= { 'I', 'S', '2', 'S', 'T', 'D', 'T' };
+			unsigned char signature[7]	= { 'I', 'S', '2', 'S', 'T', 'D', 'M' };
 			unsigned char version		= 0;
 			unsigned int count			= 0;
 			unsigned int delcount		= 0;

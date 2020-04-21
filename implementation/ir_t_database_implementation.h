@@ -1,4 +1,4 @@
-#ifndef IR_MEMFREES
+#ifndef IR_MEMFREER
 #define IR_MEMFREER
 	//I really don't know how to make templates part of Ironic. Maybe later
 	class MemFreer{ public: static void free(void *mem) { ::free(mem); } };
@@ -168,8 +168,7 @@ ir::ec ir::IR_T_DATABASE_TYPE::_init(const syschar *filepath, createmode cmode)
 	case createmode::create_readonly:
 		if (filestatus == ec::ec_open_file) return ec::ec_open_file;
 		else if (filestatus != ec::ec_ok) return ec::ec_invalid_signature;
-		else return ec::ec_ok;
-		break;
+		else break;
 	case createmode::create_new_never:
 		if (filestatus == ec::ec_open_file) return ec::ec_open_file;
 		else if (filestatus == ec::ec_invalid_signature) return ec::ec_invalid_signature;
