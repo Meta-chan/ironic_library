@@ -12,7 +12,7 @@
 //Wide strings are normal UTF16 Little Endian
 
 //So, for test the source must be saved in UTF8 without BOM
-//It is the most predictable and cross-latform case
+//It is the most predictable and cross-platform case
 
 void printutf32(unsigned int *s)
 {

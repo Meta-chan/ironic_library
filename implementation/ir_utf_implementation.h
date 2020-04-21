@@ -336,7 +336,7 @@ unsigned int utf_1251_decode(const void *string, unsigned int *nsymbols)
 		else if (s[0] < 0xC0)
 		{
 			if (nsymbols != (void*)0) *nsymbols = nskipped + 1;
-			return utf_1251_symbols[s[0] - 0xC0];
+			return utf_1251_symbols[s[0] - 0x80];
 		}
 		else if (s[0] != 0x98)
 		{
