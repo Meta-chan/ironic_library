@@ -2,32 +2,45 @@
 #include "ir_openmap.h"
 #include <stdio.h>
 #include <time.h>
-#include <share.h>
+#include <string.h>
+#include <stdlib.h>
+#ifdef _WIN32
+	#include <share.h>
+#endif
 
-#define SIZE 1024 * 1024
-
-char destbuffer[SIZE];
-char emulbuffer[SIZE];
+#define BUFSIZE 421773
+#define READSTART 69
+#define READEND 420001
 
 int main()
 {
-	FILE *file = _wfsopen(L"text.hex", L"w+b", _SH_DENYNO);
-	fwrite(destbuffer, 1, SIZE, file);
+	void *destbuffer = malloc(BUFSIZE);
+	void *emulbuffer = malloc(BUFSIZE);
+	if (destbuffer == nullptr || emulbuffer == nullptr) return 1;
+
+	#ifdef _WIN32
+		FILE *file = _wfsopen(L"test.hex", L"w+b", _SH_DENYNO);
+	#else
+		FILE *file = fopen("test.hex", "w+b");
+	#endif
+	if (file == nullptr) return 1;
+	fwrite(destbuffer, 1, BUFSIZE, file);
 
 	ir::OpenmapCache cache;
 
 	clock_t a = clock();
-	for (unsigned int i = 0; i < 1000; i++)
+	for (unsigned int i = 0; i < 10; i++)
 	{
-		fseek(file, 0, SEEK_SET);
-		fread(emulbuffer, 1, SIZE, file);
-		memcpy(destbuffer, emulbuffer, SIZE);
+		fseek(file, READSTART, SEEK_SET);
+		if (fread(emulbuffer, 1, READEND - READSTART, file) < (READEND - READSTART)) return 1;
+		memcpy(destbuffer, emulbuffer, BUFSIZE);
 	}
 	clock_t b = clock();
-	for (unsigned int i = 0; i < 1000; i++)
+	for (unsigned int i = 0; i < 10; i++)
 	{
-		void *map = ir::openmap(&cache, file, 0, SIZE, ir::openmapmode::openmap_read);
-		memcpy(destbuffer, map, SIZE);
+		void *map = ir::openmap(&cache, file, READSTART, READEND - READSTART, ir::openmapmode::openmap_read);
+		if (map == nullptr) return 1;
+		memcpy(destbuffer, map, BUFSIZE);
 	}
 	clock_t c = clock();
 	ir::closemap(&cache);

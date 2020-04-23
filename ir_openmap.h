@@ -18,6 +18,8 @@
 
 #ifdef _WIN32
 	#include <Windows.h>
+#else
+	#include <sys/mman.h>
 #endif
 #include <stdio.h>
 
@@ -32,12 +34,14 @@ namespace ir
 	{
 		#ifdef _WIN32
 			HANDLE hfile			= INVALID_HANDLE_VALUE;
-			HANDLE hmapping			= NULL;					//indicated if mapping exists(Windows)
+			HANDLE hmapping			= NULL;					//indicated if mapping exists
 			unsigned int maxmapsize	= 0;
+			void *mapstart			= nullptr;				//indicated if address is got
 		#else
 			int filedes				= -1;
+			void *mapstart			= MAP_FAILED;			//indicated if mapping exists
 		#endif
-		void *mapstart				= nullptr;				//indicated if mapping exists(Linux) / if address is got(Windows)
+		
 		unsigned int lowlimit		= 0;
 		unsigned int highlimit		= 0;
 		

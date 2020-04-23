@@ -15,7 +15,6 @@
 	#include <io.h>
 #else
 	#include <unistd.h>
-	#include <sys/mman.h>
 	#include <sys/types.h>
 	#include <stdlib.h>
 #endif
@@ -111,20 +110,21 @@ void ir::closemap(OpenmapCache *cache)
 
 #else
 
-void *ir::openmap(ir::OpenmapCache *cache, int filedes, unsigned int offset, unsigned int size)
+void *ir::openmap(OpenmapCache *cache, int filedes, unsigned int offset, unsigned int size, openmapmode mode)
 {
 	//If we need to recreate address -> recreate address
-	if (cache->filedes != fieldes || cache->mapstart == nullptr || offset <= cache->lowlimit || offset + size > cache->highlimit))
+	if (cache->filedes != filedes || cache->mapstart == MAP_FAILED || offset <= cache->lowlimit || offset + size > cache->highlimit)
 	{
-		if (cache->mapstart != nullptr) munmap(cache->mapstart);
+		if (cache->mapstart != MAP_FAILED) munmap(cache->mapstart, cache->highlimit - cache->lowlimit);
 		if (_internal_openmap_pagesize == 0) _internal_openmap_pagesize = sysconf(_SC_PAGESIZE);
+		cache->filedes = filedes;
 		cache->lowlimit = offset & ~(_internal_openmap_pagesize - 1);
 		cache->highlimit = offset + size; //may be possible to optimize
-		cache->mapstart = mmap(nullptr, size, PROT_READ, 0, cache->filedes, cache->lowlimit);
+		cache->mapstart = mmap(nullptr, size, PROT_READ, MAP_PRIVATE, cache->filedes, cache->lowlimit);
 	}
 
 	//If we have previous step done, return pointer
-	if (cache->mapstart != nullptr)
+	if (cache->mapstart != MAP_FAILED)
 	{
 		return (char*)cache->mapstart + (offset - cache->lowlimit);
 	}
@@ -134,12 +134,12 @@ void *ir::openmap(ir::OpenmapCache *cache, int filedes, unsigned int offset, uns
 		if (cache->emulatemem == nullptr) cache->emulatemem = malloc(size);
 		else if (cache->reserved < size)
 		{
-			ocache->reserved = size;
+			cache->reserved = size;
 			cache->emulatemem = realloc(cache->emulatemem, size);
 		}
 		if (cache->emulatemem == nullptr) return nullptr;
 		
-		if (lseek(cache->hfile, offset, nullptr, FILE_BEGIN) != offset) return nullptr;
+		if (lseek(cache->filedes, offset, SEEK_SET) != offset) return nullptr;
 		if (read(cache->filedes, cache->emulatemem, size) < size) return nullptr;
 		return cache->emulatemem;
 	}
@@ -147,14 +147,14 @@ void *ir::openmap(ir::OpenmapCache *cache, int filedes, unsigned int offset, uns
 
 void *ir::openmap(OpenmapCache *cache, FILE *file, unsigned int offset, unsigned int size, openmapmode mode)
 {
-	return openmap(cache, (HANDLE)_get_osfhandle(_fileno(file)), offset, size, mode);
+	return openmap(cache, fileno(file), offset, size, mode);
 };
 
 void ir::closemap(OpenmapCache *cache)
 {
 	if (cache->mapstart != nullptr)
 	{
-		munmap(cache->mapstart);
+		munmap(cache->mapstart, cache->highlimit - cache->lowlimit);
 		cache->mapstart = nullptr;
 	}
 
