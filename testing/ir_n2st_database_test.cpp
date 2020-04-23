@@ -40,6 +40,7 @@ int main()
 {
 	ir::ec code;
 	database = new ir::N2STDatabase(SS("database.idt"), ir::Database::create_new_always, &code);
+	database->setrammode(true, true);
 
 	if (code == ir::ec::ec_ok)
 	{

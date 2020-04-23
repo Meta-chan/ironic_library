@@ -31,10 +31,11 @@ ir::ec ir::N2STDatabase::_metawrite(unsigned int keyoffset, unsigned int index)
 			if (_rammetafile == nullptr) _rammetafile = (unsigned int*)malloc((index + 1) * sizeof(unsigned int));
 			else _rammetafile = (unsigned int*)realloc(_rammetafile, (index + 1) * sizeof(unsigned int));
 			if (_rammetafile == nullptr) return ec::ec_alloc;
-			memset(_rammetafile + _tablesize, 0, index - _tablesize);
+			memset(_rammetafile + _tablesize, 0, (index - _tablesize) * sizeof(unsigned int));
 			_tablesize = (index + 1);
 		}
 		_rammetafile[index] = keyoffset;
+		_metachanged = true;
 	}
 	else
 	{
@@ -226,6 +227,8 @@ ir::ec ir::N2STDatabase::delet(unsigned int index, deletemode mode)
 
 ir::N2STDatabase::~N2STDatabase()
 {
+	closemap(&_mapcache);
+	setrammode(false, false);
 	if (_file != nullptr) fclose(_file);
 	if (_metafile != nullptr)
 	{

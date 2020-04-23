@@ -40,7 +40,7 @@ int main()
 {
 	ir::ec code;
 	database = new ir::S2STDatabase(L"database.idt", ir::S2STDatabase::create_new_always, &code);
-
+	database->setrammode(true, true);
 	if (code == ir::ec::ec_ok)
 	{
 		printf("S2STDatabase initialized\n");

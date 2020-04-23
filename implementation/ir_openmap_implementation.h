@@ -152,10 +152,10 @@ void *ir::openmap(OpenmapCache *cache, FILE *file, unsigned int offset, unsigned
 
 void ir::closemap(OpenmapCache *cache)
 {
-	if (cache->mapstart != nullptr)
+	if (cache->mapstart != MAP_FAILED)
 	{
 		munmap(cache->mapstart, cache->highlimit - cache->lowlimit);
-		cache->mapstart = nullptr;
+		cache->mapstart = MAP_FAILED;
 	}
 
 	if (cache->emulatemem != nullptr)

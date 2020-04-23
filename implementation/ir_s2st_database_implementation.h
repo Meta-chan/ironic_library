@@ -30,6 +30,7 @@ ir::ec ir::IR_T_DATABASE_TYPE::_metawrite(unsigned int keyoffset, unsigned int i
 	if (_holdmeta)
 	{
 		_rammetafile[index] = keyoffset;
+		_metachanged = true;
 	}
 	else
 	{
@@ -181,7 +182,7 @@ ir::ec ir::S2STDatabase::_find(ConstBlock key, unsigned int *index, unsigned int
 				void *readkey = nullptr;
 				code = _readpointer(&readkey, keyoffset + headersize, keysize);
 				if (code != ec::ec_ok) return code;
-				if (memcmp(key.data, _buffer.data, keysize) == 0)
+				if (memcmp(key.data, readkey, keysize) == 0)
 				{
 					*dataoffset = keyoffset + headersize + keysize;
 					break;
@@ -416,6 +417,7 @@ ir::ec ir::S2STDatabase::delet(ConstBlock key, deletemode mode)
 
 ir::S2STDatabase::~S2STDatabase()
 {
+	closemap(&_mapcache);
 	setrammode(false, false);
 	if (_file != nullptr) fclose(_file);
 	if (_metafile != nullptr)

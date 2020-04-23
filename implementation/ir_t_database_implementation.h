@@ -1,6 +1,7 @@
 #ifndef IR_MEMFREER
 #define IR_MEMFREER
 	//I really don't know how to make templates part of Ironic. Maybe later
+	//I AM WORKING ON IT! I AM WORKING!
 	class MemFreer{ public: static void free(void *mem) { ::free(mem); } };
 	typedef ir::Resource<ir::syschar*, MemFreer, nullptr> StringResource;
 	typedef ir::Resource<unsigned int*, MemFreer, nullptr> UintResource;
@@ -36,6 +37,7 @@ ir::ec ir::IR_T_DATABASE_TYPE::_write(const void *buffer, unsigned int offset, u
 			if (!reserve(&_ramfile, &_filesize, offset + size)) return ec::ec_alloc;
 		};
 		memcpy((char*)_ramfile + offset, buffer, size);
+		if (size > 0) _filechanged = true;
 	}	
 	else
 	{
@@ -62,15 +64,10 @@ ir::ec ir::IR_T_DATABASE_TYPE::_readpointer(void **p, unsigned int offset, unsig
 	}
 	else
 	{
-		if (offset != _filepointer)
-		{
-			if (fseek(_file, offset, SEEK_SET) != 0) return ec::ec_seek_file;
-			_filepointer = offset;
-		}
-		if (!reserve(&_buffer.data, &_buffer.size, size)) return ec::ec_alloc;
-		if (fread(_buffer.data, size, 1, _file) == 0) return ec::ec_read_file;
-		_filepointer += size;
-		memcpy(p, &_buffer.data, sizeof(void*));
+		//Actually openmap might change file pointer. It never causes a problem though
+		void *pointer = openmap(&_mapcache, _file, offset, size, openmapmode::openmap_read);
+		if (pointer == nullptr) return ec::ec_openmap;
+		memcpy(p, &pointer, sizeof(void*));
 	}
 	return ec::ec_ok;
 };
@@ -209,40 +206,47 @@ ir::ec ir::IR_T_DATABASE_TYPE::setrammode(bool holdfile, bool holdmeta)
 		_rammetafile = (unsigned int *)malloc(_tablesize * sizeof(unsigned int));
 		if (_rammetafile == nullptr) return ec::ec_alloc;
 		if (fseek(_metafile, sizeof(MetaFileHeader), SEEK_SET) != 0) return ec::ec_seek_file;;
-		if (fread(_rammetafile, _tablesize, sizeof(unsigned int), _metafile) < _tablesize) return ec::ec_read_file;
+		if (fread(_rammetafile, sizeof(unsigned int), _tablesize, _metafile) < _tablesize) return ec::ec_read_file;
 		_metapointer = _tablesize;
 	}
 	//Write meta
 	else if (!holdmeta && _holdmeta)
 	{
-		if (fseek(_metafile, sizeof(MetaFileHeader), SEEK_SET) != 0) return ec::ec_seek_file;
-		if (fwrite(_rammetafile, _tablesize, sizeof(unsigned int), _metafile) < _tablesize) return ec::ec_write_file;
+		if (_writeaccess && _metachanged)
+		{
+			if (fseek(_metafile, sizeof(MetaFileHeader), SEEK_SET) != 0) return ec::ec_seek_file;
+			if (fwrite(_rammetafile, sizeof(unsigned int), _tablesize, _metafile) < _tablesize) return ec::ec_write_file;
+			_metapointer = _tablesize;
+		}
 		free(_rammetafile);
 		_rammetafile = nullptr;
-		_metapointer = _tablesize;
 	}
+	_holdmeta = holdmeta;
+	_metachanged = false;
 
 	//Read data
 	if (holdfile && !_holdfile)
 	{
 		_ramfile = malloc(_filesize * sizeof(unsigned int));
 		if (_ramfile == nullptr) return ec::ec_alloc;
-		if (fseek(_file, sizeof(MetaFileHeader), SEEK_SET) != 0) return ec::ec_seek_file;;
-		if (fread(_ramfile, _filesize, 1, _file) < _filesize) return ec::ec_read_file;;
+		if (fseek(_file, sizeof(FileHeader), SEEK_SET) != 0) return ec::ec_seek_file;;
+		if (fread(_ramfile, 1, _filesize - sizeof(FileHeader), _file) < (_filesize - sizeof(FileHeader))) return ec::ec_read_file;;
 		_filepointer = _filesize;
 	}
 	//Write data
 	else if (!holdfile && _holdfile)
 	{
-		if (fseek(_file, sizeof(MetaFileHeader), SEEK_SET) != 0) return ec::ec_seek_file;;
-		if (fwrite(_ramfile, _filesize, 1, _file) < _filesize) return ec::ec_write_file;
+		if (_writeaccess && _filechanged)
+		{
+			if (fseek(_file, sizeof(FileHeader), SEEK_SET) != 0) return ec::ec_seek_file;;
+			if (fwrite(_ramfile, 1, _filesize - sizeof(FileHeader), _file) < (_filesize - sizeof(FileHeader))) return ec::ec_write_file;
+			_filepointer = _filesize;
+		}
 		free(_ramfile);
 		_ramfile = nullptr;
-		_filepointer = _filesize;
 	}
-	
 	_holdfile = holdfile;
-	_holdmeta = holdmeta;
+	_filechanged = false;
 
 	return ec::ec_ok;
 };

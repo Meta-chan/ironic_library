@@ -15,6 +15,7 @@
 #define IR_S2ST_DATABASE
 
 #include "ir_errorcode.h"
+#include "ir_openmap.h"
 #include "ir_syschar.h"
 #include "ir_block.h"
 #include "ir_database.h"
@@ -56,9 +57,11 @@ namespace ir
 
 		bool _ok						= false;
 		bool _writeaccess				= false;
+		bool _filechanged				= false;
+		bool _metachanged				= false;
 		unsigned int _count				= 0;
 		unsigned int _delcount			= 0;
-		ir::Block _buffer;	//need to replace with openmap!
+		ir::OpenmapCache _mapcache;
 
 		ec _read(void *buffer, unsigned int offset, unsigned int size);
 		ec _write(const void *buffer, unsigned int offset, unsigned int size);
