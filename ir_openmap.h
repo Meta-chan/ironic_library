@@ -8,44 +8,53 @@
 	Reinventing bicycles since 2020
 */
 
-//openmap provides an access to files with a mapping mechanism.
-//The advantage is that mapping objects are created/deleted not every time you access the file
-//openmap does not open or close files. You must do it yourself by specifying hfile in MapCache
-//openmap can be called several times without closing
-//Use openmapmode::openmap_no to close the mapping
+//openmap/closemap are functions to access files with map mechanism
+//openmap does not open or close files itself, it must be done bu user
+
+//IMPORTANT: Now only read mode is implemented. Sorry
 
 #ifndef IR_OPENMAP
 #define IR_OPENMAP
 
-#include <Windows.h>
+#ifdef _WIN32
+	#include <Windows.h>
+#endif
+#include <stdio.h>
 
 namespace ir
 {
-	enum openmapmode : char
+	enum openmapmode
 	{
-		openmap_no			= 0,
-		openmap_read		= 1,
-		openmap_write		= 2,
-		openmap_readwrite	= 3
+		openmap_read
 	};
 
-	struct MapCache
+	struct OpenmapCache
 	{
-		HANDLE hfile			= INVALID_HANDLE_VALUE;
+		#ifdef _WIN32
+			HANDLE hfile			= INVALID_HANDLE_VALUE;
+			HANDLE hmapping			= NULL;					//indicated if mapping exists(Windows)
+			unsigned int maxmapsize	= 0;
+		#else
+			int filedes				= -1;
+		#endif
+		void *mapstart				= nullptr;				//indicated if mapping exists(Linux) / if address is got(Windows)
+		unsigned int lowlimit		= 0;
+		unsigned int highlimit		= 0;
 		
-		//Refer to hmapping
-		HANDLE hmapping			= NULL;
-		size_t maxmapsize		= 0;
-		openmapmode mapmode		= openmapmode::openmap_read;
-
-		//Refer to mapstart:
-		void *mapstart			= nullptr;
-		unsigned int lowlimit	= 0;
-		unsigned int highlimit	= 0;
+		void *emulatemem			= nullptr;
+		unsigned int reserved		= 0;
 	};
 
-	void *openmap(MapCache *cache, size_t offset, size_t size, openmapmode mode);
-}
+	#ifdef _WIN32
+		void *openmap(OpenmapCache *cache, HANDLE hfile, unsigned int offset, unsigned int size, openmapmode mode);
+		void *openmap(OpenmapCache *cache, int filedes, unsigned int offset, unsigned int size, openmapmode mode);
+		void *openmap(OpenmapCache *cache, FILE *file, unsigned int offset, unsigned int size, openmapmode mode);
+	#else
+		void *openmap(OpenmapCache *cache, int filedes, unsigned int offset, unsigned int size, openmapmode mode);
+		void *openmap(OpenmapCache *cache, FILE *file, unsigned int offset, unsigned int size, openmapmode mode);
+	#endif
+		void closemap(OpenmapCache *cache);
+};
 
 #if (defined(IR_OPENMAP_IMPLEMENT) || defined(IR_IMPLEMENT))
 	#include "implementation/ir_openmap_implementation.h"
