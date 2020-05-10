@@ -14,7 +14,7 @@
 #ifndef IR_PLOT
 #define IR_PLOT
 
-#include "ir_errorcode.h"
+#include <ir_errorcode.h>
 
 namespace ir
 {
@@ -33,8 +33,8 @@ namespace ir
 	ec plot(unsigned int nplots, Plot plot1, ...);
 };
 
-#if (defined(IR_IMPLEMENT) || defined (IR_PLOT_IMPLEMENT))
-	#include "implementation/ir_plot_implementation.h"
+#if (defined(IR_IMPLEMENT) || defined (IR_PLOT_IMPLEMENT)) && !defined(IR_PLOT_NOT_IMPLEMENT)
+	#include <implementation/ir_plot_implementation.h>
 #endif
 
 #endif	//#ifndef IR_PLOT

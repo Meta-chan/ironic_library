@@ -67,9 +67,6 @@ LRESULT CALLBACK plotwindowproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	case WM_PAINT:
 		plotwindowpaint(hWnd);
 		break;
-	case WM_LBUTTONUP:
-		MessageBox(hWnd, TEXT("Вы кликнули!"), TEXT("событие"), 0);
-		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;

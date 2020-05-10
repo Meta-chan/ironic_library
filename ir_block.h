@@ -35,8 +35,8 @@ namespace ir
 	};
 };
 
-#if (defined (IR_BLOCK_IMPLEMENT) || defined(IR_IMPLEMENT))
-	#include "implementation/ir_block_implementation.h"
+#if (defined (IR_BLOCK_IMPLEMENT) || defined(IR_IMPLEMENT)) && !defined(IR_BLOCK_NOT_IMPLEMENT)
+	#include <implementation/ir_block_implementation.h>
 #endif
 
 #endif //#ifndef IR_BLOCK

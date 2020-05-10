@@ -16,7 +16,7 @@
 #include <random>
 #include <time.h>
 #include <math.h>
-#include "ir_resource.h"
+#include <ir_resource.h>
 
 class MemFreer { public: static void free(void *mem) { ::free(mem); } };
 typedef ir::Resource<float*, MemFreer, nullptr> FloatResource;

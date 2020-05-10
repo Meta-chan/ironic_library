@@ -1,5 +1,5 @@
 #define IR_IMPLEMENT
-#include "ir_n2st_database.h"
+#include <ir_database/ir_n2st_database.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -29,6 +29,7 @@ void test_read(unsigned int key, const char *rightdata, ir::ec rightcode)
 	ir::ec code = database->read(key, &result);
 	printf("Result : %u\n", code);
 	bool isdataright = false;
+	const char* l = (const char*)result.data;
 	if (code == ir::ec::ec_ok) printf("Data : %s\n", (const char*)result.data);
 	bool testok = (rightcode == ir::ec::ec_ok) ?
 		(code == ir::ec::ec_ok && strcmp((const char*)result.data, rightdata) == 0) :
@@ -40,7 +41,7 @@ int main()
 {
 	ir::ec code;
 	database = new ir::N2STDatabase(SS("database.idt"), ir::Database::create_new_always, &code);
-	database->setrammode(true, true);
+	database->set_ram_mode(true, true);
 
 	if (code == ir::ec::ec_ok)
 	{

@@ -8,13 +8,12 @@
 	Reinventing bicycles since 2020
 */
 
-#ifndef IR_RESERVE
-#define IR_RESERVE
+#ifndef IR_HANDLE_RESOURCE_IMPLEMENTATION
+#define IR_HANDLE_RESOURCE_IMPLEMENTATION
+
+void ir::HandleResourceFreer::free(HANDLE handle)
+{
+	if (handle != NULL && handle != INVALID_HANDLE_VALUE) CloseHandle(handle);
+};
 	
-unsigned char reserve(void **pdata, unsigned int *preserved, unsigned int toreserve);
-
-#if (defined(IR_IMPLEMENT) || defined(IR_RESERVE_IMPLEMENT)) && !defined(IR_RESERVE_NOT_IMPLEMENT)
-	#include <implementation/ir_reserve_implementation.h>
-#endif
-
-#endif
+#endif	//#ifndef IR_HANDLE_RESOURCE_IMPLEMENTATION

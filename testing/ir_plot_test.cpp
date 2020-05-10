@@ -1,5 +1,5 @@
 #define IR_IMPLEMENT
-#include "ir_plot.h"
+#include <ir_plot.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
 

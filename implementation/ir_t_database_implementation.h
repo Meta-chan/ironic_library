@@ -1,270 +1,231 @@
-#ifndef IR_MEMFREER
-#define IR_MEMFREER
-	//I really don't know how to make templates part of Ironic. Maybe later
-	//I AM WORKING ON IT! I AM WORKING!
-	class MemFreer{ public: static void free(void *mem) { ::free(mem); } };
-	typedef ir::Resource<ir::syschar*, MemFreer, nullptr> StringResource;
-	typedef ir::Resource<unsigned int*, MemFreer, nullptr> UintResource;
-#endif
+#ifndef IR_T_DATABASE_IMPLEMENTATION
+#define IR_T_DATABASE_IMPLEMENTATION
 
-ir::ec ir::IR_T_DATABASE_TYPE::_read(void *buffer, unsigned int offset, unsigned int size)
+#include <ir_reserve.h>
+
+ir::ec ir::TDatabase::_read(void *buffer, unsigned int offset, unsigned int size)
 {
-	if (offset + size > _filesize) return ec::ec_read_file;
-	
-	if (_holdfile)
+	if (offset + size > _file.size) return ec::ec_read_file;
+
+	if (_file.hold)
 	{
-		memcpy(buffer, (char*)_ramfile + offset, size);
+		memcpy(buffer, (char*)_file.ram + offset, size);
 	}
 	else
 	{
-		if (offset != _filepointer)
+		if (offset != _file.pointer)
 		{
-			if (fseek(_file, offset, SEEK_SET) != 0) return ec::ec_seek_file;
-			_filepointer = offset;
+			if (fseek(_file.file, offset, SEEK_SET) != 0) return ec::ec_seek_file;
+			_file.pointer = offset;
 		}
-		if (fread(buffer, size, 1, _file) == 0) return ec::ec_read_file;
-		_filepointer += size;
+		if (fread(buffer, size, 1, _file.file) == 0) return ec::ec_read_file;
+		_file.pointer += size;
 	}
 	return ec::ec_ok;
 };
 
-ir::ec ir::IR_T_DATABASE_TYPE::_write(const void *buffer, unsigned int offset, unsigned int size)
+ir::ec ir::TDatabase::_write(const void *buffer, unsigned int offset, unsigned int size)
 {
-	if (_holdfile)
+	if (_file.hold)
 	{
-		if (offset + size > _filesize)
+		if (offset + size > _file.size)
 		{
-			if (!reserve(&_ramfile, &_filesize, offset + size)) return ec::ec_alloc;
+			if (!reserve(&_file.ram, &_file.size, offset + size)) return ec::ec_alloc;
 		};
-		memcpy((char*)_ramfile + offset, buffer, size);
-		if (size > 0) _filechanged = true;
-	}	
+		memcpy((char*)_file.ram + offset, buffer, size);
+		if (size > 0) _file.changed = true;
+	}
 	else
 	{
-		if (offset != _filepointer)
+		if (offset != _file.pointer)
 		{
-			if (fseek(_file, offset, SEEK_SET) != 0) return ec::ec_seek_file;
-			_filepointer = offset;
+			if (fseek(_file.file, offset, SEEK_SET) != 0) return ec::ec_seek_file;
+			_file.pointer = offset;
 		}
-		if (fwrite(buffer, size, 1, _file) == 0) return ec::ec_read_file;
-		_filepointer += size;
-		if (offset + size > _filesize) _filesize = offset + size;
+		if (fwrite(buffer, size, 1, _file.file) == 0) return ec::ec_read_file;
+		_file.pointer += size;
+		if (offset + size > _file.size) _file.size = offset + size;
 	}
 	return ec::ec_ok;
 };
 
-ir::ec ir::IR_T_DATABASE_TYPE::_readpointer(void **p, unsigned int offset, unsigned int size)
+ir::ec ir::TDatabase::_readpointer(void **p, unsigned int offset, unsigned int size)
 {
-	if (offset + size > _filesize) return ec::ec_read_file;
+	if (offset + size > _file.size) return ec::ec_read_file;
 
-	if (_holdfile)
+	if (_file.hold)
 	{
-		void *pointer = (char*)_ramfile + offset;
+		void *pointer = (char*)_file.ram + offset;
 		memcpy(p, &pointer, sizeof(void*));
 	}
 	else
 	{
 		//Actually openmap might change file pointer. It never causes a problem though
-		void *pointer = openmap(&_mapcache, _file, offset, size, openmapmode::openmap_read);
+		void *pointer = openmap(&_mapcache, _file.file, offset, size, openmapmode::openmap_read);
 		if (pointer == nullptr) return ec::ec_openmap;
 		memcpy(p, &pointer, sizeof(void*));
 	}
 	return ec::ec_ok;
 };
 
-ir::ec ir::IR_T_DATABASE_TYPE::_metaread(unsigned int *keyoffset, unsigned int index)
+ir::ec ir::TDatabase::_metaread(unsigned int *keyoffset, unsigned int index)
 {
-	if (index >= _tablesize) return ec::ec_read_file;
+	if (index >= _meta.size) return ec::ec_read_file;
 
-	if (_holdmeta)
+	if (_meta.hold)
 	{
-		*keyoffset = _rammetafile[index];
+		*keyoffset = _meta.ram[index];
 	}
 	else
 	{
-		if (index != _metapointer)
+		if (index != _meta.pointer)
 		{
-			if (fseek(_metafile, sizeof(MetaFileHeader) + index * sizeof(unsigned int), SEEK_SET) != 0) return ec::ec_seek_file;
-			_metapointer = index;
+			if (fseek(_meta.file, _metaheadersize + index * sizeof(unsigned int), SEEK_SET) != 0) return ec::ec_seek_file;
+			_meta.pointer = index;
 		}
-		if (fread(keyoffset, sizeof(unsigned int), 1, _metafile) == 0) return ec::ec_read_file;
-		_metapointer++;
+		if (fread(keyoffset, sizeof(unsigned int), 1, _meta.file) == 0) return ec::ec_read_file;
+		_meta.pointer++;
 	}
 	return ec::ec_ok;
 };
 
-ir::ec ir::IR_T_DATABASE_TYPE::_readsize(unsigned int offset, unsigned int *size, unsigned int *headersize)
+//0 - 249	- block size directrly
+//250		- next unsigned int is block size
+//251 - 254	- next 1/2/3/4 bytes are reserbed
+//255		- next unsigned int is reserved block size
+//if not tight, single unsigned int evetywhere, first bit is for reserved
+unsigned int ir::TDatabase::_headersize(unsigned int size)
 {
-	*size = 0;
-	ec code = _read(size, offset, sizeof(char));
-	if (code != ec::ec_ok) return code;
-	if (*size > 251)
+	if (_tight)
 	{
-		*headersize = (*size - 251) + 1;
-		code = _read(size, offset + 1, *size - 251);
+		if (size > 249) return sizeof(unsigned char) + sizeof(unsigned int);
+		else return sizeof(unsigned char);
+	}
+	else return sizeof(unsigned int);
+};
+
+ir::ec ir::TDatabase::_readheader(unsigned int headeroffset, InternalHeader *header)
+{
+	if (_tight)
+	{
+		unsigned char marker = 0;
+		ec code = _read(&marker, headeroffset, sizeof(unsigned char));
 		if (code != ec::ec_ok) return code;
+		
+		if (marker < 250)
+		{
+			header->size = marker;
+			header->headersize = sizeof(unsigned char);
+			header->reserved = false;
+		}
+		else if (marker == 250)
+		{
+			code = _read(&header->size, headeroffset + sizeof(unsigned char), sizeof(unsigned int));
+			if (code != ec::ec_ok) return code;
+			header->headersize = sizeof(unsigned char) + sizeof(unsigned int);
+			header->reserved = false;
+		}
+		else if (marker < 255)
+		{
+			header->size = marker - 251;
+			header->headersize = sizeof(unsigned char);
+			header->reserved = true;
+		}
+		else
+		{
+			code = _read(&header->size, headeroffset + 1, sizeof(unsigned int));
+			if (code != ec::ec_ok) return code;
+			header->headersize = sizeof(unsigned char) + sizeof(unsigned int);
+			header->reserved = true;
+		}
 	}
 	else
 	{
-		*headersize = 1;
+		ec code = _read(&header->size, headeroffset, sizeof(unsigned int));
+		if (code != ec::ec_ok) return code;
+
+		if (header->size & 0x80000000 != 0)
+		{
+			header->size &= 0x7FFFFFFF;
+			header->reserved = true;
+		}
+		else header->reserved = false;
+		header->headersize = sizeof(unsigned int);
 	}
 	return ec::ec_ok;
 };
 
-ir::ec ir::IR_T_DATABASE_TYPE::_writeblock(ConstBlock data, unsigned int *offset)
-{
-	*offset = _filesize;
-	if (data.size > 251)
-	{
-		unsigned char sizeoff;
-		if (data.size > 256 * 256 * 256) sizeoff = 4;
-		else if (data.size > 256 * 256) sizeoff = 3;
-		else if (data.size > 256) sizeoff = 2;
-		else sizeoff = 1;
-
-		unsigned int sizeoftowrite = sizeoff + 251;
-		ec code = _write(&sizeoftowrite, _filesize, sizeof(char));
-		if (code != ec::ec_ok) return code;
-		code = _write(&data.size, _filesize, sizeoff);
-		if (code != ec::ec_ok) return code;
-	}
-	else
-	{
-		ec code = _write(&data.size, _filesize, sizeof(char));
-		if (code != ec::ec_ok) return code;
-	}
-
-	return _write(data.data, _filesize, data.size);
-};
-
-ir::ec ir::IR_T_DATABASE_TYPE::_init(const syschar *filepath, createmode cmode)
-{
-	#ifdef _WIN32
-		unsigned int pathlen = wcslen(filepath);
-	#else
-		unsigned int pathlen = strlen(filepath);
-	#endif
-	
-	StringResource metafilepath = (syschar*)malloc((pathlen + 2) * sizeof(syschar));
-	if (metafilepath.it == nullptr) return ec::ec_alloc;
-	memcpy(metafilepath.it, filepath, pathlen * sizeof(syschar));
-	metafilepath.it[pathlen] = '~';
-	metafilepath.it[pathlen + 1] = '\0';
-	
-	ec filestatus = _checkfile(filepath);
-	ec metastatus = _checkmetafile(metafilepath.it);
-	
-	if (filestatus == ec::ec_ok && metastatus == ec::ec_ok) filestatus = ec::ec_ok;
-	else if (filestatus == ec::ec_open_file && metastatus == ec::ec_open_file) filestatus = ec::ec_open_file;
-	else filestatus = ec::ec_invalid_signature;
-
-	//Hehehehe. I am sorry(
-	ec code = ec::ec_ok;
-	switch (cmode)
-	{
-	case createmode::create_readonly:
-		if (filestatus == ec::ec_open_file) return ec::ec_open_file;
-		else if (filestatus != ec::ec_ok) return ec::ec_invalid_signature;
-		else break;
-	case createmode::create_new_never:
-		if (filestatus == ec::ec_open_file) return ec::ec_open_file;
-		else if (filestatus == ec::ec_invalid_signature) return ec::ec_invalid_signature;
-		else code = _openwrite(filepath, metafilepath.it, false);
-		break;
-	case createmode::create_new_if_no:
-		if (filestatus == ec::ec_open_file) code = _openwrite(filepath, metafilepath.it, true);
-		else if (filestatus == ec::ec_invalid_signature) return ec::ec_invalid_signature;
-		else code = _openwrite(filepath, metafilepath.it, false);
-		break;
-	case createmode::create_new_if_corrupted:
-		if (filestatus == ec::ec_open_file) return ec::ec_open_file;
-		else if (filestatus == ec::ec_invalid_signature) code = _openwrite(filepath, metafilepath.it, true);
-		else code = _openwrite(filepath, metafilepath.it, false);
-		break;
-	case createmode::create_new_if_no_or_corrupted:
-		if (filestatus == ec::ec_open_file) code = _openwrite(filepath, metafilepath.it, true);
-		if (filestatus == ec::ec_invalid_signature) code = _openwrite(filepath, metafilepath.it, true);
-		code = _openwrite(filepath, metafilepath.it, false);
-		break;
-	case createmode::create_new_always:
-		code = _openwrite(filepath, metafilepath.it, true);
-		break;
-	}
-
-	if (code != ec::ec_ok) return code;
-	_ok = true;
-	return ec::ec_ok;
-};
-
-ir::ec ir::IR_T_DATABASE_TYPE::setrammode(bool holdfile, bool holdmeta)
+ir::ec ir::TDatabase::setrammode(bool holdfile, bool holdmeta)
 {
 	if (!_ok) return ec::ec_object_not_ok;
 
 	//Read meta
-	if (holdmeta && !_holdmeta)
+	if (holdmeta && !_meta.hold)
 	{
-		_rammetafile = (unsigned int *)malloc(_tablesize * sizeof(unsigned int));
-		if (_rammetafile == nullptr) return ec::ec_alloc;
-		if (fseek(_metafile, sizeof(MetaFileHeader), SEEK_SET) != 0) return ec::ec_seek_file;;
-		if (fread(_rammetafile, sizeof(unsigned int), _tablesize, _metafile) < _tablesize) return ec::ec_read_file;
-		_metapointer = _tablesize;
+		_meta.ram = (unsigned int *)malloc(_meta.size * sizeof(unsigned int));
+		if (_meta.ram == nullptr) return ec::ec_alloc;
+		if (fseek(_meta.file, _metaheadersize, SEEK_SET) != 0) return ec::ec_seek_file;;
+		if (fread(_meta.ram, sizeof(unsigned int), _meta.size, _meta.file) < _meta.size) return ec::ec_read_file;
+		_meta.pointer = _meta.size;
 	}
 	//Write meta
-	else if (!holdmeta && _holdmeta)
+	else if (!holdmeta && _meta.hold)
 	{
-		if (_writeaccess && _metachanged)
+		if (_writeaccess && _meta.changed)
 		{
-			if (fseek(_metafile, sizeof(MetaFileHeader), SEEK_SET) != 0) return ec::ec_seek_file;
-			if (fwrite(_rammetafile, sizeof(unsigned int), _tablesize, _metafile) < _tablesize) return ec::ec_write_file;
-			_metapointer = _tablesize;
+			if (fseek(_meta.file, _metaheadersize, SEEK_SET) != 0) return ec::ec_seek_file;
+			if (fwrite(_meta.ram, sizeof(unsigned int), _meta.size, _meta.file) < _meta.size) return ec::ec_write_file;
+			_meta.pointer = _meta.size;
 		}
-		free(_rammetafile);
-		_rammetafile = nullptr;
+		free(_meta.ram);
+		_meta.ram = nullptr;
 	}
-	_holdmeta = holdmeta;
-	_metachanged = false;
+	_meta.hold = holdmeta;
+	_meta.changed = false;
 
 	//Read data
-	if (holdfile && !_holdfile)
+	if (holdfile && !_file.hold)
 	{
-		_ramfile = malloc(_filesize * sizeof(unsigned int));
-		if (_ramfile == nullptr) return ec::ec_alloc;
-		if (fseek(_file, sizeof(FileHeader), SEEK_SET) != 0) return ec::ec_seek_file;;
-		if (fread(_ramfile, 1, _filesize - sizeof(FileHeader), _file) < (_filesize - sizeof(FileHeader))) return ec::ec_read_file;;
-		_filepointer = _filesize;
+		_file.ram = malloc(_file.size * sizeof(unsigned int));
+		if (_file.ram == nullptr) return ec::ec_alloc;
+		if (fseek(_file.file, 0, SEEK_SET) != 0) return ec::ec_seek_file;;
+		if (fread(_file.ram, 1, _file.size, _file.file) < _file.size) return ec::ec_read_file;;
+		_file.pointer = _file.size;
 	}
 	//Write data
-	else if (!holdfile && _holdfile)
+	else if (!holdfile && _file.hold)
 	{
-		if (_writeaccess && _filechanged)
+		if (_writeaccess && _file.changed)
 		{
-			if (fseek(_file, sizeof(FileHeader), SEEK_SET) != 0) return ec::ec_seek_file;;
-			if (fwrite(_ramfile, 1, _filesize - sizeof(FileHeader), _file) < (_filesize - sizeof(FileHeader))) return ec::ec_write_file;
-			_filepointer = _filesize;
+			if (fseek(_file.file, 0, SEEK_SET) != 0) return ec::ec_seek_file;;
+			if (fwrite(_file.ram, 1, _file.size, _file.file) < _file.size) return ec::ec_write_file;
+			_file.pointer = _file.size;
 		}
-		free(_ramfile);
-		_ramfile = nullptr;
+		free(_file.ram);
+		_file.ram = nullptr;
 	}
-	_holdfile = holdfile;
-	_filechanged = false;
+	_file.hold = holdfile;
+	_file.changed = false;
 
 	return ec::ec_ok;
 };
 
-ir::IR_T_DATABASE_TYPE::IR_T_DATABASE_TYPE(const syschar *filepath, createmode cmode, ec *code)
-{
-	ec c = _init(filepath, cmode);
-	if (code != nullptr) *code = c;
-};
-
-unsigned int ir::IR_T_DATABASE_TYPE::count()
+unsigned int ir::TDatabase::count()
 {
 	if (!_ok) return 0;
 	else return _count;
 };
 
-unsigned int ir::IR_T_DATABASE_TYPE::tablesize()
+unsigned int ir::TDatabase::tablesize()
 {
 	if (!_ok) return 0;
-	else return _tablesize;
+	else return _meta.size;
 };
+
+unsigned int ir::TDatabase::filesize()
+{
+	if (!_ok) return 0;
+	else return _file.size;
+};
+
+#endif	//#ifndef IR_T_DATABASE_IMPLEMENTATION

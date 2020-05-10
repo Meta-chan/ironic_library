@@ -16,48 +16,49 @@
 #ifdef __cplusplus
 namespace ir
 {
-enum ec : unsigned int
+	enum ec : unsigned int
 #else
-enum ir_ec : unsigned int
+	enum ir_ec : unsigned int
 #endif
 
-{
-	ec_ok = 0,
-	ec_other = 1,
+	{
+		ec_ok = 0,
+		ec_other = 1,
+		ec_not_implemented = 2,
 
-	//common sector
-	ec_alloc,
-	ec_null,
-	ec_create_file,
-	ec_open_file,
-	ec_read_file,
-	ec_write_file,
-	ec_seek_file,
-	ec_path_is_directory,
-	ec_path_is_file,
-	ec_invalid_signature,
-	ec_object_not_ok,
+		//common sector
+		ec_alloc,
+		ec_null,
+		ec_create_file,
+		ec_open_file,
+		ec_read_file,
+		ec_write_file,
+		ec_seek_file,
+		ec_path_is_directory,
+		ec_path_is_file,
+		ec_invalid_signature,
+		ec_object_not_ok,
 
-	//Windows specific sector
-	ec_windows_register_class,
-	ec_windows_create_window,
-	ec_windows_getmessage,
-	ec_windows_createthread,
+		//Windows specific sector
+		ec_windows_register_class,
+		ec_windows_create_window,
+		ec_windows_getmessage,
+		ec_windows_createthread,
 
-	//openmap sector
-	ec_openmap,
+		//openmap sector
+		ec_openmap,
 
-	//databases and registers sector
-	ec_key_not_exists,
-	ec_key_already_exists,
+		//databases and registers sector
+		ec_key_not_exists,
+		ec_key_already_exists,
 
-	//ir_neuro sector
-	ec_neuro_invalid_layers,
-	ec_neuro_invalid_forward,
+		//ir_neuro sector
+		ec_neuro_invalid_layers,
+		ec_neuro_invalid_forward,
 
-	//opengl
-	ec_opengl
-};
+		//opengl
+		ec_opengl
+	};
 
 #ifdef __cplusplus
 };

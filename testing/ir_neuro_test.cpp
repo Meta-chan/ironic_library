@@ -1,5 +1,5 @@
 #define IR_IMPLEMENT
-#include "ir_neuro.h"
+#include <ir_neuro.h>
 #include <random>
 #include <stdio.h>
 

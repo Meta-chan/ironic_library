@@ -19,7 +19,7 @@ namespace ir
 	void ifft(_Dcomplex *data, unsigned int N);
 
 	#if defined(IR_IMPLEMENT) || defined(IR_FFT_IMPLEMENT)
-		#include "implementation/ir_fft_implementation.h"
+		#include <implementation/ir_fft_implementation.h>
 	#endif
 };
 

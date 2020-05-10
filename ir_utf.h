@@ -76,8 +76,8 @@ extern struct UTF_Codec utf_utf32;	//UTF32
 extern struct UTF_Codec utf_1251;	//Windows-1251 (cyrillic)
 extern struct UTF_Codec utf_866;	//DOS-866 (cyrillic)
 
-#if (defined(IR_IMPLEMENT) || defined(IR_UTF_IMPLEMENT))
-	#include "implementation/ir_utf_implementation.h"
+#if (defined(IR_IMPLEMENT) || defined(IR_UTF_IMPLEMENT)) && !defined(IR_UTF_NOT_IMPLEMENT)
+	#include <implementation/ir_utf_implementation.h>
 #endif
 
 #endif	//#ifndef IR_UTF

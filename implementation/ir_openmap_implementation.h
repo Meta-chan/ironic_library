@@ -120,7 +120,7 @@ void *ir::openmap(OpenmapCache *cache, int filedes, unsigned int offset, unsigne
 		cache->filedes = filedes;
 		cache->lowlimit = offset & ~(_internal_openmap_pagesize - 1);
 		cache->highlimit = offset + size; //may be possible to optimize
-		cache->mapstart = mmap(nullptr, size, PROT_READ, MAP_PRIVATE, cache->filedes, cache->lowlimit);
+		cache->mapstart = mmap(nullptr, cache->highlimit - cache->lowlimit, PROT_READ, MAP_PRIVATE, cache->filedes, cache->lowlimit);
 	}
 
 	//If we have previous step done, return pointer

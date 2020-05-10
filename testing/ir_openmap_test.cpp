@@ -1,5 +1,5 @@
 #define IR_IMPLEMENT
-#include "ir_openmap.h"
+#include <ir_openmap.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>

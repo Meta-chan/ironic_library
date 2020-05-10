@@ -1,5 +1,5 @@
 #define IR_IMPLEMENT
-#include "ir_utf.h"
+#include <ir_utf.h>
 #include <stdio.h>
 #ifdef _WIN32
 	#include <Windows.h>

@@ -8,13 +8,12 @@
 	Reinventing bicycles since 2020
 */
 
-#ifndef IR_RESERVE
-#define IR_RESERVE
+#ifndef IR_FILE_RESOURCE_IMPLEMENTATION
+#define IR_FILE_RESOURCE_IMPLEMENTATION
+
+void ir::FileResourceFreer::free(FILE *file)
+{
+	if (file != nullptr) fclose(file);
+};
 	
-unsigned char reserve(void **pdata, unsigned int *preserved, unsigned int toreserve);
-
-#if (defined(IR_IMPLEMENT) || defined(IR_RESERVE_IMPLEMENT)) && !defined(IR_RESERVE_NOT_IMPLEMENT)
-	#include <implementation/ir_reserve_implementation.h>
-#endif
-
-#endif
+#endif	//#ifndef IR_FILE_RESOURCE_IMPLEMENTATION

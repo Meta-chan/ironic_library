@@ -1,6 +1,6 @@
 #include <stdio.h>
 #define IR_IMPLEMENT
-#include "ir_s2st_database.h"
+#include <ir_database/ir_s2st_database.h>
 
 ir::S2STDatabase *database;
 
@@ -40,7 +40,7 @@ int main()
 {
 	ir::ec code;
 	database = new ir::S2STDatabase(L"database.idt", ir::S2STDatabase::create_new_always, &code);
-	database->setrammode(true, true);
+	//database->set_ram_mode(true, true);
 	if (code == ir::ec::ec_ok)
 	{
 		printf("S2STDatabase initialized\n");

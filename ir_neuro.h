@@ -13,7 +13,7 @@
 #ifndef IR_NEURO
 #define IR_NEURO
 
-#include "ir_errorcode.h"
+#include <ir_errorcode.h>
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
@@ -63,7 +63,7 @@ namespace ir
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_NEURO_IMPLEMENT))
-	#include "implementation/ir_neuro_implementation.h"
+	#include <implementation/ir_neuro_implementation.h>
 #endif
 
 #endif	//#ifndef IR_NEURO

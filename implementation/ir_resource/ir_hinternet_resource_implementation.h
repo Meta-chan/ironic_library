@@ -8,13 +8,12 @@
 	Reinventing bicycles since 2020
 */
 
-#ifndef IR_RESERVE
-#define IR_RESERVE
-	
-unsigned char reserve(void **pdata, unsigned int *preserved, unsigned int toreserve);
+#ifndef IR_HINTERNET_RESOURCE_IMPLEMENTATION
+#define IR_HINTERNET_RESOURCE_IMPLEMENTATION
 
-#if (defined(IR_IMPLEMENT) || defined(IR_RESERVE_IMPLEMENT)) && !defined(IR_RESERVE_NOT_IMPLEMENT)
-	#include <implementation/ir_reserve_implementation.h>
-#endif
+void ir::HInternetResourceFreer::free(HINTERNET hinternet)
+{
+	if (hinternet != NULL && hinternet != INVALID_HANDLE_VALUE) WinHttpCloseHandle(hinternet);
+};
 
-#endif
+#endif	//#ifndef IR_HINTERNET_RESOURCE_IMPLEMENTATION

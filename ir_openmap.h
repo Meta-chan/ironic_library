@@ -60,8 +60,8 @@ namespace ir
 		void closemap(OpenmapCache *cache);
 };
 
-#if (defined(IR_OPENMAP_IMPLEMENT) || defined(IR_IMPLEMENT))
-	#include "implementation/ir_openmap_implementation.h"
+#if (defined(IR_IMPLEMENT) || defined(IR_OPENMAP_IMPLEMENT)) && !defined(IR_OPENMAP_NOT_IMPLEMENT)
+	#include <implementation/ir_openmap_implementation.h>
 #endif
 
 #endif	//#ifndef IR_OPENMAP
