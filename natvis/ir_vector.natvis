@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="ir::Vector&lt;*&gt;" Priority="MediumLow">
+    <DisplayString>{{ size={_header->size} }}</DisplayString>
+    <Expand>
+      <Item Name="[capacity]" ExcludeView="simple">_header->capacity</Item>
+      <Item Name="[reference count]" ExcludeView="simple">_header->refcount</Item>
+      <ArrayItems>
+        <Size>_header->size</Size>
+        <ValuePointer>($T1*)(_header + 1)</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+</AutoVisualizer>
