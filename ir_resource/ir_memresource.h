@@ -15,18 +15,14 @@
 
 namespace ir
 {
-	class MemResourceFreer
+	template <class T> class MemIniterFreer
 	{
 	public:
-		static void free(void *mem);
+		static T *initvalue;
+		static void free(T *mem);
 	};
 	
-	template<class T> class MemResource : public Resource<T*, MemResourceFreer, nullptr>
-	{
-	public:
-		MemResource();
-		MemResource(T* it);
-	};
+	template <class T> using MemResource =  Resource<T*, MemIniterFreer<T>>;
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_MEM_RESOURCE_IMPLEMENT)) && !defined(IR_MEM_RESOURCE_NOT_IMPLEMENT)

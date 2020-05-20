@@ -3,12 +3,18 @@
 
 namespace ir
 {
-	template <class T, class F, T N> class Resource
+	template <class T, class IniterFreer> class Resource
 	{
+	private:
+		T _value;
+
 	public:
-		T it;
 		Resource();
-		Resource(T value);
+		Resource(const T& value);
+		T &value();
+		const T &value() const;
+		operator T() const;
+		T &operator=(const T &value);
 		void free();
 		~Resource();
 	};

@@ -11,7 +11,9 @@
 #ifndef IR_SHADER_RESOURCE_IMPLEMENTATION
 #define IR_SHADER_RESOURCE_IMPLEMENTATION
 
-void ir::HandleResourceFreer::free(GLuint shader)
+GLuint ir::ShaderIniterFreer::initvalue = (GLuint)-1;
+
+void ir::ShaderIniterFreer::free(GLuint shader)
 {
 	if (shader != (GLuint)-1) glDeleteShader(shader);
 };

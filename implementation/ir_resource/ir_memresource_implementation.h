@@ -13,17 +13,11 @@
 
 #include <stdlib.h>
 
-void ir::MemResourceFreer::free(void *mem)
+template <class T> T *ir::MemIniterFreer<T>::initvalue = nullptr;
+
+template<class T> void ir::MemIniterFreer<T>::free(T *mem)
 {
 	if (mem != nullptr) ::free(mem);
 };
 
-template<class T> ir::MemResource<T>::MemResource() : Resource<T*, MemResourceFreer, nullptr>::Resource(nullptr)
-{
-};
-
-template<class T> ir::MemResource<T>::MemResource(T *it) : Resource<T*, MemResourceFreer, nullptr>::Resource(it)
-{
-};
-	
 #endif	//#ifndef IR_MEM_RESOURCE_IMPLEMENTATION

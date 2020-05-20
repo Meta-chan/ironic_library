@@ -16,15 +16,9 @@
 #include <random>
 #include <time.h>
 #include <math.h>
-#include <ir_resource.h>
 
-class MemFreer { public: static void free(void *mem) { ::free(mem); } };
-typedef ir::Resource<float*, MemFreer, nullptr> FloatResource;
-typedef ir::Resource<char*, MemFreer, nullptr> CharResource;
-typedef ir::Resource<unsigned int*, MemFreer, nullptr> UintResource;
-
-class FileFreer { public: static void free(FILE *file) { ::fclose(file); } };
-typedef ir::Resource<FILE*, FileFreer, nullptr> FileResource;
+#include <ir_resource/ir_memresource.h>
+#include <ir_resource/ir_file_resource.h>
 
 ir::ec ir::Neuro::_init(unsigned int nlayers, const unsigned int *layers, FILE *file)
 {
@@ -109,14 +103,14 @@ ir::Neuro::Neuro(const syschar *filepath, ec *code)
 		FileResource file = fopen(filepath, "rb");
 	#endif
 
-	if (file.it == nullptr)
+	if (file == nullptr)
 	{
 		if (code != nullptr) *code = ec::ec_open_file;
 		return;
 	}
 
 	FileHeader header;
-	if (fread(&header, sizeof(FileHeader), 1, file.it) == 0 ||
+	if (fread(&header, sizeof(FileHeader), 1, file) == 0 ||
 		memcmp(header.signature, "INR", 3) != 0 ||
 		header.version != 0)
 	{
@@ -125,20 +119,20 @@ ir::Neuro::Neuro(const syschar *filepath, ec *code)
 	}
 
 	unsigned int nlayers;
-	if (fread(&nlayers, sizeof(unsigned int), 1, file.it) == 0)
+	if (fread(&nlayers, sizeof(unsigned int), 1, file) == 0)
 	{
 		if (code != nullptr) *code = ec::ec_read_file;
 		return;
 	}
 
-	UintResource layers = (unsigned int*)malloc(nlayers * sizeof(unsigned int));
-	if (fread(layers.it, sizeof(unsigned int), nlayers, file.it) < nlayers)
+	MemResource<unsigned int> layers = (unsigned int*)malloc(nlayers * sizeof(unsigned int));
+	if (fread(layers, sizeof(unsigned int), nlayers, file) < nlayers)
 	{
 		if (code != nullptr) *code = ec::ec_read_file;
 		return;
 	}
 
-	ec c = _init(nlayers, layers.it, file.it);
+	ec c = _init(nlayers, layers, file);
 	if (code != nullptr) *code = c;
 };
 
@@ -259,19 +253,19 @@ ir::ec ir::Neuro::save(const syschar *filepath)
 		FileResource file = fopen(filepath, "wb");
 	#endif
 
-	if (file.it == nullptr) return ec::ec_create_file;
+	if (file == nullptr) return ec::ec_create_file;
 
 	FileHeader header;
 	memcpy(header.signature, "INR", 3);
 	header.version = 0;
-	if (fwrite(&header, sizeof(FileHeader), 1, file.it) == 0) return ec::ec_write_file;
+	if (fwrite(&header, sizeof(FileHeader), 1, file) == 0) return ec::ec_write_file;
 
-	if (fwrite(&_nlayers, sizeof(unsigned int), _nlayers, file.it) < _nlayers) return ec::ec_write_file;
+	if (fwrite(&_nlayers, sizeof(unsigned int), _nlayers, file) < _nlayers) return ec::ec_write_file;
 
 	for (unsigned int i = 0; i < (_nlayers - 1); i++)
 	{
 		unsigned int matrixsize = (_layers[i] + 1) * _layers[i + 1];
-		if (fwrite(_weights[i], sizeof(float), matrixsize, file.it) < matrixsize) return ec::ec_write_file;
+		if (fwrite(_weights[i], sizeof(float), matrixsize, file) < matrixsize) return ec::ec_write_file;
 	}
 
 	return ec::ec_ok;

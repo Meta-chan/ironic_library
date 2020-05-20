@@ -11,24 +11,45 @@
 #ifndef IR_RESOURCE_IMPLEMENTATION
 #define IR_RESOURCE_IMPLEMENTATION
 
-template <class T, class F, T N> ir::Resource<T, F, N>::Resource() : it(N)
+template <class T, class IniterFreer> ir::Resource<T, IniterFreer>::Resource() : _value(IniterFreer::initvalue)
 {
 };
 
-template <class T, class F, T N> ir::Resource<T, F, N>::Resource(T value) : it(value)
+template <class T, class IniterFreer> ir::Resource<T, IniterFreer>::Resource(const T &value) : _value(value)
 {
 };
 
-template <class T, class F, T N> void ir::Resource<T, F, N>::free()
+template <class T, class IniterFreer> T &ir::Resource<T, IniterFreer>::value()
 {
-	F::free(it);
-	it = N;
+	return _value;
 };
 
-template <class T, class F, T N> ir::Resource<T, F, N>::~Resource()
+template <class T, class IniterFreer> const T &ir::Resource<T, IniterFreer>::value() const
 {
-	F::free(it);
-	it = N;
+	return _value;
+};
+
+template <class T, class IniterFreer> ir::Resource<T, IniterFreer>::operator T() const
+{
+	return _value;
+};
+
+template <class T, class IniterFreer> T &ir::Resource<T, IniterFreer>::operator=(const T &value)
+{
+	_value = value;
+	return _value;
+};
+
+template <class T, class IniterFreer> void ir::Resource<T, IniterFreer>::free()
+{
+	IniterFreer::free(_value);
+	_value = IniterFreer::initvalue;
+};
+
+template <class T, class IniterFreer> ir::Resource<T, IniterFreer>::~Resource()
+{
+	IniterFreer::free(_value);
+	_value = IniterFreer::initvalue;
 };
 
 #endif	//#ifndef IR_RESOURCE_IMPLEMENTATION

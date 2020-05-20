@@ -16,13 +16,14 @@
 
 namespace ir
 {
-	class FiledesResourceFreer
+	class FiledesIniterFreer
 	{
 	public:
+		static int initvalue;
 		static void free(int filedes);
 	};
 	
-	typedef Resource<int, FiledesResourceFreer, -1> FileResource;
+	typedef Resource<int, FiledesIniterFreer> FileResource;
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_FILEDES_RESOURCE_IMPLEMENT)) && !defined(IR_FILEDES_RESOURCE_NOT_IMPLEMENT)

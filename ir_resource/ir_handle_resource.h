@@ -16,13 +16,14 @@
 
 namespace ir
 {
-	class HandleResourceFreer
+	class HandleIniterFreer
 	{
 	public:
+		static HANDLE initvalue;
 		static void free(HANDLE handle);
 	};
 	
-	typedef Resource<HANDLE, HandleResourceFreer, NULL> HandleResource;
+	typedef Resource<HANDLE, HandleIniterFreer> HandleResource;
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_HANDLE_RESOURCE_IMPLEMENT)) && !defined(IR_HANDLE_RESOURCE_NOT_IMPLEMENT)

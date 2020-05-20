@@ -211,8 +211,8 @@ ir::ec ir::S2STDatabase::_find(ConstBlock key, unsigned int *index, MetaCell *ce
 ir::ec ir::S2STDatabase::_rehash(unsigned int newtablesize)
 {
 	MemResource<MetaCell> table = (MetaCell*)malloc(newtablesize * sizeof(MetaCell));
-	if (table.it == nullptr) return ec::ec_alloc;
-	memset(table.it, 0, newtablesize * sizeof(MetaCell));
+	if (table == nullptr) return ec::ec_alloc;
+	memset(table, 0, newtablesize * sizeof(MetaCell));
 	
 	for (unsigned int i = 0; i < _meta.size; i++)
 	{
@@ -233,7 +233,7 @@ ir::ec ir::S2STDatabase::_rehash(unsigned int newtablesize)
 			//Inserting meta to new table
 			while (true)
 			{
-				if (table.it[searchindex].offset == 0) { table.it[searchindex] = cell; break; }
+				if (table[searchindex].offset == 0) { table[searchindex] = cell; break; }
 				else { searchindex++; if (searchindex == newtablesize) searchindex = 0; }
 			}
 		}
@@ -243,13 +243,13 @@ ir::ec ir::S2STDatabase::_rehash(unsigned int newtablesize)
 	if (_meta.hold)
 	{
 		free(_meta.ram);
-		_meta.ram = table.it;
-		table.it = nullptr;
+		_meta.ram = table;
+		table = nullptr;
 	}
 	else
 	{
 		if (fseek(_meta.file, sizeof(MetaHeader), SEEK_SET) != 0) return ec::ec_seek_file;
-		if (fwrite(table.it, sizeof(MetaCell), newtablesize, _meta.file) < newtablesize) return ec::ec_write_file;
+		if (fwrite(table, sizeof(MetaCell), newtablesize, _meta.file) < newtablesize) return ec::ec_write_file;
 		_meta.pointer = newtablesize;
 	}
 	
@@ -277,12 +277,13 @@ ir::ec ir::S2STDatabase::_check(const syschar *filepath, const syschar *metapath
 
 	if (fseek(_file.file, 0, SEEK_END) != 0) return ec::ec_seek_file;
 	_file.size = ftell(_file.file);
+	_file.pointer = _file.size;
 
 	//META
 	#ifdef _WIN32
-		_meta.file = _wfsopen(filepath, L"rb", _SH_DENYNO);
+		_meta.file = _wfsopen(metapath, L"rb", _SH_DENYNO);
 	#else
-		_meta.file = fopen(filepath, "rb");
+		_meta.file = fopen(metapath, "rb");
 	#endif
 
 	if (_meta.file == nullptr) return ec::ec_open_file;
@@ -301,6 +302,7 @@ ir::ec ir::S2STDatabase::_check(const syschar *filepath, const syschar *metapath
 	if (_meta.size % sizeof(MetaCell) != 0) return ec::ec_invalid_signature;
 	_meta.size /= sizeof(MetaCell);
 	if (_meta.size & (_meta.size - 1) != 0) return ec::ec_invalid_signature;
+	_meta.pointer = _meta.size;
 
 	_meta.count = metaheader.count;
 	_meta.delcount = metaheader.delcount;
@@ -368,12 +370,12 @@ ir::ec ir::S2STDatabase::_init(const syschar *filepath, createmode cmode)
 	#endif
 
 	MemResource<syschar> metafilepath = (syschar*)malloc((pathlen + 2) * sizeof(syschar));
-	if (metafilepath.it == nullptr) return ec::ec_alloc;
-	memcpy(metafilepath.it, filepath, pathlen * sizeof(syschar));
-	metafilepath.it[pathlen] = '~';
-	metafilepath.it[pathlen + 1] = '\0';
+	if (metafilepath == nullptr) return ec::ec_alloc;
+	memcpy(metafilepath, filepath, pathlen * sizeof(syschar));
+	metafilepath[pathlen] = '~';
+	metafilepath[pathlen + 1] = '\0';
 
-	ec filestatus = _check(filepath, metafilepath.it);
+	ec filestatus = _check(filepath, metafilepath);
 
 	//Hehehehe. I am sorry(
 	ec code = ec::ec_ok;
@@ -386,25 +388,25 @@ ir::ec ir::S2STDatabase::_init(const syschar *filepath, createmode cmode)
 	case createmode::create_new_never:
 		if (filestatus == ec::ec_open_file) return ec::ec_open_file;
 		else if (filestatus == ec::ec_invalid_signature) return ec::ec_invalid_signature;
-		else code = _openwrite(filepath, metafilepath.it, false);
+		else code = _openwrite(filepath, metafilepath, false);
 		break;
 	case createmode::create_new_if_no:
-		if (filestatus == ec::ec_open_file) code = _openwrite(filepath, metafilepath.it, true);
+		if (filestatus == ec::ec_open_file) code = _openwrite(filepath, metafilepath, true);
 		else if (filestatus == ec::ec_invalid_signature) return ec::ec_invalid_signature;
-		else code = _openwrite(filepath, metafilepath.it, false);
+		else code = _openwrite(filepath, metafilepath, false);
 		break;
 	case createmode::create_new_if_corrupted:
 		if (filestatus == ec::ec_open_file) return ec::ec_open_file;
-		else if (filestatus == ec::ec_invalid_signature) code = _openwrite(filepath, metafilepath.it, true);
-		else code = _openwrite(filepath, metafilepath.it, false);
+		else if (filestatus == ec::ec_invalid_signature) code = _openwrite(filepath, metafilepath, true);
+		else code = _openwrite(filepath, metafilepath, false);
 		break;
 	case createmode::create_new_if_no_or_corrupted:
-		if (filestatus == ec::ec_open_file) code = _openwrite(filepath, metafilepath.it, true);
-		if (filestatus == ec::ec_invalid_signature) code = _openwrite(filepath, metafilepath.it, true);
-		code = _openwrite(filepath, metafilepath.it, false);
+		if (filestatus == ec::ec_open_file) code = _openwrite(filepath, metafilepath, true);
+		if (filestatus == ec::ec_invalid_signature) code = _openwrite(filepath, metafilepath, true);
+		code = _openwrite(filepath, metafilepath, false);
 		break;
 	case createmode::create_new_always:
-		code = _openwrite(filepath, metafilepath.it, true);
+		code = _openwrite(filepath, metafilepath, true);
 		break;
 	}
 

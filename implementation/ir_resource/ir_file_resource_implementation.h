@@ -11,7 +11,9 @@
 #ifndef IR_FILE_RESOURCE_IMPLEMENTATION
 #define IR_FILE_RESOURCE_IMPLEMENTATION
 
-void ir::FileResourceFreer::free(FILE *file)
+FILE *ir::FileIniterFreer::initvalue = nullptr;
+
+void ir::FileIniterFreer::free(FILE *file)
 {
 	if (file != nullptr) fclose(file);
 };

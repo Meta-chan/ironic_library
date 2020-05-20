@@ -11,7 +11,9 @@
 #ifndef IR_HINTERNET_RESOURCE_IMPLEMENTATION
 #define IR_HINTERNET_RESOURCE_IMPLEMENTATION
 
-void ir::HInternetResourceFreer::free(HINTERNET hinternet)
+HINTERNET ir::HInternetIniterFreer::initvalue = NULL;
+
+void ir::HInternetIniterFreer::free(HINTERNET hinternet)
 {
 	if (hinternet != NULL && hinternet != INVALID_HANDLE_VALUE) WinHttpCloseHandle(hinternet);
 };

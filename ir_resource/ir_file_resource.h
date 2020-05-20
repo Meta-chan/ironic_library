@@ -16,13 +16,14 @@
 
 namespace ir
 {
-	class FileResourceFreer
+	class FileIniterFreer
 	{
 	public:
+		static FILE *initvalue;
 		static void free(FILE *file);
 	};
 	
-	typedef Resource<FILE*, FileResourceFreer, nullptr> FileResource;
+	typedef Resource<FILE*, FileIniterFreer> FileResource;
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_FILE_RESOURCE_IMPLEMENT)) && !defined(IR_FILE_RESOURCE_NOT_IMPLEMENT)

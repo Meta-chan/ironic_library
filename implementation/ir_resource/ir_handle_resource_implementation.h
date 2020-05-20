@@ -11,7 +11,9 @@
 #ifndef IR_HANDLE_RESOURCE_IMPLEMENTATION
 #define IR_HANDLE_RESOURCE_IMPLEMENTATION
 
-void ir::HandleResourceFreer::free(HANDLE handle)
+HANDLE ir::FiledesIniterFreer::initvalue = NULL;
+
+void ir::HandleIniterFreer::free(HANDLE handle)
 {
 	if (handle != NULL && handle != INVALID_HANDLE_VALUE) CloseHandle(handle);
 };

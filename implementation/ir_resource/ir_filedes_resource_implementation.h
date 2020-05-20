@@ -11,7 +11,9 @@
 #ifndef IR_FILEDES_RESOURCE_IMPLEMENTATION
 #define IR_FILEDES_RESOURCE_IMPLEMENTATION
 
-void ir::FiledesResourceFreer::free(int filedes)
+int ir::FiledesIniterFreer::initvalue = -1;
+
+void ir::FiledesIniterFreer::free(int filedes)
 {
 	if (filedes >= 0) close(filedes);
 };

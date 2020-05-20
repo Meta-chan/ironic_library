@@ -16,13 +16,14 @@
 
 namespace ir
 {
-	class HInternetResourceFreer
+	class HInternetIniterFreer
 	{
 	public:
+		static HINTERNET initvalue;
 		static void free(HINTERNET hinternet);
 	};
 	
-	typedef Resource<HINTERNET, HInternetResourceFreer, NULL> HInternetResource;
+	typedef Resource<HINTERNET, HInternetIniterFreer> HInternetResource;
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_HINTERNET_RESOURCE_IMPLEMENT)) && !defined(IR_HINTERNET_RESOURCE_NOT_IMPLEMENT)

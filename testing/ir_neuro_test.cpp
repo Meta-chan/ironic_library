@@ -24,7 +24,7 @@ int main()
 		goal = 2 * ((float) (b[0] ^ b[1]) - 0.5f);
 
 		net.forward(input, &output, false, false);
-		net.backward(input, &output, &goal, 1.0f);
+		net.backward(input, &output, &goal, 0.01f);
 		printf("%i %i -> %f\n", b[0], b[1], output);
 	}
 

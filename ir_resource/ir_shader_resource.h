@@ -15,13 +15,14 @@
 
 namespace ir
 {
-	class ShaderResourceFreer
+	class ShaderIniterFreer
 	{
 	public:
+		static GLuint initvalue;
 		static void free(GLuint shader);
 	};
 	
-	typedef Resource<GLuint, ShaderResourceFreer, (GLuint)-1> ShaderResource;
+	typedef Resource<GLuint, ShaderIniterFreer> ShaderResource;
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_SHADER_RESOURCE_IMPLEMENT)) && !defined(IR_SHADER_RESOURCE_NOT_IMPLEMENT)
