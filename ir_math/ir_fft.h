@@ -11,15 +11,16 @@
 #ifndef IR_FFT
 #define IR_FFT
 
-#include <complex.h>
+#define _USE_MATH_DEFINES
+#include <complex>
 
 namespace ir
 {
-	void fft(_Dcomplex *data, unsigned int N);
-	void ifft(_Dcomplex *data, unsigned int N);
+	template<class T>bool fft(std::complex<T> *data, size_t n);
+	template<class T>bool ifft(std::complex<T> *data, size_t n);
 
-	#if defined(IR_IMPLEMENT) || defined(IR_FFT_IMPLEMENT)
-		#include <implementation/ir_fft_implementation.h>
+	#if (defined(IR_IMPLEMENT) || defined(IR_FFT_IMPLEMENT)) && !defined(IR_FFT_NOT_IMPLEMENT)
+		#include <implementation/ir_math/ir_fft_implementation.h>
 	#endif
 };
 

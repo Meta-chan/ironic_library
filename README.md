@@ -1,35 +1,44 @@
 # Welcome to Ironic Library!
-The code presented here is some pieces of my home projects, that might be helpful to others. Here you will find:
- - ir_md5 - MD5 hash algorithm
- - ir_openmap - helpful mapping function
- - ir_n2st_database, ir_s2st_database - number to string and string to string table databases
- - ir_neuro - neural network
- - ir_plot - plotting function
- - ir_resource - helpful class wrapper aroud non-class things
- - ir_utf - encoding library
+The code presented here is some pieces of my home projects. Here you will find:
+ - ir_database	- ultra-light databases
+ - ir_neuro		- neural network
+ - ir_resource	- helpful class wrappers around non-class things (RAII)
+ - ir_utf		- encoding library
+ - ir_vector	- library's vector
+ - ir_math		- some math algorithms
+ - ir_md5		- MD5 hash algorithm
+ - ir_openmap	- mapping function
+ - ir_plot		- plotting function
 
 ### Platforms
 The code is developed and tested mostly under Windows. Some of libraries were specially tested under Linux. Some are cross-platform by chance. Some need just several corrections and renamings to make them work on your platform. Some are really stuck to WinAPI and could be barely ported. It that case, I beg your pardon.
  
 ### How to install?
-I wanted to make the installation really simple. All you need is to insert
-```c
+I wanted to make the installation really simple. The simplest way to install the library is to choose one of .cpp files and paste 
+```c++
 #define IR_IMPLEMENT
+#include <ir_NAME.h>
 ```
-before all the libraries, but only in one file - if you do it twice, the compiler might detect multiple implementations. If you want to manage yourself, which files the compiler needs to compile - try using
-```c
-#define IR_ ## FILENAME_IN_UPPER_CASE ## _IMPLEMENT
+
+If you want to manage yourself, which files to compile (for example, you want to compile one part as debug, one as release), you can also use these symbols:
+```c++
+#define IR_NAME_IMPLEMENT
+#define IR_NAME_NOT_IMPLEMENT
 ```
-It could be helpful if you build some libraries or compile using object files. Also it is preferable to make a separate file for implementation so that the compiler must not do the same job every time.
 
-### How to use?
-The code is pretty self-documented. Every header file contains one, less often several functions or classes, which purpose can be read even with basic programming skills. Well, at least I beleave it can. If something is not obvious, there is high possibility that it is explained in comments. Later I will consider to use some documentation system.
+Templates are quite non-ironic-way thing, and there are difficulties. The Ironic way of using templates is (on example of vector):
+```c++
+#define IR_IMPLEMENT
+#include <ir_vector.h>
+template class ir::vector<float>;
+```
 
-### Ideology
-The library is written following some principles:
- - The library does not claim to be full or serious.
- - The library does not claim to be new. I am sure that it's functionality was already implemented numerous times.
- - The library does not use any interpretable languages, it is fully native.
- - The library is old-fashioned. You will see a lot of C-style typecasts and very little *std* code.
+And then you can use your `ir::vector\<float\>` in every file. But actually you can just include the header in every file, the compiler is smart enough and does not complain about multiple implementations. But doing so will increase the compile time.
+
+### How to get help?
+The code is pretty self-documented. Every header file (without \_implementation suffix) contains one, less often several functions or classes, which purpose can be read even with basic programming skills. Well, at least I believe it can. If something is not obvious, there is high possibility that it is explained in comments. Later I will consider to use wiki or some documentation system. And feel free to contact me!
+
+### About Natvis
+For some classes I provide Natvis files! Include theese files to your Visual Studio project and enjoy debugging. [More](https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects).
 
 ###### P.S. My code is not dirty, it is alternatively clean.
