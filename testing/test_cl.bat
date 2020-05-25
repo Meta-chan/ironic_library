@@ -24,7 +24,7 @@ pause
 exit /b
 
 :test
-	cl %* /I .. /W4 /EHsc
+	cl %* /I .. /W4 /sdl /EHsc
 	if ERRORLEVEL 1 (
 		rgb r
 		echo Fail

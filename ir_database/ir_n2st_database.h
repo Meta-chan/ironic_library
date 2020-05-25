@@ -18,7 +18,7 @@
 #include <ir_openmap.h>
 #include <ir_errorcode.h>
 #include <ir_syschar.h>
-#include <ir_block.h>
+#include <ir_container/ir_block.h>
 #include <stdio.h>
 
 namespace ir

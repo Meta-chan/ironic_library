@@ -1,9 +1,11 @@
 #define IR_IMPLEMENT
-#include <ir_vector.h>
+#include <ir_container/ir_vector.h>
+#include <ir_container/ir_quiet_vector.h>
 #include <stdio.h>
 #include <vector>
 
 template class ir::Vector <unsigned int>;
+template class ir::QuietVector <unsigned int>;
 
 int print(ir::Vector<unsigned int> vector)
 {
