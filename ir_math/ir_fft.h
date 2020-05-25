@@ -13,11 +13,12 @@
 
 #define _USE_MATH_DEFINES
 #include <complex>
+#include <stddef.h>
 
 namespace ir
 {
-	template<class T>bool fft(std::complex<T> *data, size_t n);
-	template<class T>bool ifft(std::complex<T> *data, size_t n);
+	template<class T>bool fft(std::complex<T> *data, size_t size);
+	template<class T>bool ifft(std::complex<T> *data, size_t size);
 
 	#if (defined(IR_IMPLEMENT) || defined(IR_FFT_IMPLEMENT)) && !defined(IR_FFT_NOT_IMPLEMENT)
 		#include <implementation/ir_math/ir_fft_implementation.h>

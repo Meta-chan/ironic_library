@@ -8,6 +8,9 @@
 	Reinventing bicycles since 2020
 */
 
+#ifndef IR_GAUSS_IMPLEMENTATION
+#define IR_GAUSS_IMPLEMENTATION
+
 template<class T> bool ir::gauss(size_t size, T **matrix, T *vector, T *result)
 {
 	//Eleminating bottom left corner
@@ -75,3 +78,5 @@ template<class T> bool ir::gauss(size_t size, T **matrix, T *vector, T *result)
 
 	return true;
 };
+
+#endif	//#ifndef IR_GAUSS_IMPLEMENTATION

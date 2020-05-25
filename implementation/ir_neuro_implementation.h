@@ -17,6 +17,10 @@
 #include <time.h>
 #include <math.h>
 
+#ifdef _WIN32
+	#include <share.h>
+#endif
+
 #include <ir_resource/ir_memresource.h>
 #include <ir_resource/ir_file_resource.h>
 
@@ -40,7 +44,7 @@ ir::ec ir::Neuro::_init(unsigned int nlayers, const unsigned int *layers, FILE *
 	memset(_weights, 0, (nlayers - 1) * sizeof(float));
 
 	std::default_random_engine generator;
-	generator.seed(time(NULL));
+	generator.seed((unsigned int)time(NULL));
 	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
 	
 	for (unsigned int i = 0; i < (nlayers - 1); i++)
@@ -98,7 +102,7 @@ ir::Neuro::Neuro(unsigned int nlayers, const unsigned int *layers, ec *code)
 ir::Neuro::Neuro(const syschar *filepath, ec *code)
 {
 	#ifdef _WIN32
-		FileResource file = _wfopen(filepath, L"rb");
+		FileResource file = _wfsopen(filepath, L"rb", _SH_DENYNO);
 	#else
 		FileResource file = fopen(filepath, "rb");
 	#endif
@@ -248,7 +252,7 @@ ir::ec ir::Neuro::save(const syschar *filepath)
 	if (!_ok) return ec::ec_object_not_ok;
 
 	#ifdef _WIN32
-		FileResource file = _wfopen(filepath, L"wb");
+		FileResource file = _wfsopen(filepath, L"wb", _SH_DENYNO);
 	#else
 		FileResource file = fopen(filepath, "wb");
 	#endif

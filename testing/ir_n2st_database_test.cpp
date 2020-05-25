@@ -28,8 +28,6 @@ void test_read(unsigned int key, const char *rightdata, ir::ec rightcode)
 	ir::ConstBlock result;
 	ir::ec code = database->read(key, &result);
 	printf("Result : %u\n", code);
-	bool isdataright = false;
-	const char* l = (const char*)result.data;
 	if (code == ir::ec::ec_ok) printf("Data : %s\n", (const char*)result.data);
 	bool testok = (rightcode == ir::ec::ec_ok) ?
 		(code == ir::ec::ec_ok && strcmp((const char*)result.data, rightdata) == 0) :
@@ -39,7 +37,7 @@ void test_read(unsigned int key, const char *rightdata, ir::ec rightcode)
 
 int main()
 {
-	ir::ec code;
+	ir::ec code = ir::ec::ec_ok;
 	database = new ir::N2STDatabase(SS("database.idt"), ir::Database::create_new_always, &code);
 	database->set_ram_mode(true, true);
 

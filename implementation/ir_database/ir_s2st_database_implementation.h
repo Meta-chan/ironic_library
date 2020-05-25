@@ -299,9 +299,9 @@ ir::ec ir::S2STDatabase::_check(const syschar *filepath, const syschar *metapath
 	if (fseek(_meta.file, 0, SEEK_END) != 0) return ec::ec_seek_file;
 	_meta.size = ftell(_meta.file) - sizeof(MetaHeader);
 	if (_meta.size < sizeof(MetaCell)) return ec::ec_invalid_signature;
-	if (_meta.size % sizeof(MetaCell) != 0) return ec::ec_invalid_signature;
+	if ((_meta.size % sizeof(MetaCell)) != 0) return ec::ec_invalid_signature;
 	_meta.size /= sizeof(MetaCell);
-	if (_meta.size & (_meta.size - 1) != 0) return ec::ec_invalid_signature;
+	if ((_meta.size & (_meta.size - 1)) != 0) return ec::ec_invalid_signature;
 	_meta.pointer = _meta.size;
 
 	_meta.count = metaheader.count;
@@ -343,7 +343,7 @@ ir::ec ir::S2STDatabase::_openwrite(const syschar *filepath, const syschar *meta
 	#ifdef _WIN32
 		_meta.file = _wfsopen(metapath, createnew ? L"w+b" : L"r+b", _SH_DENYNO);
 	#else
-		_meta.file = fopen(metafilepath, createnew ? "w+b" : "r+b");
+		_meta.file = fopen(metapath, createnew ? "w+b" : "r+b");
 	#endif
 	if (_meta.file == nullptr) return ec::ec_create_file;
 	if (createnew)
@@ -692,12 +692,13 @@ ir::S2STDatabase::~S2STDatabase()
 	{
 		if (_writeaccess)
 		{
-			fseek(_meta.file, offsetof(MetaHeader, used), SEEK_SET);
-			fwrite(&_file.used, sizeof(unsigned int), 1, _meta.file);
-			fseek(_meta.file, offsetof(MetaHeader, count), SEEK_SET);
-			fwrite(&_meta.count, sizeof(unsigned int), 1, _meta.file);
-			fseek(_meta.file, offsetof(MetaHeader, delcount), SEEK_SET);
-			fwrite(&_meta.delcount, sizeof(unsigned int), 1, _meta.file);
+			MetaHeader header;
+			header.count = _meta.count;
+			header.delcount = _meta.delcount;
+			header.used = _file.used;
+			fseek(_meta.file, 0, SEEK_SET);
+			fwrite(&header, sizeof(MetaHeader), 1, _meta.file);
+			
 		}
 		fclose(_meta.file);
 	}

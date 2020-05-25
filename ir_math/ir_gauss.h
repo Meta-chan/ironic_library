@@ -14,6 +14,8 @@
 #ifndef IR_GAUSS
 #define IR_GAUSS
 
+#include <stddef.h>
+
 namespace ir
 {
 	template<class T> bool gauss(size_t size, T **matrix, T *vector, T *result = (T*)nullptr);

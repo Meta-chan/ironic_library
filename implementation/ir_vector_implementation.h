@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <stdlib.h>
+#include <string.h>
 
 template<class T> char const * const ir::Vector<T>::_out_of_range_message = "ir::Vector out_of_range";
 
@@ -133,13 +134,14 @@ template<class T> void ir::Vector<T>::insert(size_t i, T elem)
 {
 	if (i > size()) throw std::out_of_range(_out_of_range_message);
 	resize(size() + 1);
-	memcpy(data() + i, data() + i + 1, (size() - i - 1) * sizeof(T));
+	memcpy(data() + i + 1, data() + i, (size() - i - 1) * sizeof(T));
+	*(data() + i) = elem;
 };
 
 template<class T> void ir::Vector<T>::erase(size_t i)
 {
 	if (i >= size()) throw std::out_of_range(_out_of_range_message);
-	memcpy(data() + i + 1, data() + i, (size() - i - 1) * sizeof(T));
+	memcpy(data() + i, data() + i + 1, (size() - i - 1) * sizeof(T));
 	resize(size() - 1);
 };
 
@@ -165,7 +167,7 @@ template<class T> void ir::Vector<T>::detach()
 	}
 };
 
-template<class T> ir::Vector<T>::~Vector()
+template<class T> ir::Vector<T>::~Vector() noexcept
 {
 	clear();
 };

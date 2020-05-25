@@ -28,6 +28,6 @@ int main()
 		printf("%i %i -> %f\n", b[0], b[1], output);
 	}
 
-	net.save(L"xor.inr");
+	net.save(SS("xor.inr"));
 	getchar();
 };

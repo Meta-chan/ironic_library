@@ -1,6 +1,8 @@
 #ifndef IR_VECTOR
 #define IR_VECTOR
-	
+
+#include <stddef.h>
+
 namespace ir
 {
 	template <class T> class Vector

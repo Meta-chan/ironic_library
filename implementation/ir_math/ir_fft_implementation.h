@@ -14,44 +14,44 @@
 #ifndef IR_FFT_IMPLEMENTATION
 #define IR_FFT_IMPLEMENTATION
 
-template <class T> bool ir::fft(std::complex<T> *data, const size_t n)
+template <class T> bool ir::fft(std::complex<T> *data, const size_t size)
 {
-	if (n == 0 || (n & (n - 1)) != 0) return false;
+	if (size == 0 || (size & (size - 1)) != 0) return false;
 
-	size_t k = n;
-	T thetaT = (T)M_PI / n;
+	unsigned int k = size;
+	T thetaT = (T)M_PI / size;
 
 	std::complex<T> phiT(cos(thetaT), sin(thetaT));
 	while (k > 1)
 	{
-		size_t n = k;
+		unsigned int n = k;
 		k >>= 1;
 		phiT *= phiT;
-		std::complex<T> t1(1.0, 0.0);
-		for (size_t l = 0; l < k; l++)
+		std::complex<T> t0(1.0, 0.0);
+		for (unsigned int l = 0; l < k; l++)
 		{
-			for (size_t a = l; a < n; a += n)
+			for (unsigned int a = l; a < size; a += n)
 			{
-				size_t b = a + k;
-				std::complex<T> t2 = data[a] - data[b];
+				unsigned int b = a + k;
+				std::complex<T> t = data[a] - data[b];
 				data[a] = data[a] + data[b];
-				data[b] = t1 * t2;
+				data[b] = t * t0;
 			}
-			t1 *= phiT;
+			t0 *= phiT;
 		}
 	}
 
 	size_t log = 0;
-	size_t tmpn = n;
-	while (tmpn > 1)
+	size_t tmpsize = size;
+	while (tmpsize > 1)
 	{
 		log++;
-		tmpn >>= 1;
+		tmpsize >>= 1;
 	}
-
-	for (size_t a = 0; a < n; a++)
+	
+	for (unsigned int a = 0; a < size; a++)
 	{
-		size_t b = a;
+		unsigned int b = a;
 		b = (((b & 0xaaaaaaaa) >> 1) | ((b & 0x55555555) << 1));
 		b = (((b & 0xcccccccc) >> 2) | ((b & 0x33333333) << 2));
 		b = (((b & 0xf0f0f0f0) >> 4) | ((b & 0x0f0f0f0f) << 4));
@@ -68,12 +68,13 @@ template <class T> bool ir::fft(std::complex<T> *data, const size_t n)
 	return true;
 };
 
-template<class T> bool ir::ifft(std::complex<T> *data, size_t n)
+template<class T> bool ir::ifft(std::complex<T> *data, size_t size)
 {
-	if (n == 0 || (n & (n - 1)) != 0) return false;
-	for (size_t i = 0; i < n; i++) data[i] = conj(data[i]);
-	if (!fft(data, n)) return false;
-	for (size_t i = 0; i < n; i++) data[i] = conj(data[i]) / (T)n;
+	if (size == 0 || (size & (size - 1)) != 0) return false;
+	for (size_t i = 0; i < size; i++) data[i] = conj(data[i]);
+	if (!fft(data, size)) return false;
+	for (size_t i = 0; i < size; i++) data[i] = conj(data[i]) / (T)size;
+	return true;
 };
 
 #endif	//#ifndef IR_FFT_IMPLEMENTATION

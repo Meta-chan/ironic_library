@@ -38,7 +38,7 @@ ehthumbs.db
 Thumbs.db
 
 #Visual Studio Specific:
-/*/.vs
+**/.vs
 **/*VCXPROJ*
 **/*.SLN
 **/Debug/

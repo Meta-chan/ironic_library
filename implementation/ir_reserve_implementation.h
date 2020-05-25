@@ -13,6 +13,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stddef.h>
 
 unsigned char reserve(void **pdata, unsigned int *preserved, unsigned int toreserve)
 {
@@ -20,10 +21,10 @@ unsigned char reserve(void **pdata, unsigned int *preserved, unsigned int torese
 	{
 		void *data;
 		memcpy(&data, pdata, sizeof(void*));
-		if (data == (void*)0) data = malloc(toreserve);
+		if (data == NULL) data = malloc(toreserve);
 		else data = realloc(data, toreserve);
 		memcpy(pdata, &data, sizeof(void*));
-		if (data == (void*)0)
+		if (data == NULL)
 		{
 			*preserved = 0;
 			return 0;

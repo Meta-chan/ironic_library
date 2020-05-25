@@ -13,6 +13,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h>
 #include <ir_reserve.h>
 
 struct UTF_Codec utf_c;
@@ -28,9 +29,11 @@ struct
 	unsigned int reserved;
 } utf_buffer;
 
-#pragma region ASCII
+#ifdef _WIN32
+	#pragma region ASCII
+#endif
 
-unsigned int utf_c_charsize()
+unsigned int utf_c_charsize(void)
 {
 	return 1;
 };
@@ -40,7 +43,7 @@ unsigned int utf_c_encode(unsigned int code, void *symbols, unsigned int errcode
 	unsigned char *s = (unsigned char*)symbols;
 	if (code < 0x80)
 	{
-		if (s != (void*)0) s[0] = code;
+		if (s != NULL) s[0] = (unsigned char)code;
 		return 1;
 	}
 	else return utf_c_encode(errcode, symbols, ' ');
@@ -54,7 +57,7 @@ unsigned int utf_c_decode(const void *string, unsigned int *nsymbols)
 	{
 		if (s[0] < 0x80)
 		{
-			if (nsymbols != (void*)0) *nsymbols = nskipped + 1;
+			if (nsymbols != NULL) *nsymbols = nskipped + 1;
 			return (s[0] & 0x7F);
 		}
 		else
@@ -78,11 +81,12 @@ unsigned char utf_c_init(void)
 	return 1;
 };
 
-#pragma endregion
+#ifdef _WIN32
+	#pragma endregion
+	#pragma region UTF8
+#endif
 
-#pragma region UTF8
-
-unsigned int utf_utf8_charsize()
+unsigned int utf_utf8_charsize(void)
 {
 	return 1;
 };
@@ -92,12 +96,12 @@ unsigned int utf_utf8_encode(unsigned int code, void *symbols, unsigned int errc
 	unsigned char *s = (unsigned char*)symbols;
 	if (code < 0x80)
 	{
-		if (s != (void*)0) s[0] = code;
+		if (s != NULL) s[0] = (unsigned char) code;
 		return 1;
 	}
 	else if (code < 0x800)
 	{
-		if (s != (void*)0)
+		if (s != NULL)
 		{
 			s[0] = 0xC0 | ((code >> 6) & 0x1F);
 			s[1] = 0x80 | (code & 0x3F);
@@ -106,7 +110,7 @@ unsigned int utf_utf8_encode(unsigned int code, void *symbols, unsigned int errc
 	}
 	else if (code < 0x10000)
 	{
-		if (s != (void*)0)
+		if (s != NULL)
 		{
 			s[0] = 0xE0 | ((code >> 12) & 0x0F);
 			s[1] = 0x80 | ((code >> 6) & 0x3F);
@@ -116,7 +120,7 @@ unsigned int utf_utf8_encode(unsigned int code, void *symbols, unsigned int errc
 	}
 	else if (code < 0x110000)
 	{
-		if (s != (void*)0)
+		if (s != NULL)
 		{
 			s[0] = 0xE0 | ((code >> 18) & 0x07);
 			s[1] = 0x80 | ((code >> 12) & 0x3F);
@@ -136,22 +140,22 @@ unsigned int utf_utf8_decode(const void *string, unsigned int *nsymbols)
 	{
 		if ((s[0] & 0x80) == 0)
 		{
-			if (nsymbols != (void*)0) *nsymbols = nskipped + 1;
+			if (nsymbols != NULL) *nsymbols = nskipped + 1;
 			return s[0];
 		}
 		else if ((s[0] & 0xE0) == 0xC0 && (s[1] & 0xC0) == 0x80)
 		{
-			if (nsymbols != (void*)0) *nsymbols = nskipped + 2;
+			if (nsymbols != NULL) *nsymbols = nskipped + 2;
 			return ((s[0] & 0x1F) << 6) | (s[1] & 0x3F);
 		}
 		else if ((s[0] & 0xF0) == 0xE0 && (s[1] & 0xC0) == 0x80 && (s[2] & 0xC0) == 0x80)
 		{
-			if (nsymbols != (void*)0) *nsymbols = nskipped + 3;
+			if (nsymbols != NULL) *nsymbols = nskipped + 3;
 			return ((s[0] & 0x0F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
 		}
 		else if ((s[0] & 0xF8) == 0xF0 && (s[1] & 0xC0) == 0x80 && (s[2] & 0xC0) == 0x80 && (s[3] & 0xC0) == 0x80)
 		{
-			if (nsymbols != (void*)0) *nsymbols = nskipped + 4;
+			if (nsymbols != NULL) *nsymbols = nskipped + 4;
 			return ((s[0] & 0x07) << 18) | ((s[1] & 0x3F) << 12) | ((s[2] & 0x3F) << 6) | (s[3] & 0x3F);
 		}
 		else
@@ -175,11 +179,12 @@ unsigned char utf_utf8_init(void)
 	return 1;
 };
 
-#pragma endregion
+#ifdef _WIN32
+	#pragma endregion
+	#pragma region UTF16
+#endif
 
-#pragma region UTF16
-
-unsigned int utf_utf16_charsize()
+unsigned int utf_utf16_charsize(void)
 {
 	return 2;
 };
@@ -189,12 +194,12 @@ unsigned int utf_utf16_encode(unsigned int code, void *symbols, unsigned int err
 	unsigned short int *s = (unsigned short int*)symbols;
 	if (code < 0x10000 && !(code >= 0xD800 && code < 0xE000))
 	{
-		if (s != (void*)0) s[0] = code;
+		if (s != NULL) s[0] = (unsigned short)code;
 		return 1;
 	}
 	else if (code < 0x110000)
 	{
-		if (s != (void*)0)
+		if (s != NULL)
 		{
 			s[0] = ((code - 0x10000) >> 10) & 0x3FF;
 			s[1] = (code - 0x10000) & 0x3FF;
@@ -212,12 +217,12 @@ unsigned int utf_utf16_decode(const void *string, unsigned int *nsymbols)
 	{
 		if (!(s[0] >= 0xD800 && s[0] < 0xE000))
 		{
-			if (nsymbols != (void*)0) *nsymbols = nskipped + 1;
+			if (nsymbols != NULL) *nsymbols = nskipped + 1;
 			return s[0];
 		}
 		else if ((s[0] >= 0xD800 && s[0] < 0xDC00) && (s[1] >= 0xDC00 && s[1] < 0xE000))
 		{
-			if (nsymbols != (void*)0) *nsymbols = nskipped + 2;
+			if (nsymbols != NULL) *nsymbols = nskipped + 2;
 			return 0;
 		}
 		else
@@ -241,24 +246,25 @@ unsigned char utf_utf16_init(void)
 	return 1;
 };
 
-#pragma endregion
+#ifdef _WIN32
+	#pragma endregion
+	#pragma region UTF32
+#endif
 
-#pragma region UTF32
-
-unsigned int utf_utf32_charsize()
+unsigned int utf_utf32_charsize(void)
 {
 	return 4;
 };
 
 unsigned int utf_utf32_encode(unsigned int code, void *symbols, unsigned int errcode)
 {
-	if (symbols != (void*)0) *((unsigned int*)symbols) = code;
+	if (symbols != NULL) *((unsigned int*)symbols) = code;
 	return 1;
 };
 
 unsigned int utf_utf32_decode(const void *string, unsigned int *nsymbols)
 {
-	if (nsymbols != (void*)0) *nsymbols = 1;
+	if (nsymbols != NULL) *nsymbols = 1;
 	return *((unsigned int*) nsymbols);
 };
 
@@ -275,9 +281,10 @@ unsigned char utf_utf32_init(void)
 	return 1;
 };
 
-#pragma endregion
-
-#pragma region 1251
+#ifdef _WIN32
+	#pragma endregion
+	#pragma region 1251
+#endif
 
 const unsigned short int utf_1251_symbols[0x40] =
 {
@@ -287,7 +294,7 @@ const unsigned short int utf_1251_symbols[0x40] =
 	0xB0,	0xB1,	0x406,	0x456,	0x491,	0xB5,	0xB6,	0xB7,	0x451,	0x2116,	0x454,	0xBB,	0x458,	0x405,	0x455,	0x457
 };
 
-unsigned int utf_1251_charsize()
+unsigned int utf_1251_charsize(void)
 {
 	return 1;
 };
@@ -298,12 +305,12 @@ unsigned int utf_1251_encode(unsigned int code, void *symbols, unsigned int errc
 	
 	if (code < 0x80)
 	{
-		if (s != (void*)0) s[0] = code;
+		if (s != NULL) s[0] = (unsigned char)code;
 		return 1;
 	}
 	else if (code >= 0x410 && code < 0x450)
 	{
-		if (s != (void*)0) s[0] = code - 0x410 + 0xC0;
+		if (s != NULL) s[0] = (unsigned char)(code - 0x410 + 0xC0);
 		return 1;
 	}
 	else if (code >= 0xA0 && code <= 0x2122)
@@ -313,7 +320,7 @@ unsigned int utf_1251_encode(unsigned int code, void *symbols, unsigned int errc
 			//can be optimized with binar search
 			if (utf_1251_symbols[i] == code)
 			{
-				if (s != (void*)0) s[0] = 0x80 + i;
+				if (s != NULL) s[0] = (unsigned char)(0x80 + i);
 				return 1;
 			}
 		}
@@ -330,17 +337,17 @@ unsigned int utf_1251_decode(const void *string, unsigned int *nsymbols)
 	{
 		if (s[0] < 0x80)
 		{
-			if (nsymbols != (void*)0) *nsymbols = nskipped + 1;
+			if (nsymbols != NULL) *nsymbols = nskipped + 1;
 			return s[0];
 		}
 		else if (s[0] < 0xC0)
 		{
-			if (nsymbols != (void*)0) *nsymbols = nskipped + 1;
+			if (nsymbols != NULL) *nsymbols = nskipped + 1;
 			return utf_1251_symbols[s[0] - 0x80];
 		}
 		else if (s[0] != 0x98)
 		{
-			if (nsymbols != (void*)0) *nsymbols = nskipped + 1;
+			if (nsymbols != NULL) *nsymbols = nskipped + 1;
 			return s[0] - 0xC0 + 0x410;
 		}
 		else
@@ -364,9 +371,10 @@ unsigned char utf_1251_init(void)
 	return 1;
 };
 
-#pragma endregion
-
-#pragma region 866
+#ifdef _WIN32
+	#pragma endregion
+	#pragma region 866
+#endif
 
 const unsigned short int utf_866_symbols1[0x30] =
 {
@@ -380,7 +388,7 @@ const unsigned short int utf_866_symbols2[0x10] =
 	0x401,	0x451,	0x404,	0x454,	0x407,	0x457,	0x40E,	0x45E,	0xB0,	0x2219,	0xB7,	0x221A,	0x2116,	0xA4,	0x25A0,	0xA0
 };
 
-unsigned int utf_866_charsize()
+unsigned int utf_866_charsize(void)
 {
 	return 1;
 };
@@ -391,17 +399,17 @@ unsigned int utf_866_encode(unsigned int code, void *symbols, unsigned int errco
 
 	if (code < 0x80)
 	{
-		if (s != (void*)0) s[0] = code;
+		if (s != NULL) s[0] = (unsigned char)code;
 		return 1;
 	}
 	else if (code >= 0x410 && code < 0x440)
 	{
-		if (s != (void*)0) s[0] = code - 0x410 + 0x80;
+		if (s != NULL) s[0] = (unsigned char)(code - 0x410 + 0x80);
 		return 1;
 	}
 	else if (code >= 0x440 && code < 0x450)
 	{
-		if (s != (void*)0) s[0] = code - 0x440 + 0xE0;
+		if (s != NULL) s[0] = (unsigned char)(code - 0x440 + 0xE0);
 		return 1;
 	}
 	else if (code >= 0xA0 && code <= 0x2593)
@@ -411,7 +419,7 @@ unsigned int utf_866_encode(unsigned int code, void *symbols, unsigned int errco
 		{
 			if (utf_866_symbols1[i] == code)
 			{
-				if (s != (void*)0) s[0] = 0xB0 + i;
+				if (s != NULL) s[0] = (unsigned char)(0xB0 + i);
 				return 1;
 			}
 		}
@@ -420,7 +428,7 @@ unsigned int utf_866_encode(unsigned int code, void *symbols, unsigned int errco
 		{
 			if (utf_866_symbols2[i] == code)
 			{
-				if (s != (void*)0) s[0] = 0xF0 + i;
+				if (s != NULL) s[0] = (unsigned char)(0xF0 + i);
 				return 1;
 			}
 		}
@@ -433,7 +441,7 @@ unsigned int utf_866_encode(unsigned int code, void *symbols, unsigned int errco
 unsigned int utf_866_decode(const void *string, unsigned int *nsymbols)
 {
 	const unsigned char *s = (const unsigned char*)string;
-	if (nsymbols != (void*)0) *nsymbols = 1;
+	if (nsymbols != NULL) *nsymbols = 1;
 	if (s[0] < 0x80)
 	{
 		return s[0];
@@ -469,7 +477,9 @@ unsigned char utf_866_init(void)
 	return 1;
 };
 
-#pragma endregion
+#ifdef _WIN32
+	#pragma endregion
+#endif
 
 unsigned int utf_recode(struct UTF_Codec *codec1, const void *string1, unsigned int errcode, struct UTF_Codec *codec2, void *string2)
 {
@@ -484,7 +494,7 @@ unsigned int utf_recode(struct UTF_Codec *codec1, const void *string1, unsigned 
 	{
 		unsigned int n1;
 		unsigned int code = codec1->decode(s1 + c1 * i1, &n1);
-		unsigned int n2 = codec2->encode(code, (s2 == (void*)0) ? s2 : (s2 + c2 * i2), errcode);
+		unsigned int n2 = codec2->encode(code, (s2 == NULL) ? s2 : (s2 + c2 * i2), errcode);
 
 		if (code == 0) return i2;
 		
@@ -495,22 +505,22 @@ unsigned int utf_recode(struct UTF_Codec *codec1, const void *string1, unsigned 
 
 void *utf_alloc_recode(struct UTF_Codec *codec1, const void *string1, unsigned int errcode, struct UTF_Codec *codec2)
 {
-	unsigned int size = codec2->charsize() * (utf_recode(codec1, string1, errcode, codec2, (void*)0) + codec2->encode(0, (void*)0, errcode));
+	unsigned int size = codec2->charsize() * (utf_recode(codec1, string1, errcode, codec2, NULL) + codec2->encode(0, NULL, errcode));
 	void *result = malloc(size);
-	if (result == (void*)0) return (void*)0;
+	if (result == NULL) return NULL;
 	utf_recode(codec1, string1, errcode, codec2, result);
 	return result;
 };
 
 void *utf_buffer_recode(struct UTF_Codec *codec1, const void *string1, unsigned int errcode, struct UTF_Codec *codec2)
 {
-	unsigned int size = codec2->charsize() * (utf_recode(codec1, string1, errcode, codec2, (void*)0) + codec2->encode(0, (void*)0, errcode));
+	unsigned int size = codec2->charsize() * (utf_recode(codec1, string1, errcode, codec2, NULL) + codec2->encode(0, NULL, errcode));
 	if (reserve(&utf_buffer.data, &utf_buffer.reserved, size))
 	{
 		utf_recode(codec1, string1, errcode, codec2, utf_buffer.data);
 		return utf_buffer.data;
 	}
-	else return (void*)0;
+	else return NULL;
 };
 
 //INIT AND FREE
@@ -532,10 +542,10 @@ void utf_free(void)
 	utf_utf32_free();
 	utf_1251_free();
 	utf_866_free();
-	if (utf_buffer.data != (void*)0)
+	if (utf_buffer.data != NULL)
 	{
 		free(utf_buffer.data);
-		utf_buffer.data = (void*)0;
+		utf_buffer.data = NULL;
 		utf_buffer.reserved = 0;
 	}
 };

@@ -224,7 +224,7 @@ ir::ec ir::N2STDatabase::_openwrite(const syschar *filepath, const syschar *meta
 	#ifdef _WIN32
 		_meta.file = _wfsopen(metapath, createnew ? L"w+b" : L"r+b", _SH_DENYNO);
 	#else
-		_meta.file = fopen(metafilepath, createnew ? "w+b" : "r+b");
+		_meta.file = fopen(metapath, createnew ? "w+b" : "r+b");
 	#endif
 	if (_meta.file == nullptr) return ec::ec_create_file;
 	if (createnew)
@@ -519,10 +519,11 @@ ir::N2STDatabase::~N2STDatabase()
 	{
 		if (_writeaccess)
 		{
-			fseek(_meta.file, offsetof(MetaHeader, count), SEEK_SET);
-			fwrite(&_meta.count, sizeof(unsigned int), 1, _meta.file);
-			fseek(_meta.file, offsetof(MetaHeader, used), SEEK_SET);
-			fwrite(&_file.used, sizeof(unsigned int), 1, _meta.file);
+			MetaHeader header;
+			header.count = _meta.count;
+			header.used = _file.used;
+			fseek(_meta.file, 0, SEEK_SET);
+			fwrite(&_meta.count, sizeof(MetaHeader), 1, _meta.file);
 		}
 		fclose(_meta.file);
 	}

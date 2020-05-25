@@ -25,7 +25,7 @@ void printutf32(unsigned int *s)
 
 int main(void)
 {
-	const unsigned char *hello = "Hello Привет こんにちは!";
+	const char *hello = "Hello Привет こんにちは!";
 	
 	utf_init();
 	utf_c.init();
@@ -36,12 +36,12 @@ int main(void)
 	utf_866.init();
 	
 	printf("Original: %s\n", hello);
-	printf("C: %s\n", utf_buffer_recode(&utf_utf8, hello, '*', &utf_c));
-	printf("UTF8: %s\n", utf_buffer_recode(&utf_utf8, hello, '*', &utf_utf8));
-	printf("UTF16: %ls\n", utf_buffer_recode(&utf_utf8, hello, '*', &utf_utf16));
+	printf("C: %s\n", (char*)utf_buffer_recode(&utf_utf8, hello, '*', &utf_c));
+	printf("UTF8: %s\n", (char*)utf_buffer_recode(&utf_utf8, hello, '*', &utf_utf8));
+	printf("UTF16: %ls\n", (wchar_t*)utf_buffer_recode(&utf_utf8, hello, '*', &utf_utf16));
 	printf("UTF32: "); printutf32((unsigned int*)utf_buffer_recode(&utf_utf8, hello, '*', &utf_utf32)); printf("\n");
-	printf("1251: %s\n", utf_buffer_recode(&utf_utf8, hello, '*', &utf_1251));
-	printf("866: %s\n", utf_buffer_recode(&utf_utf8, hello, '*', &utf_866));
+	printf("1251: %s\n", (char*)utf_buffer_recode(&utf_utf8, hello, '*', &utf_1251));
+	printf("866: %s\n", (char*)utf_buffer_recode(&utf_utf8, hello, '*', &utf_866));
 
 	#ifdef _WIN32
 		const wchar_t *whello = (wchar_t*)utf_buffer_recode(&utf_utf8, hello, '*', &utf_utf16);

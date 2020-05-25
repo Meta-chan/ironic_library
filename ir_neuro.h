@@ -14,7 +14,7 @@
 #define IR_NEURO
 
 #include <ir_errorcode.h>
-#define _CRT_SECURE_NO_WARNINGS
+#include <ir_syschar.h>
 #include <stdio.h>
 
 namespace ir
@@ -22,12 +22,6 @@ namespace ir
 	class Neuro
 	{
 	private:
-		#ifdef _WIN32
-			typedef wchar_t syschar;
-		#else
-			typedef char syschar;
-		#endif
-
 		struct FileHeader
 		{
 			char signature[3];
