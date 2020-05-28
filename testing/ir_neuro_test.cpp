@@ -12,7 +12,7 @@ int main()
 
 	ir::ec code;
 	unsigned int lays[3] = { 2, 2, 1 };
-	ir::Neuro net(3, lays, &code);
+	ir::Neuro net(3, lays, 0.5f, &code);
 	
 	for (unsigned int i = 0; i < 100000; i++)
 	{

@@ -38,19 +38,19 @@ namespace ir
 		float **_outputs = nullptr;
 		float **_errors = nullptr;
 
-		ec _init(unsigned int nlayers, const unsigned int *layers, FILE *file);
+		ec _init(unsigned int nlayers, const unsigned int *layers, float amplitude, FILE *file);
 
 		static void _stepforward(const float *matrix, unsigned int prevlen, const float *prevoutput, unsigned int nextlen, float *nextoutput);
 		static void _lastbackward(unsigned int lastlen, const float *goal, const float *lastoutput, float *lasterror);
 		static void _stepbackward(const float *matrix, unsigned int nextlen, const float *nexterror, unsigned int prevlen, const float *prevoutput, float *preverror);
-		static void _corrigate(float koef, unsigned int prevlen, const float *prevoutput, unsigned int nextlen, const float *nexterror, float *matrix);
+		static void _corrigate(float coefficient, unsigned int prevlen, const float *prevoutput, unsigned int nextlen, const float *nexterror, float *matrix);
 		static void _freevectors(float **vector, unsigned int n);
 
 	public:
-		Neuro(unsigned int nlayers, const unsigned int *layers, ec *code);
+		Neuro(unsigned int nlayers, const unsigned int *layers, float amplitude, ec *code);
 		Neuro(const syschar *filepath, ec *code);
 		ec forward(const float *input, float *output, bool holdinput, bool holdoutput);
-		ec backward(const float *input, const float *output, const float *goal, float koef);
+		ec backward(const float *input, const float *output, const float *goal, float coefficient);
 		ec save(const syschar *filepath);
 		~Neuro();
 	};

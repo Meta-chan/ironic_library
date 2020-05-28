@@ -24,7 +24,7 @@
 #include <ir_resource/ir_memresource.h>
 #include <ir_resource/ir_file_resource.h>
 
-ir::ec ir::Neuro::_init(unsigned int nlayers, const unsigned int *layers, FILE *file)
+ir::ec ir::Neuro::_init(unsigned int nlayers, const unsigned int *layers, float amplitude, FILE *file)
 {
 	_nlayers = nlayers;
 
@@ -62,7 +62,7 @@ ir::ec ir::Neuro::_init(unsigned int nlayers, const unsigned int *layers, FILE *
 		{
 			for (unsigned int k = 0; k < weightssize; k++)
 			{
-				_weights[i][k] = distribution(generator);
+				_weights[i][k] = distribution(generator) * amplitude;
 			}
 		}
 	}
@@ -93,9 +93,9 @@ ir::ec ir::Neuro::_init(unsigned int nlayers, const unsigned int *layers, FILE *
 	return ec::ec_ok;
 };
 
-ir::Neuro::Neuro(unsigned int nlayers, const unsigned int *layers, ec *code)
+ir::Neuro::Neuro(unsigned int nlayers, const unsigned int *layers, float amplitude, ec *code)
 {
-	ec c = _init(nlayers, layers, nullptr);
+	ec c = _init(nlayers, layers, amplitude, nullptr);
 	if (code != nullptr) *code = c;
 };
 
@@ -136,7 +136,7 @@ ir::Neuro::Neuro(const syschar *filepath, ec *code)
 		return;
 	}
 
-	ec c = _init(nlayers, layers, file);
+	ec c = _init(nlayers, layers, 0.0f, file);
 	if (code != nullptr) *code = c;
 };
 
@@ -189,17 +189,17 @@ void ir::Neuro::_stepbackward(const float *matrix, unsigned int nextlen, const f
 	}
 };
 
-void ir::Neuro::_corrigate(float koef, unsigned int prevlen, const float *prevoutput, unsigned int nextlen, const float *nexterror, float *matrix)
+void ir::Neuro::_corrigate(float coefficient, unsigned int prevlen, const float *prevoutput, unsigned int nextlen, const float *nexterror, float *matrix)
 {
 	for (unsigned int i = 0; i < nextlen; i++)
 	{
 		float error = nexterror[i];
 		float *row = matrix + (prevlen + 1) * i;	//first element is adjustment, output is always 1 for it
-		(*row) += koef * error;
+		(*row) += coefficient * error;
 		row++;
 		for (unsigned int j = 0; j < prevlen; j++)
 		{
-			row[j] += koef * prevoutput[j] * error;
+			row[j] += coefficient * prevoutput[j] * error;
 		}
 	}
 };
@@ -223,7 +223,7 @@ ir::ec ir::Neuro::forward(const float *input, float *output, bool holdinput, boo
 	return ec::ec_ok;
 }
 
-ir::ec ir::Neuro::backward(const float *input, const float *output, const float *goal, float koef)
+ir::ec ir::Neuro::backward(const float *input, const float *output, const float *goal, float coefficient)
 {
 	if (!_ok) return ec::ec_object_not_ok;
 	if ((!_readybackward) || (input == nullptr && !_holdinput) || (output == nullptr && !_holdoutput)) return ec::ec_neuro_invalid_forward;
@@ -241,7 +241,7 @@ ir::ec ir::Neuro::backward(const float *input, const float *output, const float 
 	for (unsigned int i = 0; i < (_nlayers - 1); i++)
 	{
 		//Corrigating weights for matrix between [i] and [i + 1] from output of layer [i] and error of [i + 1]
-		_corrigate(koef, _layers[i], (i == 0 && !_holdinput) ? input : _outputs[i], _layers[i + 1], _errors[i], _weights[i]);
+		_corrigate(coefficient, _layers[i], (i == 0 && !_holdinput) ? input : _outputs[i], _layers[i + 1], _errors[i], _weights[i]);
 	}
 
 	return ec::ec_ok;
