@@ -105,7 +105,8 @@ template<class T> const T &ir::QuietVector<T>::back() const noexcept
 template<class T> bool ir::QuietVector<T>::get(size_t i, T *elem) const noexcept
 {
 	if (i >= size()) return false;
-	else return data()[i];
+	*elem = data()[i];
+	return true;
 };
 
 template<class T> bool ir::QuietVector<T>::empty() const noexcept
