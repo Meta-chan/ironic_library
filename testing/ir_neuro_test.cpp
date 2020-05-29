@@ -7,24 +7,29 @@ int main()
 {
 	//simple net trying to learn xor operation
 
-	float input[2];
-	float output, goal;
-
 	ir::ec code;
 	unsigned int lays[3] = { 2, 2, 1 };
-	ir::Neuro net(3, lays, 0.5f, &code);
+	ir::Neuro<ir::ReLUFunction> net(3, lays, 0.5f, &code);
+	
+	net.set_coefficient(1.0f);
 	
 	for (unsigned int i = 0; i < 100000; i++)
 	{
 		char b[2];
 		b[0] = rand() % 2;
 		b[1] = rand() % 2;
-		input[0] = 2 * ((float) b[0] - 0.5f);
-		input[1] = 2 * ((float) b[1] - 0.5f);
-		goal = 2 * ((float) (b[0] ^ b[1]) - 0.5f);
+		float input[2] = { 2 * ((float)b[0] - 0.5f), 2 * ((float)b[1] - 0.5f) };
+		float goal = 2 * ((float) (b[0] ^ b[1]) - 0.5f);
+		float output;
 
-		net.forward(input, &output, false, false);
-		net.backward(input, &output, &goal, 0.01f);
+		net.set_input(input);
+		net.set_goal(&goal);
+		net.set_output_pointer(&output);
+
+		net.forward();
+		net.backward();
+		net.get_output();
+
 		printf("%i %i -> %f\n", b[0], b[1], output);
 	}
 

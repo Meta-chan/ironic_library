@@ -19,25 +19,42 @@
 
 namespace ir
 {
-	class Neuro
+	class TanhFunction
+	{
+	public:
+		static inline float function(const float input);
+		static inline float derivative(const float output);
+	};
+
+	class ReLUFunction
+	{
+	public:
+		static inline float function(const float input);
+		static inline float derivative(const float output);
+	};
+
+	template <class ActivationFunction = TanhFunction> class Neuro
 	{
 	private:
 		struct FileHeader
 		{
-			char signature[3];
-			unsigned char version;
+			char signature[3]		= { 'I', 'N', 'R' };
+			unsigned char version	= 0;
 		};
 
-		bool _ok = false;
-		bool _holdinput = false;
-		bool _holdoutput = false;
-		bool _readybackward = false;
-		unsigned int _nlayers = 0;
-		unsigned int *_layers = nullptr;
-		float **_weights = nullptr;
-		float **_outputs = nullptr;
-		float **_errors = nullptr;
+		bool _ok				= false;
+		unsigned int _nlayers	= 0;
+		unsigned int *_layers	= nullptr;
+		float **_weights		= nullptr;
+		float **_vectors		= nullptr;
+		float **_errors			= nullptr;
+		float *_goal			= nullptr;
+		float _coefficient		= 0.0f;
 
+		const float *_userinput	= nullptr;
+		const float *_usergoal	= nullptr;
+		float *_useroutput		= nullptr;
+		
 		ec _init(unsigned int nlayers, const unsigned int *layers, float amplitude, FILE *file);
 
 		static void _stepforward(const float *matrix, unsigned int prevlen, const float *prevoutput, unsigned int nextlen, float *nextoutput);
@@ -49,9 +66,14 @@ namespace ir
 	public:
 		Neuro(unsigned int nlayers, const unsigned int *layers, float amplitude, ec *code);
 		Neuro(const syschar *filepath, ec *code);
-		ec forward(const float *input, float *output, bool holdinput, bool holdoutput);
-		ec backward(const float *input, const float *output, const float *goal, float coefficient);
-		ec save(const syschar *filepath);
+		ec set_input(const float *input, bool copy = false);
+		ec set_goal(const float *goal, bool copy = false);
+		ec set_coefficient(float coefficient);
+		ec set_output_pointer(float *output);
+		ec get_output(bool copy = false) const;
+		ec forward();
+		ec backward();
+		ec save(const syschar *filepath) const;
 		~Neuro();
 	};
 };

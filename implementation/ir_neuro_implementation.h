@@ -24,7 +24,28 @@
 #include <ir_resource/ir_memresource.h>
 #include <ir_resource/ir_file_resource.h>
 
-ir::ec ir::Neuro::_init(unsigned int nlayers, const unsigned int *layers, float amplitude, FILE *file)
+float ir::TanhFunction::function(const float input)
+{
+	return tanhf(input);
+};
+
+float ir::TanhFunction::derivative(const float output)
+{
+	return 1 - output * output;
+};
+
+float ir::ReLUFunction::function(const float input)
+{
+	return input >= 0 ? input : 0.01f * input;
+};
+
+float ir::ReLUFunction::derivative(const float output)
+{
+	return output >= 0 ? 1.0f : 0.01f;
+};
+
+template <class ActivationFunction>
+ir::ec ir::Neuro<ActivationFunction>::_init(unsigned int nlayers, const unsigned int *layers, float amplitude, FILE *file)
 {
 	_nlayers = nlayers;
 
@@ -67,15 +88,15 @@ ir::ec ir::Neuro::_init(unsigned int nlayers, const unsigned int *layers, float 
 		}
 	}
 
-	//Initializing _outputs (n)
-	_outputs = (float**)malloc(nlayers * sizeof(float*));
-	if (_outputs == nullptr) return ec::ec_alloc;
-	memset(_outputs, 0, nlayers * sizeof(float));
+	//Initializing _vectors (n)
+	_vectors = (float**)malloc(nlayers * sizeof(float*));
+	if (_vectors == nullptr) return ec::ec_alloc;
+	memset(_vectors, 0, nlayers * sizeof(float));
 
 	for (unsigned int i = 0; i < nlayers; i++)
 	{
-		_outputs[i] = (float *)malloc(layers[i] * sizeof(float));
-		if (_outputs[i] == nullptr) return ec::ec_alloc;
+		_vectors[i] = (float *)malloc(layers[i] * sizeof(float));
+		if (_vectors[i] == nullptr) return ec::ec_alloc;
 	}
 
 	//Initializing _errors (n - 1)
@@ -93,13 +114,15 @@ ir::ec ir::Neuro::_init(unsigned int nlayers, const unsigned int *layers, float 
 	return ec::ec_ok;
 };
 
-ir::Neuro::Neuro(unsigned int nlayers, const unsigned int *layers, float amplitude, ec *code)
+template <class ActivationFunction>
+ir::Neuro<ActivationFunction>::Neuro(unsigned int nlayers, const unsigned int *layers, float amplitude, ec *code)
 {
 	ec c = _init(nlayers, layers, amplitude, nullptr);
 	if (code != nullptr) *code = c;
 };
 
-ir::Neuro::Neuro(const syschar *filepath, ec *code)
+template <class ActivationFunction>
+ir::Neuro<ActivationFunction>::Neuro(const syschar *filepath, ec *code)
 {
 	#ifdef _WIN32
 		FileResource file = _wfsopen(filepath, L"rb", _SH_DENYNO);
@@ -113,10 +136,10 @@ ir::Neuro::Neuro(const syschar *filepath, ec *code)
 		return;
 	}
 
-	FileHeader header;
-	if (fread(&header, sizeof(FileHeader), 1, file) == 0 ||
-		memcmp(header.signature, "INR", 3) != 0 ||
-		header.version != 0)
+	FileHeader header, sample;
+	if (fread(&header, sizeof(FileHeader), 1, file) == 0	||
+		memcmp(header.signature, sample.signature, 3) != 0	||
+		header.version != sample.version)
 	{
 		if (code != nullptr) *code = ec::ec_invalid_signature;
 		return;
@@ -140,41 +163,33 @@ ir::Neuro::Neuro(const syschar *filepath, ec *code)
 	if (code != nullptr) *code = c;
 };
 
-void ir::Neuro::_freevectors(float **vector, unsigned int n)
-{
-	for (unsigned int i = 0; i < n; i++)
-	{
-		if (vector[i] == nullptr) return;
-		else free(vector[i]);
-	}
-	free(vector);
-};
-
-void ir::Neuro::_stepforward(const float *matrix, unsigned int prevlen, const float *prevoutput, unsigned int nextlen, float *nextoutput)
+template <class ActivationFunction>
+void ir::Neuro<ActivationFunction>::_stepforward(const float *matrix, unsigned int prevlen, const float *prevoutput, unsigned int nextlen, float *nextoutput)
 {
 	for (unsigned int i = 0; i < nextlen; i++)
 	{
 		const float *row = matrix + (prevlen + 1) * i;	//+1 because first element in row is adjustment
-		float output = *row;							//getting adjustment
+		float sum = *row;								//getting adjustment
 		row++;
 		for (unsigned int j = 0; j < prevlen; j++)
 		{
-			output += row[j] * prevoutput[j];
+			sum += row[j] * prevoutput[j];
 		}
-		nextoutput[i] = tanhf(output);
+		nextoutput[i] = ActivationFunction::function(sum);
 	}
 };
 
-void ir::Neuro::_lastbackward(unsigned int lastlen, const float *goal, const float *lastoutput, float *lasterror)
+template <class ActivationFunction>
+void ir::Neuro<ActivationFunction>::_lastbackward(unsigned int lastlen, const float *goal, const float *lastoutput, float *lasterror)
 {
 	for (unsigned int i = 0; i < lastlen; i++)
 	{
-		float out = lastoutput[i];
-		lasterror[i] = (1 - out * out) * (goal[i] - out);
+		lasterror[i] = ActivationFunction::derivative(lastoutput[i]) * (goal[i] - lastoutput[i]);
 	}
 };
 
-void ir::Neuro::_stepbackward(const float *matrix, unsigned int nextlen, const float *nexterror, unsigned int prevlen, const float *prevoutput, float *preverror)
+template <class ActivationFunction>
+void ir::Neuro<ActivationFunction>::_stepbackward(const float *matrix, unsigned int nextlen, const float *nexterror, unsigned int prevlen, const float *prevoutput, float *preverror)
 {
 	for (unsigned int i = 0; i < prevlen; i++)
 	{
@@ -184,12 +199,12 @@ void ir::Neuro::_stepbackward(const float *matrix, unsigned int nextlen, const f
 		{
 			error += column[(prevlen + 1) * j] * nexterror[j];	//same reason
 		}
-		float output = prevoutput[i];
-		preverror[i] = (1 - output * output) * error;
+		preverror[i] = ActivationFunction::derivative(prevoutput[i]) * error;
 	}
 };
 
-void ir::Neuro::_corrigate(float coefficient, unsigned int prevlen, const float *prevoutput, unsigned int nextlen, const float *nexterror, float *matrix)
+template <class ActivationFunction>
+void ir::Neuro<ActivationFunction>::_corrigate(float coefficient, unsigned int prevlen, const float *prevoutput, unsigned int nextlen, const float *nexterror, float *matrix)
 {
 	for (unsigned int i = 0; i < nextlen; i++)
 	{
@@ -204,50 +219,123 @@ void ir::Neuro::_corrigate(float coefficient, unsigned int prevlen, const float 
 	}
 };
 
-ir::ec ir::Neuro::forward(const float *input, float *output, bool holdinput, bool holdoutput)
+template <class ActivationFunction>
+void ir::Neuro<ActivationFunction>::_freevectors(float **vector, unsigned int n)
+{
+	for (unsigned int i = 0; i < n; i++)
+	{
+		if (vector[i] == nullptr) return;
+		else free(vector[i]);
+	}
+	free(vector);
+};
+
+template <class ActivationFunction>
+ir::ec ir::Neuro<ActivationFunction>::set_input(const float *input, bool copy)
 {
 	if (!_ok) return ec::ec_object_not_ok;
-	if (holdinput) memcpy(_outputs[0], input, _layers[0] * sizeof(float));
-	_holdinput = holdinput;
+	if (copy)
+	{
+		memcpy(_vectors[0], input, _layers[0] * sizeof(float));
+		_userinput = nullptr;
+	}
+	else _userinput = input;
+	return ec::ec_ok;
+};
 
+template <class ActivationFunction>
+ir::ec ir::Neuro<ActivationFunction>::set_goal(const float *goal, bool copy)
+{
+	if (!_ok) return ec::ec_object_not_ok;
+	if (copy)
+	{
+		memcpy(_vectors[_nlayers - 1], goal, _layers[_nlayers - 1] * sizeof(float));
+		_usergoal = nullptr;
+	}
+	else _usergoal = goal;
+	return ec::ec_ok;
+};
+
+template <class ActivationFunction>
+ir::ec ir::Neuro<ActivationFunction>::set_coefficient(float coefficient)
+{
+	if (!_ok) return ec::ec_object_not_ok;
+	_coefficient = coefficient;
+	return ec::ec_ok;
+};
+
+template <class ActivationFunction>
+ir::ec ir::Neuro<ActivationFunction>::set_output_pointer(float *output)
+{
+	if (!_ok) return ec::ec_object_not_ok;
+	_useroutput = output;
+	return ec::ec_ok;
+};
+
+template <class ActivationFunction>
+ir::ec ir::Neuro<ActivationFunction>::get_output(bool copy) const
+{
+	if (!_ok) return ec::ec_object_not_ok;
+	if (copy) memcpy(_useroutput, _vectors[_nlayers - 1], _layers[_nlayers - 1] * sizeof(float));
+	return ec::ec_ok;
+};
+
+template <class ActivationFunction>
+ir::ec ir::Neuro<ActivationFunction>::forward()
+{
+	if (!_ok) return ec::ec_object_not_ok;
+	
 	for (unsigned int i = 0; i < (_nlayers - 1); i++)
 	{
 		//Calculating output for latout [i + 1] from [i]
-		_stepforward(_weights[i], _layers[i], (i == 0) ? input : _outputs[i], _layers[i + 1], (i == _nlayers - 2) ? output : _outputs[i + 1]);
+		_stepforward(_weights[i],
+			_layers[i],
+			(i == 0 && _userinput != nullptr) ? _userinput : _vectors[i],
+			_layers[i + 1],
+			(i == (_nlayers - 2) && _useroutput != nullptr) ? _useroutput : _vectors[i + 1]);
 	}
 
-	if (holdoutput) memcpy(_outputs[0], output, _layers[_nlayers - 1] * sizeof(float));
-	_holdoutput = holdoutput;
-
-	_readybackward = true;
 	return ec::ec_ok;
 }
 
-ir::ec ir::Neuro::backward(const float *input, const float *output, const float *goal, float coefficient)
+template <class ActivationFunction>
+ir::ec ir::Neuro<ActivationFunction>::backward()
 {
 	if (!_ok) return ec::ec_object_not_ok;
-	if ((!_readybackward) || (input == nullptr && !_holdinput) || (output == nullptr && !_holdoutput)) return ec::ec_neuro_invalid_forward;
-	_readybackward = false;
-
+	
 	//Calculating error for layer [_nlayer - 1] from target and output of layer [_nlayer - 1]
-	_lastbackward(_layers[_nlayers - 1], goal, output, _errors[_nlayers - 2]);
+	_lastbackward(_layers[_nlayers - 1],
+		_usergoal != nullptr ? _usergoal : _goal,
+		_useroutput != nullptr ? _useroutput : _vectors[_nlayers - 1],
+		_errors[_nlayers - 2]);
 
 	for (unsigned int i = _nlayers - 2; i > 0; i--)
 	{
 		//Calculating error for layer [i] from output of [i] and error of [i + 1]
-		_stepbackward(_weights[i], _layers[i + 1], _errors[i], _layers[i], _outputs[i], _errors[i - 1]);
+		_stepbackward(_weights[i],
+			_layers[i + 1],
+			_errors[i],
+			_layers[i],
+			_vectors[i],
+			_errors[i - 1]);
 	}
 
 	for (unsigned int i = 0; i < (_nlayers - 1); i++)
 	{
 		//Corrigating weights for matrix between [i] and [i + 1] from output of layer [i] and error of [i + 1]
-		_corrigate(coefficient, _layers[i], (i == 0 && !_holdinput) ? input : _outputs[i], _layers[i + 1], _errors[i], _weights[i]);
+		_corrigate(_coefficient,
+			_layers[i],
+			(i == 0 && _userinput != nullptr) ? _userinput : _vectors[i],
+			_layers[i + 1],
+			_errors[i],
+			_weights[i]);
 	}
 
 	return ec::ec_ok;
 };
 
-ir::ec ir::Neuro::save(const syschar *filepath)
+template <class ActivationFunction>
+ir::ec ir::Neuro<ActivationFunction>::save(const syschar *filepath) const
 {
 	if (!_ok) return ec::ec_object_not_ok;
 
@@ -260,8 +348,6 @@ ir::ec ir::Neuro::save(const syschar *filepath)
 	if (file == nullptr) return ec::ec_create_file;
 
 	FileHeader header;
-	memcpy(header.signature, "INR", 3);
-	header.version = 0;
 	if (fwrite(&header, sizeof(FileHeader), 1, file) == 0) return ec::ec_write_file;
 
 	if (fwrite(&_nlayers, sizeof(unsigned int), _nlayers, file) < _nlayers) return ec::ec_write_file;
@@ -275,11 +361,13 @@ ir::ec ir::Neuro::save(const syschar *filepath)
 	return ec::ec_ok;
 };
 
-ir::Neuro::~Neuro()
+template <class ActivationFunction>
+ir::Neuro<ActivationFunction>::~Neuro()
 {
-	if (_outputs != nullptr) _freevectors(_outputs, _nlayers);
+	if (_vectors != nullptr) _freevectors(_vectors, _nlayers);
 	if (_errors != nullptr) _freevectors(_errors, _nlayers - 1);
 	if (_weights != nullptr) _freevectors(_weights, _nlayers - 1);
+	if (_goal != nullptr) free(_goal);
 	if (_layers != nullptr) free(_layers);
 };
 
