@@ -38,6 +38,8 @@ namespace ir
 		ec_path_is_file,
 		ec_invalid_signature,
 		ec_object_not_ok,
+		ec_align,
+		ec_invalid_input,
 
 		//Windows specific sector
 		ec_windows_register_class,
@@ -52,11 +54,7 @@ namespace ir
 		ec_key_not_exists,
 		ec_key_already_exists,
 
-		//ir_neuro sector
-		ec_neuro_invalid_layers,
-		ec_neuro_invalid_forward,
-
-		//opengl
+		//opengl sector
 		ec_opengl
 	};
 

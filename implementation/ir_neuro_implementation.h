@@ -24,36 +24,16 @@
 #include <ir_resource/ir_memresource.h>
 #include <ir_resource/ir_file_resource.h>
 
-float ir::TanhFunction::function(const float input)
-{
-	return tanhf(input);
-};
-
-float ir::TanhFunction::derivative(const float output)
-{
-	return 1 - output * output;
-};
-
-float ir::ReLUFunction::function(const float input)
-{
-	return input >= 0 ? input : 0.01f * input;
-};
-
-float ir::ReLUFunction::derivative(const float output)
-{
-	return output >= 0 ? 1.0f : 0.01f;
-};
-
-template <class ActivationFunction>
-ir::ec ir::Neuro<ActivationFunction>::_init(unsigned int nlayers, const unsigned int *layers, float amplitude, FILE *file)
+template <class ActivationFunction, unsigned int Align>
+ir::ec ir::Neuro<ActivationFunction, Align>::_init(unsigned int nlayers, const unsigned int *layers, float amplitude, FILE *file)
 {
 	_nlayers = nlayers;
 
 	//Initializing _layers (n)
-	if (nlayers < 2) return ec::ec_neuro_invalid_layers;
+	if (nlayers < 2) return ec::ec_invalid_input;
 	for (unsigned int i = 0; i < nlayers; i++)
 	{
-		if (layers[i] == 0) return ec::ec_neuro_invalid_layers;
+		if (layers[i] == 0) return ec::ec_invalid_input;
 	}
 	_layers = (unsigned int*)malloc(nlayers * sizeof(unsigned int));
 	if (_layers == nullptr) return ec::ec_alloc;
@@ -70,22 +50,38 @@ ir::ec ir::Neuro<ActivationFunction>::_init(unsigned int nlayers, const unsigned
 	
 	for (unsigned int i = 0; i < (nlayers - 1); i++)
 	{
-		//Marixes are always one element wider than given because of adjustment
-		unsigned int weightssize = (layers[i] + 1) * layers[i + 1];
-		_weights[i] = (float *)malloc(weightssize * sizeof(float));
+		//Matrixes are always one element wider than given because of adjustment
+		//Allocating memory
+		unsigned int nlines = layers[i + 1];
+		unsigned int linesize = _IR_NEURO_UPALIGN(Align, layers[i] + 1);
+		_weights[i] = (float*)malloc((nlines * linesize + Align - 1) * sizeof(float));
 		if (_weights[i] == nullptr) return ec::ec_alloc;
 		
-		if (file != nullptr)
-		{ 
-			if (fread(_weights[i], sizeof(float), weightssize, file) != weightssize) return ec::ec_read_file;
-		}
-		else
+		//Find aligned part
+		float *matrix = (float*)_IR_NEURO_BLOCK_UPALIGN(_weights[i]);
+		
+		//Zero trash in beginning
+		memset(_weights[i], 0, (char*)matrix - (char*)_weights[i]);
+
+		//For each line
+		for (unsigned int line = 0; line < nlines; line++)
 		{
-			for (unsigned int k = 0; k < weightssize; k++)
+			//Read data
+			if (file != nullptr)
 			{
-				_weights[i][k] = distribution(generator) * amplitude;
+				if (fread(matrix + line * linesize, (layers[i] + 1), sizeof(float), file) != (layers[i] + 1)) return ec::ec_read_file;
 			}
+			else
+			{
+				for (unsigned int k = 0; k < (layers[i] + 1); k++) matrix[line * linesize + k] = distribution(generator) * amplitude;
+			}
+			//Zero to end of line
+			for (unsigned int k = layers[i] + 1; k < linesize; k++) matrix[line * linesize + k] = 0.0f;
 		}
+
+		//Zero trash in end
+		memset(matrix + nlines * linesize, 0,
+			(char*)(_weights[i] + nlines * linesize + Align - 1) - (char*)(matrix + nlines * linesize));
 	}
 
 	//Initializing _vectors (n)
@@ -95,8 +91,15 @@ ir::ec ir::Neuro<ActivationFunction>::_init(unsigned int nlayers, const unsigned
 
 	for (unsigned int i = 0; i < nlayers; i++)
 	{
-		_vectors[i] = (float *)malloc(layers[i] * sizeof(float));
+		unsigned int linesize = _IR_NEURO_UPALIGN(Align, layers[i] + 1);
+		_vectors[i] = (float *)malloc((linesize + Align - 1) * sizeof(float));
 		if (_vectors[i] == nullptr) return ec::ec_alloc;
+		//Zero everyting
+		memset(_vectors[i], 0, (linesize + Align - 1) * sizeof(float));
+		//Find aligned part
+		float *vector = (float*)_IR_NEURO_BLOCK_UPALIGN(_vectors[i]);
+		//Adjustment = 1.0f
+		vector[layers[i]] = 1.0f;
 	}
 
 	//Initializing _errors (n - 1)
@@ -106,23 +109,26 @@ ir::ec ir::Neuro<ActivationFunction>::_init(unsigned int nlayers, const unsigned
 
 	for (unsigned int i = 0; i < (nlayers - 1); i++)
 	{
-		_errors[i] = (float *)malloc(layers[i + 1] * sizeof(float));
+		unsigned int linesize = _IR_NEURO_UPALIGN(Align, layers[i + 1]);
+		_errors[i] = (float *)malloc((linesize + Align - 1) * sizeof(float));
 		if (_errors[i] == nullptr) return ec::ec_alloc;
+		//Zero everyting
+		memset(_errors[i], 0, (linesize + Align - 1) * sizeof(float));
 	}
 
 	_ok = true;
 	return ec::ec_ok;
 };
 
-template <class ActivationFunction>
-ir::Neuro<ActivationFunction>::Neuro(unsigned int nlayers, const unsigned int *layers, float amplitude, ec *code)
+template <class ActivationFunction, unsigned int Align>
+ir::Neuro<ActivationFunction, Align>::Neuro(unsigned int nlayers, const unsigned int *layers, float amplitude, ec *code)
 {
 	ec c = _init(nlayers, layers, amplitude, nullptr);
 	if (code != nullptr) *code = c;
 };
 
-template <class ActivationFunction>
-ir::Neuro<ActivationFunction>::Neuro(const syschar *filepath, ec *code)
+template <class ActivationFunction, unsigned int Align>
+ir::Neuro<ActivationFunction, Align>::Neuro(const syschar *filepath, ec *code)
 {
 	#ifdef _WIN32
 		FileResource file = _wfsopen(filepath, L"rb", _SH_DENYNO);
@@ -163,64 +169,8 @@ ir::Neuro<ActivationFunction>::Neuro(const syschar *filepath, ec *code)
 	if (code != nullptr) *code = c;
 };
 
-template <class ActivationFunction>
-void ir::Neuro<ActivationFunction>::_stepforward(const float *matrix, unsigned int prevlen, const float *prevoutput, unsigned int nextlen, float *nextoutput)
-{
-	for (unsigned int i = 0; i < nextlen; i++)
-	{
-		const float *row = matrix + (prevlen + 1) * i;	//+1 because first element in row is adjustment
-		float sum = *row;								//getting adjustment
-		row++;
-		for (unsigned int j = 0; j < prevlen; j++)
-		{
-			sum += row[j] * prevoutput[j];
-		}
-		nextoutput[i] = ActivationFunction::function(sum);
-	}
-};
-
-template <class ActivationFunction>
-void ir::Neuro<ActivationFunction>::_lastbackward(unsigned int lastlen, const float *goal, const float *lastoutput, float *lasterror)
-{
-	for (unsigned int i = 0; i < lastlen; i++)
-	{
-		lasterror[i] = ActivationFunction::derivative(lastoutput[i]) * (goal[i] - lastoutput[i]);
-	}
-};
-
-template <class ActivationFunction>
-void ir::Neuro<ActivationFunction>::_stepbackward(const float *matrix, unsigned int nextlen, const float *nexterror, unsigned int prevlen, const float *prevoutput, float *preverror)
-{
-	for (unsigned int i = 0; i < prevlen; i++)
-	{
-		float error = 0.0f;
-		const float *column = matrix + i + 1;					//+1 because the first element is adjustment, we ignore it
-		for (unsigned int j = 0; j < nextlen; j++)
-		{
-			error += column[(prevlen + 1) * j] * nexterror[j];	//same reason
-		}
-		preverror[i] = ActivationFunction::derivative(prevoutput[i]) * error;
-	}
-};
-
-template <class ActivationFunction>
-void ir::Neuro<ActivationFunction>::_corrigate(float coefficient, unsigned int prevlen, const float *prevoutput, unsigned int nextlen, const float *nexterror, float *matrix)
-{
-	for (unsigned int i = 0; i < nextlen; i++)
-	{
-		float error = nexterror[i];
-		float *row = matrix + (prevlen + 1) * i;	//first element is adjustment, output is always 1 for it
-		(*row) += coefficient * error;
-		row++;
-		for (unsigned int j = 0; j < prevlen; j++)
-		{
-			row[j] += coefficient * prevoutput[j] * error;
-		}
-	}
-};
-
-template <class ActivationFunction>
-void ir::Neuro<ActivationFunction>::_freevectors(float **vector, unsigned int n)
+template <class ActivationFunction, unsigned int Align>
+void ir::Neuro<ActivationFunction, Align>::_freevectors(float **vector, unsigned int n)
 {
 	for (unsigned int i = 0; i < n; i++)
 	{
@@ -230,94 +180,109 @@ void ir::Neuro<ActivationFunction>::_freevectors(float **vector, unsigned int n)
 	free(vector);
 };
 
-template <class ActivationFunction>
-ir::ec ir::Neuro<ActivationFunction>::set_input(const float *input, bool copy)
+template <class ActivationFunction, unsigned int Align>
+ir::ec ir::Neuro<ActivationFunction, Align>::set_input(const float *input, bool copy)
 {
 	if (!_ok) return ec::ec_object_not_ok;
 	if (copy)
 	{
-		memcpy(_vectors[0], input, _layers[0] * sizeof(float));
+		memcpy(_IR_NEURO_BLOCK_UPALIGN(_vectors[0]), input, _layers[0] * sizeof(float));
 		_userinput = nullptr;
 	}
-	else _userinput = input;
+	else
+	{
+		if ((const float*)_IR_NEURO_BLOCK_UPALIGN(input) != input) return ir::ec::ec_align;	//check alignment
+		if (input[_layers[0]] != 1.0f) return ir::ec::ec_align;								//check adjustment
+		for (unsigned int i = _layers[0] + 1; i < _IR_NEURO_UPALIGN(Align, _layers[0] + 1); i++)
+		{
+			if (input[i] != 0.0f) return ir::ec::ec_align;									//check zeros in end
+		}
+		_userinput = input;
+	}
 	return ec::ec_ok;
 };
 
-template <class ActivationFunction>
-ir::ec ir::Neuro<ActivationFunction>::set_goal(const float *goal, bool copy)
+template <class ActivationFunction, unsigned int Align>
+ir::ec ir::Neuro<ActivationFunction, Align>::set_goal(const float *goal, bool copy)
 {
 	if (!_ok) return ec::ec_object_not_ok;
 	if (copy)
 	{
-		memcpy(_vectors[_nlayers - 1], goal, _layers[_nlayers - 1] * sizeof(float));
+		memcpy(_IR_NEURO_BLOCK_UPALIGN(_vectors[_nlayers - 1]), goal, _layers[_nlayers - 1] * sizeof(float));
 		_usergoal = nullptr;
 	}
-	else _usergoal = goal;
+	else
+	{
+		if ((const float*)_IR_NEURO_BLOCK_UPALIGN(goal) != goal) return ir::ec::ec_align;
+		for (unsigned int i = _layers[_nlayers - 1] + 1; i < _IR_NEURO_UPALIGN(Align, _layers[_nlayers - 1]); i++)
+		{
+			if (goal[i] != 0.0f) return ir::ec::ec_align;
+		}
+		_usergoal = goal;
+	}
 	return ec::ec_ok;
 };
 
-template <class ActivationFunction>
-ir::ec ir::Neuro<ActivationFunction>::set_coefficient(float coefficient)
+template <class ActivationFunction, unsigned int Align>
+ir::ec ir::Neuro<ActivationFunction, Align>::set_coefficient(float coefficient)
 {
 	if (!_ok) return ec::ec_object_not_ok;
 	_coefficient = coefficient;
 	return ec::ec_ok;
 };
 
-template <class ActivationFunction>
-ir::ec ir::Neuro<ActivationFunction>::set_output_pointer(float *output)
+template <class ActivationFunction, unsigned int Align>
+ir::ec ir::Neuro<ActivationFunction, Align>::set_output_pointer(float *output)
 {
 	if (!_ok) return ec::ec_object_not_ok;
+	if ((float*)_IR_NEURO_BLOCK_UPALIGN(output) != output) return ir::ec::ec_align;
 	_useroutput = output;
 	return ec::ec_ok;
 };
 
-template <class ActivationFunction>
-ir::ec ir::Neuro<ActivationFunction>::get_output(bool copy) const
+template <class ActivationFunction, unsigned int Align>
+ir::ec ir::Neuro<ActivationFunction, Align>::get_output(bool copy) const
 {
 	if (!_ok) return ec::ec_object_not_ok;
-	if (copy) memcpy(_useroutput, _vectors[_nlayers - 1], _layers[_nlayers - 1] * sizeof(float));
+	if (copy) memcpy(_useroutput, _IR_NEURO_BLOCK_UPALIGN(_vectors[_nlayers - 1]), _layers[_nlayers - 1] * sizeof(float));
 	return ec::ec_ok;
 };
 
-template <class ActivationFunction>
-ir::ec ir::Neuro<ActivationFunction>::forward()
+template <class ActivationFunction, unsigned int Align>
+ir::ec ir::Neuro<ActivationFunction, Align>::forward()
 {
 	if (!_ok) return ec::ec_object_not_ok;
 	
 	for (unsigned int i = 0; i < (_nlayers - 1); i++)
 	{
 		//Calculating output for latout [i + 1] from [i]
-		_stepforward(_weights[i],
+		_stepforward(_IR_NEURO_BLOCK_UPALIGN(_weights[i]),
 			_layers[i],
-			(i == 0 && _userinput != nullptr) ? _userinput : _vectors[i],
+			(i == 0 && _userinput != nullptr) ? (FloatBlock*)_userinput : _IR_NEURO_BLOCK_UPALIGN(_vectors[i]),
 			_layers[i + 1],
-			(i == (_nlayers - 2) && _useroutput != nullptr) ? _useroutput : _vectors[i + 1]);
+			(i == (_nlayers - 2) && _useroutput != nullptr) ? _useroutput : (float*)_IR_NEURO_BLOCK_UPALIGN(_vectors[i + 1]));
 	}
 
 	return ec::ec_ok;
 }
 
-template <class ActivationFunction>
-ir::ec ir::Neuro<ActivationFunction>::backward()
+template <class ActivationFunction, unsigned int Align>
+ir::ec ir::Neuro<ActivationFunction, Align>::backward()
 {
 	if (!_ok) return ec::ec_object_not_ok;
 	
 	//Calculating error for layer [_nlayer - 1] from target and output of layer [_nlayer - 1]
 	_lastbackward(_layers[_nlayers - 1],
-		_usergoal != nullptr ? _usergoal : _goal,
-		_useroutput != nullptr ? _useroutput : _vectors[_nlayers - 1],
-		_errors[_nlayers - 2]);
+		_usergoal != nullptr ? (FloatBlock*)_usergoal : (FloatBlock*)_goal,
+		_useroutput != nullptr ? (FloatBlock*)_useroutput : _IR_NEURO_BLOCK_UPALIGN(_vectors[_nlayers - 1]),
+		_IR_NEURO_BLOCK_UPALIGN(_errors[_nlayers - 2]));
 
 	for (unsigned int i = _nlayers - 2; i > 0; i--)
 	{
 		//Calculating error for layer [i] from output of [i] and error of [i + 1]
-		_stepbackward(_weights[i],
-			_layers[i + 1],
-			_errors[i],
-			_layers[i],
-			_vectors[i],
-			_errors[i - 1]);
+		_stepbackward((float*)_IR_NEURO_BLOCK_UPALIGN(_weights[i]),
+			_layers[i + 1], _IR_NEURO_BLOCK_UPALIGN(_errors[i]),
+			_layers[i], (float*)_IR_NEURO_BLOCK_UPALIGN(_vectors[i]), (float*)_IR_NEURO_BLOCK_UPALIGN(_errors[i - 1]));
 	}
 
 	for (unsigned int i = 0; i < (_nlayers - 1); i++)
@@ -325,17 +290,17 @@ ir::ec ir::Neuro<ActivationFunction>::backward()
 		//Corrigating weights for matrix between [i] and [i + 1] from output of layer [i] and error of [i + 1]
 		_corrigate(_coefficient,
 			_layers[i],
-			(i == 0 && _userinput != nullptr) ? _userinput : _vectors[i],
+			(i == 0 && _userinput != nullptr) ? (FloatBlock*)_userinput : _IR_NEURO_BLOCK_UPALIGN(_vectors[i]),
 			_layers[i + 1],
-			_errors[i],
-			_weights[i]);
+			(float*)_IR_NEURO_BLOCK_UPALIGN(_errors[i]),
+			_IR_NEURO_BLOCK_UPALIGN(_weights[i]));
 	}
 
 	return ec::ec_ok;
 };
 
-template <class ActivationFunction>
-ir::ec ir::Neuro<ActivationFunction>::save(const syschar *filepath) const
+template <class ActivationFunction, unsigned int Align>
+ir::ec ir::Neuro<ActivationFunction, Align>::save(const syschar *filepath) const
 {
 	if (!_ok) return ec::ec_object_not_ok;
 
@@ -354,15 +319,20 @@ ir::ec ir::Neuro<ActivationFunction>::save(const syschar *filepath) const
 
 	for (unsigned int i = 0; i < (_nlayers - 1); i++)
 	{
-		unsigned int matrixsize = (_layers[i] + 1) * _layers[i + 1];
-		if (fwrite(_weights[i], sizeof(float), matrixsize, file) < matrixsize) return ec::ec_write_file;
+		unsigned int nlines = _layers[i + 1];
+		unsigned int linesize = _IR_NEURO_UPALIGN(Align, _layers[i] + 1);
+		float *matrix = (float*)_IR_NEURO_BLOCK_UPALIGN(_weights[i]);
+		for (unsigned int line = 0; line < nlines; line++)
+		{
+			if (fwrite(matrix + line * linesize, (_layers[i] + 1), sizeof(float), file) != (_layers[i] + 1)) return ec::ec_read_file;
+		}
 	}
 
 	return ec::ec_ok;
 };
 
-template <class ActivationFunction>
-ir::Neuro<ActivationFunction>::~Neuro()
+template <class ActivationFunction, unsigned int Align>
+ir::Neuro<ActivationFunction, Align>::~Neuro()
 {
 	if (_vectors != nullptr) _freevectors(_vectors, _nlayers);
 	if (_errors != nullptr) _freevectors(_errors, _nlayers - 1);
