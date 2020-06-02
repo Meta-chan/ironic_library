@@ -18,19 +18,18 @@ int main()
 		char b[2];
 		b[0] = rand() % 2;
 		b[1] = rand() % 2;
-		float alignas(16) input[4] = { 2 * ((float)b[0] - 0.5f), 2 * ((float)b[1] - 0.5f), 1.0f, 0.0f };
-		float alignas(16) goal[4] = { 2 * ((float)(b[0] ^ b[1]) - 0.5f), 0.0f, 0.0f, 0.0f };
-		float alignas(16) output[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		float input[2] = { 2 * ((float)b[0] - 0.5f), 2 * ((float)b[1] - 0.5f) };
+		float goal = 2 * ((float)(b[0] ^ b[1]) - 0.5f);
+		float output;
 
-		net.set_input(input);
-		net.set_goal(goal);
-		net.set_output_pointer(output);
-
+		net.set_input(input, true);
+		net.set_output_pointer(&output, true);
 		net.forward();
-		net.backward();
 		net.get_output();
+		net.set_goal(&goal, true);
+		net.backward();
 
-		printf("%i %i -> %f\n", b[0], b[1], output[0]);
+		printf("%i %i -> %f\n", b[0], b[1], output);
 	}
 
 	net.save(SS("xor.inr"));

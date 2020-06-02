@@ -80,6 +80,7 @@ namespace ir
 		const float *_userinput	= nullptr;
 		const float *_usergoal	= nullptr;
 		float *_useroutput		= nullptr;
+		bool _copy_output		= false;
 		
 		ec _init(unsigned int nlayers, const unsigned int *layers, float amplitude, FILE *file);
 
@@ -110,8 +111,8 @@ namespace ir
 		ec set_input(const float *input, bool copy = false);
 		ec set_goal(const float *goal, bool copy = false);
 		ec set_coefficient(float coefficient);
-		ec set_output_pointer(float *output);
-		ec get_output(bool copy = false) const;
+		ec set_output_pointer(float *output, bool copy = false);
+		ec get_output() const;
 		ec forward();
 		ec backward();
 		ec save(const syschar *filepath) const;
