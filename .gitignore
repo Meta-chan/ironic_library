@@ -48,3 +48,6 @@ Thumbs.db
 #Ironic database files:
 **/*.idt
 **/*.idt~
+
+#Ironic neural network:
+**/*.inr
