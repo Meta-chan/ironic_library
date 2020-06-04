@@ -16,7 +16,7 @@
 	#ifdef _WIN32
 		#include <intrin.h>
 	#else
-		#inclide <x86intrin.h>
+		#include <x86intrin.h>
 	#endif	
 #endif
 
@@ -62,26 +62,29 @@ void ir::Neuro<ActivationFunction, Align>::_stepforward(
 				sum = _m_pfadd(sum, _m_pfmul(*((__m64*)&matrix[line * prevlenblock + columnblock]),
 					*((__m64*)&prevvector[columnblock])));
 			}
+			
+			sum = _m_pfacc(sum, zero);
 
-			//Specially for ReLU, we can skip _m_femmms
+			//Specially for ReLU, we can compute the result here (skip _m_femms)
 			if (std::is_same<ActivationFunction, ReLUFunction>::value)
 			{
 				__m64 comp = _m_pfcmpge(sum, zero);
 				if (!_m_to_int(comp)) sum = _m_pfmul(sum, hunderth_low);
 				*((int*)&nextvector[line]) = _m_to_int(sum);
 			}
+			//By default we save the result and call the function later (skip _m_femms)
 			else
 			{
-				//Actually it is possible to calculate glibc tanh with SSE2
-				//But it is VERY challenging (make 12 paths, store pointers, count filling...)
-				int endsumi = _m_to_int(_m_pfacc(sum, zero));
-				_m_femms();
-				float endsum = *((float*)&endsumi);
-				nextvector[line] = ActivationFunction::function(endsum);
+				*((int*)&nextvector[line]) = _m_to_int(sum);
 			}
 		}
-		//Specially for ReLU, we need to call _m_femms here
-		if (std::is_same<ActivationFunction, ReLUFunction>::value) _m_femms();
+		
+		_m_femms();
+		if (!std::is_same<ActivationFunction, ReLUFunction>::value)
+		{
+			for (unsigned int line = 0; line < nextlen; line++)
+				nextvector[line] = ActivationFunction::function(nextvector[line]);
+		}
 	}
 	else
 	{
@@ -136,7 +139,7 @@ void ir::Neuro<ActivationFunction, Align>::_lastbackward(
 				__m64 v = *((__m64*)&lastvector[lineblock]);
 				__m64 g = *((__m64*)&goal[lineblock]);
 				__m64 comp = _m_pfcmpge(v, zero);
-				__m64 one_or_hunderth = _m_por(_m_pand(one, comp), _m_pandn(hunderth, comp));
+				__m64 one_or_hunderth = _m_por(_m_pand(comp, one), _m_pandn(comp, hunderth));
 				*((__m64*)&lasterror[lineblock]) = _m_pfmul(one_or_hunderth, _m_pfsub(g, v));
 			}
 			else
@@ -279,8 +282,7 @@ void ir::Neuro<ActivationFunction, Align>::_corrigate(
 				_m_pfacc(_m_from_int(*((int*)&nexterror[line])), _m_from_int(*((int*)&nexterror[line]))));
 			for (unsigned int columnblock = 0; columnblock < prevlenblock; columnblock++)
 			{
-				for (unsigned int a = 0; a < Align; a++)
-					*((__m64*)&matrix[line * prevlenblock + columnblock]) =
+				*((__m64*)&matrix[line * prevlenblock + columnblock]) =
 					_m_pfadd(*((__m64*)&matrix[line * prevlenblock + columnblock]),
 					_m_pfmul(linecoef, *((__m64*)&prevvector[columnblock])));
 			}

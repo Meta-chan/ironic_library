@@ -2,7 +2,7 @@
 test()
 {
 	
-	if g++ $1 -I .. -Wall -Wextra -o $1.exe
+	if g++ $1 -I .. -Wall -Wextra -march=native -o $1.exe
 	then
 		GREEN='\033[0;32m'
 		WHITE='\033[0m'
