@@ -69,7 +69,7 @@ ir::ec ir::Neuro<ActivationFunction, Align>::_init(unsigned int nlayers, const u
 			//Read data
 			if (file != nullptr)
 			{
-				if (fread(matrix + line * linesize, (layers[i] + 1), sizeof(float), file) != (layers[i] + 1)) return ec::ec_read_file;
+				if (fread(matrix + line * linesize, sizeof(float), (layers[i] + 1), file) < (layers[i] + 1)) return ec::ec_read_file;
 			}
 			else
 			{
@@ -334,7 +334,9 @@ ir::ec ir::Neuro<ActivationFunction, Align>::save(const syschar *filepath) const
 	FileHeader header;
 	if (fwrite(&header, sizeof(FileHeader), 1, file) == 0) return ec::ec_write_file;
 
-	if (fwrite(&_nlayers, sizeof(unsigned int), _nlayers, file) < _nlayers) return ec::ec_write_file;
+	//Before bugfix:
+	if (fwrite(&_nlayers, sizeof(unsigned int), 1, file) == 0) return ec::ec_write_file;
+	if (fwrite(_layers, sizeof(unsigned int), _nlayers, file) < _nlayers) return ec::ec_write_file;
 
 	for (unsigned int i = 0; i < (_nlayers - 1); i++)
 	{
@@ -343,7 +345,7 @@ ir::ec ir::Neuro<ActivationFunction, Align>::save(const syschar *filepath) const
 		float *matrix = (float*)_IR_NEURO_BLOCK_UPALIGN(_weights[i]);
 		for (unsigned int line = 0; line < nlines; line++)
 		{
-			if (fwrite(matrix + line * linesize, (_layers[i] + 1), sizeof(float), file) != (_layers[i] + 1)) return ec::ec_read_file;
+			if (fwrite(matrix + line * linesize, sizeof(float), (_layers[i] + 1), file) < (_layers[i] + 1)) return ec::ec_read_file;
 		}
 	}
 

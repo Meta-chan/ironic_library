@@ -91,7 +91,10 @@ void ir::Neuro<ActivationFunction, Align>::_stepforward(
 	#endif
 		//NORMAL IMPLEMENTATION HERE
 		unsigned int prevlenblock = (prevlen + 1 + Align - 1) / Align;
-		for (unsigned int line = 0; line < nextlen; line++)
+		#ifdef IR_NEURO_CRITICAL_OPENMP
+			#pragma omp parallel for firstprivate(matrix, prevvector, nextlen, nextvector, prevlenblock)
+		#endif
+		for (int line = 0; (unsigned int)line < nextlen; line++)
 		{
 			FloatBlock sum; for (unsigned a = 0; a < Align; a++) sum.f[a] = 0.0f;
 			for (unsigned int columnblock = 0; columnblock < prevlenblock; columnblock++)
@@ -155,7 +158,10 @@ void ir::Neuro<ActivationFunction, Align>::_lastbackward(
 	#endif
 		//NORMAL IMPLEMENTATION HERE
 		unsigned int lastlenblock = (lastlen + Align - 1) / Align;
-		for (unsigned int lineblock = 0; lineblock < lastlenblock; lineblock++)
+		#ifdef IR_NEURO_CRITICAL_OPENMP
+			#pragma omp parallel for firstprivate(goal, lastvector, lasterror, lastlenblock)
+		#endif
+		for (int lineblock = 0; (unsigned int)lineblock < lastlenblock; lineblock++)
 		{
 			for (unsigned int a = 0; a < Align; a++)
 			{
@@ -233,7 +239,10 @@ void ir::Neuro<ActivationFunction, Align>::_stepbackward(
 		//NORMAL IMPLEMENTATION HERE
 		unsigned int prevfloatlen = _IR_NEURO_UPALIGN(Align, prevlen);
 		unsigned int nextlenblock = nextlen / Align;
-		for (unsigned int column = 0; column < prevlen; column++)
+		#ifdef IR_NEURO_CRITICAL_OPENMP
+			#pragma omp parallel for firstprivate(matrix, nextlen, nexterror, prevlen, prevvector, preverror, prevfloatlen, nextlenblock)
+		#endif
+		for (int column = 0; (unsigned int)column < prevlen; column++)
 		{
 			FloatBlock sum; for (unsigned a = 0; a < Align; a++) sum.f[a] = 0.0f;
 
@@ -292,7 +301,10 @@ void ir::Neuro<ActivationFunction, Align>::_corrigate(
 	#endif
 		//NORMAL IMPLEMENTATION HERE
 		unsigned int prevlenblock = (prevlen + 1 + Align - 1) / Align;
-		for (unsigned int line = 0; line < nextlen; line++)
+		#ifdef IR_NEURO_CRITICAL_OPENMP
+			#pragma omp parallel for firstprivate(coefficient, prevvector, nextlen, nexterror, matrix, prevlenblock)
+		#endif
+		for (int line = 0; (unsigned int)line < nextlen; line++)
 		{
 			for (unsigned int columnblock = 0; columnblock < prevlenblock; columnblock++)
 			{

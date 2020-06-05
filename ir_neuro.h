@@ -15,6 +15,7 @@
 //this header provides:
 //IR_NEURO_CRITICAL_[NOT]_IMPLEMENT - to manage whether to include time critical code or not.
 //IR_NEURO_CRITICAL_NOT_RESTRICT - to disable restrict modifier. May reduce performance.
+//IR_NEURO_CRITICAL_OPENMP - to enable OpenMP.
 //IR_NEURO_CRITICAL_3DNOW - to use 3DNow! instructions if Align is 2. Use if you are freak.
 
 #ifndef IR_NEURO
