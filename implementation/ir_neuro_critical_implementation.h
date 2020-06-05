@@ -174,7 +174,7 @@ void ir::Neuro<ActivationFunction, Align>::_stepbackward(
 	unsigned int nextlen, const FloatBlock *IR_NEURO_CRITICAL_RESTRICT nexterror,
 	unsigned int prevlen, const float *IR_NEURO_CRITICAL_RESTRICT prevvector, float *IR_NEURO_CRITICAL_RESTRICT preverror)
 {
-	#ifdef IR_NEURO_CRITICAL_3DNOW
+#ifdef IR_NEURO_CRITICAL_3DNOW
 	if (Align == 2)
 	{
 		//3DNOW IMPLEMENTATION HERE
@@ -184,23 +184,22 @@ void ir::Neuro<ActivationFunction, Align>::_stepbackward(
 		const __m64 zero_low = _m_from_int(0);
 
 		unsigned int prevfloatlen = _IR_NEURO_UPALIGN(Align, prevlen);
+		unsigned int nextlenblock = nextlen / Align;
 		for (unsigned int column = 0; column < prevlen; column++)
 		{
 			__m64 sum = zero;
 
-			unsigned int line = 0;
-			while ((line + 1) < nextlen)
+			for (unsigned int lineblock = 0; lineblock < nextlenblock; lineblock++)
 			{
-				__m64 v = _m_pfacc(_m_from_int(*((int*)&matrix[prevfloatlen * line + column])),
-					_m_from_int(*((int*)&matrix[prevfloatlen * (line + 1) + column])));
-				sum = _m_pfadd(sum, _m_pfmul(v, *((__m64*)&nexterror[line])));
-				line += 2;
+				__m64 v = _m_pfacc(_m_from_int(*((int*)&matrix[prevfloatlen * Align * lineblock + column])),
+					_m_from_int(*((int*)&matrix[prevfloatlen * (Align * lineblock + 1) + column])));
+				sum = _m_pfadd(sum, _m_pfmul(v, *((__m64*)&nexterror[lineblock])));
 			}
 
-			if (line < nextlen)
+			if (nextlenblock * Align < nextlen)
 			{
-				__m64 v = _m_from_int(*((int*)&matrix[prevfloatlen * line + column]));
-				sum = _m_pfadd(sum, _m_pfmul(v, *((__m64*)&nexterror[line])));
+				__m64 v = _m_from_int(*((int*)&matrix[prevfloatlen * Align * nextlenblock + column]));
+				sum = _m_pfadd(sum, _m_pfmul(v, *((__m64*)&nexterror[nextlenblock])));
 			}
 
 			sum = _m_pfacc(sum, zero);
@@ -211,6 +210,7 @@ void ir::Neuro<ActivationFunction, Align>::_stepbackward(
 				__m64 v = _m_from_int(*((int*)&prevvector[column]));
 				*((int*)&preverror[column]) = _m_to_int(_m_pfmul(_m_pfsub(one_low, _m_pfmul(v, v)), sum));
 			}
+			//Special for ReLU
 			else if (std::is_same<ActivationFunction, ReLUFunction>::value)
 			{
 				__m64 v = _m_from_int(*((int*)&prevvector[column]));
@@ -224,34 +224,32 @@ void ir::Neuro<ActivationFunction, Align>::_stepbackward(
 			}
 		}
 
-		if(std::is_same<ActivationFunction, TanhFunction>::value
-		|| std::is_same<ActivationFunction, ReLUFunction>::value) _m_femms();
+		if (std::is_same<ActivationFunction, TanhFunction>::value
+			|| std::is_same<ActivationFunction, ReLUFunction>::value) _m_femms();
 	}
 	else
 	{
 	#endif
 		//NORMAL IMPLEMENTATION HERE
 		unsigned int prevfloatlen = _IR_NEURO_UPALIGN(Align, prevlen);
+		unsigned int nextlenblock = nextlen / Align;
 		for (unsigned int column = 0; column < prevlen; column++)
 		{
 			FloatBlock sum; for (unsigned a = 0; a < Align; a++) sum.f[a] = 0.0f;
 
-			unsigned int line = 0;
-			while ((line + Align - 1) < nextlen)
+			for (unsigned int lineblock = 0; lineblock < nextlenblock; lineblock++)
 			{
 				FloatBlock v;
-				for (unsigned int a = 0; a < Align; a++) v.f[a] = matrix[prevfloatlen * (line + a) + column];
-				for (unsigned int a = 0; a < Align; a++) sum.f[a] += v.f[a] * nexterror[line].f[a];
-				line += Align;
+				for (unsigned int a = 0; a < Align; a++) v.f[a] = matrix[prevfloatlen * (Align * lineblock + a) + column];
+				for (unsigned int a = 0; a < Align; a++) sum.f[a] += v.f[a] * nexterror[lineblock].f[a];
 			}
 
-			if (line < nextlen)
+			if (nextlenblock * Align < nextlen)
 			{
-				FloatBlock v;
-				unsigned int i = 0;
-				while (line + i < nextlen) { v.f[i] = matrix[prevfloatlen * (line + i) + column]; i++; }
-				while (i < Align) { v.f[i] = 0.0f; i++; }
-				for (unsigned int a = 0; a < Align; a++) sum.f[a] += v.f[a] * nexterror[line].f[a];
+				FloatBlock v; for (unsigned a = 0; a < Align; a++) v.f[a] = 0.0f;
+				for (unsigned int a = 0; Align * nextlenblock + a < nextlen; a++)
+					v.f[a] = matrix[prevfloatlen * (Align * nextlenblock + a) + column];
+				for (unsigned int a = 0; a < Align; a++) sum.f[a] += v.f[a] * nexterror[nextlenblock].f[a];
 			}
 
 			float enderror = 0.0f;
