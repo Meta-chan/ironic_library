@@ -63,7 +63,7 @@ namespace ir
 		struct FileHeader
 		{
 			char signature[3]		= { 'I', 'N', 'R' };
-			unsigned char version	= 1;
+			unsigned char version	= 2;
 		};
 
 		struct alignas(Align * sizeof(float)) FloatBlock
@@ -77,36 +77,41 @@ namespace ir
 		float **_weights		= nullptr;
 		float **_vectors		= nullptr;
 		float **_errors			= nullptr;
+		float **_prev_changes	= nullptr;
 		float *_goal			= nullptr;
 		float _coefficient		= 0.0f;
+		float _inductance		= 0.0f;
 
-		const float *_userinput	= nullptr;
-		const float *_usergoal	= nullptr;
-		float *_useroutput		= nullptr;
+		const float *_user_input= nullptr;
+		const float *_user_goal	= nullptr;
+		float *_user_output		= nullptr;
 		bool _copy_output		= false;
 		
-		ec _init(unsigned int nlayers, const unsigned int *layers, float amplitude, FILE *file);
+		ec _init_matrixes(float ***matrixes, float amplitude, FILE *file);
+		ec _init(float amplitude, FILE *file);
+		ec _init_from_random(unsigned int nlayers, const unsigned int *layers, float amplitude);
+		ec _init_from_file(const syschar *filepath);
+		ec _save_matrixes(float*const*const matrixes, FILE *file) const;
+		static void _free_vectors(float **vector, unsigned int n);
 
-		static void _stepforward(
+		static void _step_forward(
 			const FloatBlock *IR_NEURO_CRITICAL_RESTRICT matrix,
 			unsigned int prevlen, const FloatBlock *IR_NEURO_CRITICAL_RESTRICT prevvector,
 			unsigned int nextlen, float *IR_NEURO_CRITICAL_RESTRICT nextvector);
-		static void _lastbackward(
+		static void _last_backward(
 			unsigned int lastlen,
 			const FloatBlock *IR_NEURO_CRITICAL_RESTRICT goal,
 			const FloatBlock *IR_NEURO_CRITICAL_RESTRICT lastoutput,
 			FloatBlock *IR_NEURO_CRITICAL_RESTRICT lasterror);
-		static void _stepbackward(
+		static void _step_backward(
 			const float *IR_NEURO_CRITICAL_RESTRICT matrix,
 			unsigned int nextlen, const FloatBlock *IR_NEURO_CRITICAL_RESTRICT nexterror,
 			unsigned int prevlen, const float *IR_NEURO_CRITICAL_RESTRICT prevvector, float *IR_NEURO_CRITICAL_RESTRICT preverror);
 		static void _corrigate(
-			float coefficient,
+			float coefficient, float inductance,
 			unsigned int prevlen, const FloatBlock *IR_NEURO_CRITICAL_RESTRICT prevvector,
 			unsigned int nextlen, const float *IR_NEURO_CRITICAL_RESTRICT nexterror,
-			FloatBlock *IR_NEURO_CRITICAL_RESTRICT matrix);
-		
-		static void _freevectors(float **vector, unsigned int n);
+			FloatBlock *IR_NEURO_CRITICAL_RESTRICT matrix, FloatBlock *IR_NEURO_CRITICAL_RESTRICT prevchanges);
 
 	public:
 		Neuro(unsigned int nlayers, const unsigned int *layers, float amplitude, ec *code);
@@ -114,6 +119,7 @@ namespace ir
 		ec set_input(const float *input, bool copy = false);
 		ec set_goal(const float *goal, bool copy = false);
 		ec set_coefficient(float coefficient);
+		ec set_inductance(float inductance);
 		ec set_output_pointer(float *output, bool copy = false);
 		ec get_output() const;
 		ec forward();

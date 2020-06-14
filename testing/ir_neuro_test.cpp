@@ -1,5 +1,4 @@
 #define IR_IMPLEMENT
-#define IR_NEURO_CRITICAL_3DNOW
 #include <ir_neuro.h>
 #include <random>
 #include <stdio.h>
@@ -10,9 +9,10 @@ int main()
 
 	ir::ec code;
 	unsigned int lays[3] = { 2, 2, 1 };
-	ir::Neuro<ir::ReLUFunction, 2> net(3, lays, 0.5f, &code);
+	ir::Neuro<ir::TanhFunction, 2> net(3, lays, 0.5f, &code);
 	
 	net.set_coefficient(1.0f);
+	net.set_inductance(100.0f);
 	
 	for (unsigned int i = 0; i < 100000; i++)
 	{

@@ -41,7 +41,7 @@ float ir::ReLUFunction::derivative(const float output)
 };
 
 template <class ActivationFunction, unsigned int Align>
-void ir::Neuro<ActivationFunction, Align>::_stepforward(
+void ir::Neuro<ActivationFunction, Align>::_step_forward(
 	const FloatBlock *IR_NEURO_CRITICAL_RESTRICT matrix,
 	unsigned int prevlen, const FloatBlock *IR_NEURO_CRITICAL_RESTRICT prevvector,
 	unsigned int nextlen, float *IR_NEURO_CRITICAL_RESTRICT nextvector)
@@ -112,7 +112,7 @@ void ir::Neuro<ActivationFunction, Align>::_stepforward(
 };
 
 template <class ActivationFunction, unsigned int Align>
-void ir::Neuro<ActivationFunction, Align>::_lastbackward(
+void ir::Neuro<ActivationFunction, Align>::_last_backward(
 	unsigned int lastlen,
 	const FloatBlock *IR_NEURO_CRITICAL_RESTRICT goal,
 	const FloatBlock *IR_NEURO_CRITICAL_RESTRICT lastvector,
@@ -175,7 +175,7 @@ void ir::Neuro<ActivationFunction, Align>::_lastbackward(
 };
 
 template <class ActivationFunction, unsigned int Align>
-void ir::Neuro<ActivationFunction, Align>::_stepbackward(
+void ir::Neuro<ActivationFunction, Align>::_step_backward(
 	const float *IR_NEURO_CRITICAL_RESTRICT matrix,
 	unsigned int nextlen, const FloatBlock *IR_NEURO_CRITICAL_RESTRICT nexterror,
 	unsigned int prevlen, const float *IR_NEURO_CRITICAL_RESTRICT prevvector, float *IR_NEURO_CRITICAL_RESTRICT preverror)
@@ -272,50 +272,90 @@ void ir::Neuro<ActivationFunction, Align>::_stepbackward(
 
 template <class ActivationFunction, unsigned int Align>
 void ir::Neuro<ActivationFunction, Align>::_corrigate(
-	float coefficient,
+	float coefficient, float inductance,
 	unsigned int prevlen, const FloatBlock *IR_NEURO_CRITICAL_RESTRICT prevvector,
 	unsigned int nextlen, const float *IR_NEURO_CRITICAL_RESTRICT nexterror,
-	FloatBlock *IR_NEURO_CRITICAL_RESTRICT matrix)
+	FloatBlock *IR_NEURO_CRITICAL_RESTRICT matrix, FloatBlock *IR_NEURO_CRITICAL_RESTRICT prevchanges)
 {
-	#ifdef IR_NEURO_CRITICAL_3DNOW
-	if (Align == 2)
+	if (coefficient != 0.0f && inductance != 0.0f)
 	{
-		//3DNOW IMPLEMENTATION HERE
-		__m64 coef = _m_pfacc(_m_from_int(*((int*)&coefficient)), _m_from_int(*((int*)&coefficient)));
-		unsigned int prevlenblock = (prevlen + 1 + Align - 1) / Align;
-		for (unsigned int line = 0; line < nextlen; line++)
+		//REACTIVE & INDUCTIVE
+		#ifdef IR_NEURO_CRITICAL_3DNOW
+		if (Align == 2)
 		{
-			__m64 linecoef = _m_pfmul(coef,
-				_m_pfacc(_m_from_int(*((int*)&nexterror[line])), _m_from_int(*((int*)&nexterror[line]))));
-			for (unsigned int columnblock = 0; columnblock < prevlenblock; columnblock++)
-			{
-				*((__m64*)&matrix[line * prevlenblock + columnblock]) =
-					_m_pfadd(*((__m64*)&matrix[line * prevlenblock + columnblock]),
-					_m_pfmul(linecoef, *((__m64*)&prevvector[columnblock])));
-			}
+			//LATER!!!
 		}
-		_m_femms();
+		else
+		{
+		#endif
+			//NORMAL IMPLEMENTATION HERE
+			unsigned int prevlenblock = (prevlen + 1 + Align - 1) / Align;
+			float mixed_coefficient = 1 / (1 / coefficient + inductance);
+
+			#ifdef IR_NEURO_CRITICAL_OPENMP
+				#pragma omp parallel for firstprivate(coefficient, prevvector, nextlen, nexterror, matrix, prevlenblock)
+			#endif
+			for (int line = 0; (unsigned int)line < nextlen; line++)
+			{
+				for (unsigned int columnblock = 0; columnblock < prevlenblock; columnblock++)
+				{
+					for (unsigned int a = 0; a < Align; a++)
+					{
+						float prevchange = prevchanges[line * prevlenblock + columnblock].f[a];
+						float newchange = mixed_coefficient *
+							(prevvector[columnblock].f[a] * nexterror[line] + inductance * prevchange);
+						matrix[line * prevlenblock + columnblock].f[a] += newchange;
+						prevchanges[line * prevlenblock + columnblock].f[a] = newchange;
+					}
+				}
+			}
+		#ifdef IR_NEURO_CRITICAL_3DNOW
+		}
+		#endif
 	}
 	else
 	{
-	#endif
-		//NORMAL IMPLEMENTATION HERE
-		unsigned int prevlenblock = (prevlen + 1 + Align - 1) / Align;
-		#ifdef IR_NEURO_CRITICAL_OPENMP
-			#pragma omp parallel for firstprivate(coefficient, prevvector, nextlen, nexterror, matrix, prevlenblock)
-		#endif
-		for (int line = 0; (unsigned int)line < nextlen; line++)
+		//REACTIVE ONLY
+		#ifdef IR_NEURO_CRITICAL_3DNOW
+		if (Align == 2)
 		{
-			for (unsigned int columnblock = 0; columnblock < prevlenblock; columnblock++)
+			//3DNOW IMPLEMENTATION HERE
+			__m64 coef = _m_pfacc(_m_from_int(*((int*)&coefficient)), _m_from_int(*((int*)&coefficient)));
+			unsigned int prevlenblock = (prevlen + 1 + Align - 1) / Align;
+			for (unsigned int line = 0; line < nextlen; line++)
 			{
-				for (unsigned int a = 0; a < Align; a++)
-					matrix[line * prevlenblock + columnblock].f[a] +=
-					coefficient * prevvector[columnblock].f[a] * nexterror[line];
+				__m64 linecoef = _m_pfmul(coef,
+					_m_pfacc(_m_from_int(*((int*)&nexterror[line])), _m_from_int(*((int*)&nexterror[line]))));
+				for (unsigned int columnblock = 0; columnblock < prevlenblock; columnblock++)
+				{
+					*((__m64*)&matrix[line * prevlenblock + columnblock]) =
+						_m_pfadd(*((__m64*)&matrix[line * prevlenblock + columnblock]),
+						_m_pfmul(linecoef, *((__m64*)&prevvector[columnblock])));
+				}
 			}
+			_m_femms();
 		}
-	#ifdef IR_NEURO_CRITICAL_3DNOW
+		else
+		{
+		#endif
+			//NORMAL IMPLEMENTATION HERE
+			unsigned int prevlenblock = (prevlen + 1 + Align - 1) / Align;
+			#ifdef IR_NEURO_CRITICAL_OPENMP
+				#pragma omp parallel for firstprivate(coefficient, prevvector, nextlen, nexterror, matrix, prevlenblock)
+			#endif
+			for (int line = 0; (unsigned int)line < nextlen; line++)
+			{
+				for (unsigned int columnblock = 0; columnblock < prevlenblock; columnblock++)
+				{
+					for (unsigned int a = 0; a < Align; a++)
+						matrix[line * prevlenblock + columnblock].f[a] +=
+						coefficient * prevvector[columnblock].f[a] * nexterror[line];
+				}
+			}
+		#ifdef IR_NEURO_CRITICAL_3DNOW
+		}
+		#endif
 	}
-	#endif	
 };
 
 #endif	//IR_NEURO_CRITICAL_IMPLEMENTATION
