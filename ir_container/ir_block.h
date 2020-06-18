@@ -13,26 +13,43 @@
 
 namespace ir
 {
+///@defgroup ir_container Containers
+///@{
+	
+	///Data block. Encapsulates raw pointer to data and it's size
 	class Block
 	{
 	public:
-		unsigned int size;
-		void *data;
+		unsigned int size;	///< Size of data block
+		void *data;			///< Raw pointer to the data
 		
+		///Creates a data block
 		Block();
+		///Creates a data block from pointer and size
+		///@param size Size of data block
+		///@param data Raw pointer to the data
 		Block(unsigned int size, void *data);
 	};
 
+	///Constant data block. Encapsulates constant raw pointer to data and it's size
 	class ConstBlock
 	{
 	public:
-		unsigned int size;
-		const void *data;
+		unsigned int size;	///< Size of data block
+		const void *data;	///< Constant raw pointer to the data
 		
+		///Creates a data block
 		ConstBlock();
+		///Creates a data block from pointer and size
+		///@param size Size of data block
+		///@param data Constant raw pointer to the data
 		ConstBlock(unsigned int size, const void *data);
+		///Creates a constant data block from data block
+		///@param block Non-constant data block
 		ConstBlock(Block block);
 	};
+
+///@}
 };
 
 #if (defined (IR_BLOCK_IMPLEMENT) || defined(IR_IMPLEMENT)) && !defined(IR_BLOCK_NOT_IMPLEMENT)

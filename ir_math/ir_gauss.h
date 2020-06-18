@@ -8,17 +8,25 @@
 	Reinventing bicycles since 2020
 */
 
-//Gauss algorithm. matrix and vector will be changed.
-//If result is nullptr, result is written to vector.
-
 #ifndef IR_GAUSS
 #define IR_GAUSS
-
+	
 #include <stddef.h>
 
 namespace ir
 {
+///@addtogroup ir_math
+///@{
+
+	///Gauss algorithm of solving linear equations system
+	///@param size		Dimension of matrix and vector
+	///@param matrix	Square matrix of coefficients of linear system. May be changed
+	///@param vector	Input of the algorithm. May be changed. Receives result if result == nullptr
+	///@param result	Vector that receives result. Receives result if not nullptr
+	///@return			true if the matrix was regular, false if singulars
 	template<class T> bool gauss(size_t size, T **matrix, T *vector, T *result = (T*)nullptr);
+	
+///@}
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_GAUSS_IMPLEMENT)) && !defined(IT_GAUSS_NOT_IMPLEMENT)

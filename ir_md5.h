@@ -10,21 +10,24 @@
 
 #ifndef IR_MD5
 #define IR_MD5
-
+	
 #ifdef __cplusplus
 	namespace ir
 	{
+	///@defgroup ir_md5 MD5 algorithm
+	///@{
+
+		///MD5 hash algorithm
+		///@param[in]	data		Data to hash
+		///@param[in]	bitlength	Length of data in bits
+		///@param[out]	hash		Pointer to 16-bytes memory block to recieve the hash. May be <tt>int hash[4]</tt> or <tt>char hash[16]</tt> etc.
 		void md5(const void *data, unsigned int bitlength, void *hash);
-	}
+	
+	///@}
+	};
 #else
 	void ir_md5(const void *data, unsigned int bitlength, void *hash);
 #endif
-
-//data - input
-//bitlength - length in bits
-//hash - output, must point to some 16 bytes of memory.
-//It could be unsigned int hash[4]
-//Or unsigned char hash[16]
 
 #if (defined(IR_MD5_IMPLEMENT) || defined(IR_IMPLEMENT))
 	#include <implementation/ir_md5_implementation.h>

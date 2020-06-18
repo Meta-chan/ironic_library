@@ -16,14 +16,25 @@
 
 namespace ir
 {
-	class FiledesIniterFreer
-	{
-	public:
-		static int initvalue;
-		static void free(int filedes);
-	};
+///@addtogroup ir_resource
+///@{
 	
-	typedef Resource<int, FiledesIniterFreer> FileResource;
+	#ifndef DOXYGEN
+		class FiledesIniterFreer
+		{
+		private:
+			static int initvalue;
+			static void free(int filedes);
+			friend Resource<int, FiledesIniterFreer>;
+		};
+	#endif
+	
+	///*nix native file handle resource
+	///Acts almost like *nix native file handle
+	///If it's value is gtreater or equal to zero at the end of the visibility range, handle is closed
+	typedef Resource<int, FiledesIniterFreer> FiledesResource;
+	
+///@}
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_FILEDES_RESOURCE_IMPLEMENT)) && !defined(IR_FILEDES_RESOURCE_NOT_IMPLEMENT)

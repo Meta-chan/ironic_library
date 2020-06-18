@@ -15,14 +15,25 @@
 
 namespace ir
 {
-	class ShaderIniterFreer
-	{
-	public:
-		static GLuint initvalue;
-		static void free(GLuint shader);
-	};
+///@addtogroup ir_resource
+///@{
 	
+	#ifndef DOXYGEN
+		class ShaderIniterFreer
+		{
+		private:
+			static GLuint initvalue;
+			static void free(GLuint shader);
+			friend Resource<GLuint, ShaderIniterFreer>;
+		};
+	#endif
+	
+	///Shader resource
+	///Acts almost like OpenGL GLuint
+	///If it's value is greater than zero at the end of the visibility range, shader is deleted
 	typedef Resource<GLuint, ShaderIniterFreer> ShaderResource;
+	
+///@}
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_SHADER_RESOURCE_IMPLEMENT)) && !defined(IR_SHADER_RESOURCE_NOT_IMPLEMENT)

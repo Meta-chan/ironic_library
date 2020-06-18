@@ -17,12 +17,23 @@
 
 namespace ir
 {
+///@defgroup ir_math Math functions
+///@{
+	
+	///Fast Fourier Transformation
+	///@param data	Pointer to array of complex values that are input and output at the same time
+	///@param size	Size of the vector. Needs to be power of two
+	///@return true on success, false on fail
 	template<class T>bool fft(std::complex<T> *data, size_t size);
+	
+	///Inverse Fast Fourier Transformation
 	template<class T>bool ifft(std::complex<T> *data, size_t size);
-
-	#if (defined(IR_IMPLEMENT) || defined(IR_FFT_IMPLEMENT)) && !defined(IR_FFT_NOT_IMPLEMENT)
-		#include <implementation/ir_math/ir_fft_implementation.h>
-	#endif
+	
+///@}
 };
+
+#if (defined(IR_IMPLEMENT) || defined(IR_FFT_IMPLEMENT)) && !defined(IR_FFT_NOT_IMPLEMENT)
+	#include <implementation/ir_math/ir_fft_implementation.h>
+#endif
 
 #endif	//#ifndef IR_FFT

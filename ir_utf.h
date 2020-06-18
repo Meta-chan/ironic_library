@@ -8,76 +8,83 @@
 	Reinventing bicycles since 2020
 */
 
-//ir_utf - simple string codec
-//Initialize the library with utf_init(void), then initialize the codecs you use with CODEC.init(void)
-//Finalize the codeccs you use with CODEC.free(void) or call utf_free(void)
-//See the usage of the functions and the list of the codecs below
-
 #ifndef IR_UTF
 #define IR_UTF
 
-//USAGE
+///@defgroup ir_utf UTF
+///Ironic encoding library, consists of: @n
+/// - Codecs - structures of type @c ir_UTF_Codec that store pointers to encoding's methods. See list of aviable codecs in @b Variables. See function descriptions in <b>Typedef Documentation</b> @n
+/// - Functions - functions that use two codecs (like @c utf_ercode) or no codecs (like @c ir_utf_init). See function descriptions in <b>Function Documentation</b>
+///To use a codec you need to call @c ir_utf_init() and @c your_codec.init()
+///@{
 
-//Returns the size of the native char of encoding
-typedef unsigned int UTF_charsize(void);
+///Gets size of native character of the encoding, in bytes
+///@return		Size of native character of the encoding, in bytes
+typedef unsigned int Ir_utf_charsize(void);
 
-//Converts an Unicode code to specified encoding
-//code is Unicode number
-//symbols is a pointer to a string. May be nullptr, then nothing is written
-//errcode is the default code, it is used when code is not representable in specified encoding
-//returns the number of the native symbols required
-typedef unsigned int UTF_encode(unsigned int code, void *symbols, unsigned int errcode);
+///Converts the Unicode code to the encoding
+///@param[in]	code		Unicode code
+///@param[out]	symbols		String in specified encoding. May be @c nullptr, then nothing is written
+///@param[in]	errcode		Default Unicode code, used when @c code is not representable in specified encoding
+///@return					Number of native characters required for @c code
+typedef unsigned int Ir_utf_encode(unsigned int code, void *symbols, unsigned int errcode);
 
-//Converts sprecified encoding to Unicode
-//string is a pointer to a string of specified encoding
-//nsymbols is a pointer to unsigned int that recieves the number of native symbols were read, may be nullptr
-//returns Unicode number
-typedef unsigned int UTF_decode(const void *string, unsigned int *nsymbols);
+///Converts specified encoding to one Unicode code
+///@param[in]	string		String in specified encoding
+///@param[out]	nsymbols	Pointer to <tt> unsigned int </tt> that receives number of native characters were read. May be @c nullptr
+///@return					Unicode code
+typedef unsigned int Ir_utf_decode(const void *string, unsigned int *nsymbols);
 
-//Frees the codec
-typedef void UTF_free(void);
+///Frees the codec
+typedef void Ir_utf_free(void);
 
-//Initializes the codec, returns true on success
-typedef unsigned char UTF_init(void);
+///Initializes the codec
+///@return					1 on success, 0 on fail
+typedef unsigned char Ir_utf_init(void);
 
-struct UTF_Codec
+///Encoding codec, stores function pointers and related data
+struct ir_UTF_Codec
 {
-	UTF_charsize *charsize;
-	UTF_encode *encode;
-	UTF_decode *decode;
-	UTF_init *init;
-	UTF_free *free;
+	Ir_utf_charsize *charsize;
+	Ir_utf_encode *encode;
+	Ir_utf_decode *decode;
+	Ir_utf_init *init;
+	Ir_utf_free *free;
 	void *data;
 };
 
-//Decodes a null-terminated string1 with codec1 and end encode it to string2 with codec2 (null character is written)
-//Replaces the symbols not representable in the destination encoding with errcode
-//string2 may be nullptr, then nothing is written
-//returns quiantiny of native symbols of encoding 2 reqired (excluding null character)
-unsigned int utf_recode(struct UTF_Codec *codec1, const void *string1, unsigned int errcode, struct UTF_Codec *codec2, void *string2);
+///Decodes null-terminated source string into null-terminated destination string (null-character is written)
+///Replaces the symbols not representable in destination encoding with @c errcode
+///@param[in]	codec1	Source codec
+///@param[in]	string1	Source string with encoding specified with @c codec1
+///@param[in]	errcode	Default Unicode code, which is used when @c code is not representable in destination encoding
+///@param[in]	codec2	Destination codec
+///@param[out]	string2	Destination string. May be @c nullptr, then nothing is written
+///@return				Number of native characters of destination string (excluding null character)
+unsigned int ir_utf_recode(struct ir_UTF_Codec *codec1, const void *string1, unsigned int errcode, struct ir_UTF_Codec *codec2, void *string2);
 
-//Same as above, but returns a new allocated string, which can be freed with free(void) from stdlib.h
-void *utf_alloc_recode(struct UTF_Codec *codec1, const void *string1, unsigned int errcode, struct UTF_Codec *codec2);
+///Same as @c ir_utf_recode, but returns a string, allocated with standard C @c malloc
+void *ir_utf_alloc_recode(struct ir_UTF_Codec *codec1, const void *string1, unsigned int errcode, struct ir_UTF_Codec *codec2);
 
-//Same as above, but returns a pointer to internal buffer. Be carefull, the buffer may intersect with previous returned value
-void *utf_buffer_recode(struct UTF_Codec *codec1, const void *string1, unsigned int errcode, struct UTF_Codec *codec2);
+///Same as @c ir_utf_recode, but returns a pointer to internal buffer. Be careful, there is only one internal buffer!
+void *ir_utf_buffer_recode(struct ir_UTF_Codec *codec1, const void *string1, unsigned int errcode, struct ir_UTF_Codec *codec2);
 
-//Initializes the library
-void utf_init(void);
+///Initializes the codec library
+void ir_utf_init(void);
 
-//Frees the library
-void utf_free(void);
+///Frees the codec library
+void ir_utf_free(void);
 
-//LIST OF CODECS
-extern struct UTF_Codec utf_c;		//ACSII
-extern struct UTF_Codec utf_utf8;	//UTF8
-extern struct UTF_Codec utf_utf16;	//UTF16
-extern struct UTF_Codec utf_utf32;	//UTF32
-extern struct UTF_Codec utf_1251;	//Windows-1251 (cyrillic)
-extern struct UTF_Codec utf_866;	//DOS-866 (cyrillic)
+extern struct ir_UTF_Codec ir_utf_c;	///< ACSII codec
+extern struct ir_UTF_Codec ir_utf_utf8;	///< UTF8 codec
+extern struct ir_UTF_Codec ir_utf_utf16;///< UTF16 codec
+extern struct ir_UTF_Codec ir_utf_utf32;///< UTF32 codec
+extern struct ir_UTF_Codec ir_utf_1251;	///< Windows-1251 (cyrillic) codec
+extern struct ir_UTF_Codec ir_utf_866;	///< DOS-866 (cyrillic) codec
 
 #if (defined(IR_IMPLEMENT) || defined(IR_UTF_IMPLEMENT)) && !defined(IR_UTF_NOT_IMPLEMENT)
 	#include <implementation/ir_utf_implementation.h>
 #endif
 
+///@}
 #endif	//#ifndef IR_UTF

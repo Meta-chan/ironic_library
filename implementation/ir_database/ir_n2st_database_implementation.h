@@ -239,7 +239,7 @@ ir::ec ir::N2STDatabase::_openwrite(const syschar *filepath, const syschar *meta
 	return ec::ec_ok;
 };
 
-ir::ec ir::N2STDatabase::_init(const syschar *filepath, createmode cmode)
+ir::ec ir::N2STDatabase::_init(const syschar *filepath, createmode mode)
 {
 	#ifdef _WIN32
 		unsigned int pathlen = wcslen(filepath);
@@ -253,42 +253,22 @@ ir::ec ir::N2STDatabase::_init(const syschar *filepath, createmode cmode)
 	metafilepath[pathlen] = '~';
 	metafilepath[pathlen + 1] = '\0';
 	
-	ec filestatus = _check(filepath, metafilepath);
-	
-	//Hehehehe. I am sorry(
-	ec code = ec::ec_ok;
-	switch (cmode)
+	if (mode == createmode::create_new)
 	{
-	case createmode::create_readonly:
-		if (filestatus == ec::ec_open_file) return ec::ec_open_file;
-		else if (filestatus != ec::ec_ok) return ec::ec_invalid_signature;
-		else break;
-	case createmode::create_new_never:
-		if (filestatus == ec::ec_open_file) return ec::ec_open_file;
-		else if (filestatus == ec::ec_invalid_signature) return ec::ec_invalid_signature;
-		else code = _openwrite(filepath, metafilepath, false);
-		break;
-	case createmode::create_new_if_no:
-		if (filestatus == ec::ec_open_file) code = _openwrite(filepath, metafilepath, true);
-		else if (filestatus == ec::ec_invalid_signature) return ec::ec_invalid_signature;
-		else code = _openwrite(filepath, metafilepath, false);
-		break;
-	case createmode::create_new_if_corrupted:
-		if (filestatus == ec::ec_open_file) return ec::ec_open_file;
-		else if (filestatus == ec::ec_invalid_signature) code = _openwrite(filepath, metafilepath, true);
-		else code = _openwrite(filepath, metafilepath, false);
-		break;
-	case createmode::create_new_if_no_or_corrupted:
-		if (filestatus == ec::ec_open_file) code = _openwrite(filepath, metafilepath, true);
-		if (filestatus == ec::ec_invalid_signature) code = _openwrite(filepath, metafilepath, true);
-		code = _openwrite(filepath, metafilepath, false);
-		break;
-	case createmode::create_new_always:
-		code = _openwrite(filepath, metafilepath, true);
-		break;
+		ec code = _openwrite(filepath, metafilepath, true);
+		if (code != ec::ec_ok) return code;
 	}
-
-	if (code != ec::ec_ok) return code;
+	else
+	{
+		ec code = _check(filepath, metafilepath);
+		if (code != ec::ec_ok) return code;
+		if (mode == createmode::create_edit)
+		{
+			code = _openwrite(filepath, metafilepath, false);
+			if (code != ec::ec_ok) return code;
+		}
+	}
+	
 	_ok = true;
 	return ec::ec_ok;
 };
@@ -301,7 +281,7 @@ ir::N2STDatabase::N2STDatabase(const syschar *filepath, createmode createmode, e
 
 ir::ec ir::N2STDatabase::probe(unsigned int index)
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	
 	//Read offset & size
 	MetaCell cell;
@@ -314,7 +294,7 @@ ir::ec ir::N2STDatabase::probe(unsigned int index)
 
 ir::ec ir::N2STDatabase::read(unsigned int index, ConstBlock *data)
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	if (data == nullptr) return ec::ec_null;
 
 	//Read offset & size
@@ -337,7 +317,7 @@ ir::ec ir::N2STDatabase::read(unsigned int index, ConstBlock *data)
 
 ir::ec ir::N2STDatabase::insert(unsigned int index, ConstBlock data, insertmode mode)
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	if (!_writeaccess) return ec::ec_write_file;
 
 	//Read offset & size
@@ -386,7 +366,7 @@ ir::ec ir::N2STDatabase::insert(unsigned int index, ConstBlock data, insertmode 
 
 ir::ec ir::N2STDatabase::delet(unsigned int index, deletemode mode)
 {
-	if (!_ok) return ec::ec_object_not_ok; 
+	if (!_ok) return ec::ec_object_not_inited; 
 	if (!_writeaccess) return ec::ec_write_file;
 
 	//Read offset & size
@@ -439,19 +419,19 @@ unsigned int ir::N2STDatabase::get_file_used_size()
 
 ir::ec ir::N2STDatabase::set_table_size(unsigned int newtablesize)
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	else return ec::ec_not_implemented;
 };
 
 ir::ec ir::N2STDatabase::set_file_size(unsigned int newfilesize)
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	else return ec::ec_not_implemented;
 };
 
 ir::ec ir::N2STDatabase::set_ram_mode(bool holdfile, bool holdmeta)
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 
 	//Read meta
 	if (holdmeta && !_meta.hold)
@@ -506,7 +486,7 @@ ir::ec ir::N2STDatabase::set_ram_mode(bool holdfile, bool holdmeta)
 
 ir::ec ir::N2STDatabase::optimize()
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	else return ec::ec_not_implemented;
 };
 

@@ -16,14 +16,25 @@
 
 namespace ir
 {
-	class HandleIniterFreer
-	{
-	public:
-		static HANDLE initvalue;
-		static void free(HANDLE handle);
-	};
+///@addtogroup ir_resource
+///@{
 	
+	#ifndef DOXYGEN
+		class HandleIniterFreer
+		{
+		private:
+			static HANDLE initvalue;
+			static void free(HANDLE handle);
+			frind Resource<HANDLE, HandleIniterFreer>;
+		};
+	#endif
+	
+	///Windows native handle resource
+	///Acts almost like Windows native handle
+	///If it's value is not NULL or INVALID_HANDLE_VALUE at the end of the visibility range, the handle is closed
 	typedef Resource<HANDLE, HandleIniterFreer> HandleResource;
+	
+///@}
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_HANDLE_RESOURCE_IMPLEMENT)) && !defined(IR_HANDLE_RESOURCE_NOT_IMPLEMENT)

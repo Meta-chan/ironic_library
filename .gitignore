@@ -37,7 +37,12 @@
 ehthumbs.db
 Thumbs.db
 
-#Visual Studio Specific:
+# Ironic Library #
+##################
+documentation
+
+# Visual Studio files #
+#######################
 **/.vs
 **/*VCXPROJ*
 **/*.SLN
@@ -45,9 +50,11 @@ Thumbs.db
 **/Release/
 **/x64
 
-#Ironic database files:
-**/*.idt
-**/*.idt~
+# Ironic database files #
+#########################
+*.idt
+*.idt~
 
-#Ironic neural network:
-**/*.inr
+# Ironic neural network #
+#########################
+*.inr

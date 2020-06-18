@@ -13,7 +13,7 @@ call :test ir_resource_test.cpp
 if %TESTRESULT%==1 goto end
 call :test ir_s2st_database_test.cpp
 if %TESTRESULT%==1 goto end
-call :test ir_utf_test.c
+call :test ir_utf_test.cpp
 if %TESTRESULT%==1 goto end
 call :test ir_vector_test.cpp
 if %TESTRESULT%==1 goto end

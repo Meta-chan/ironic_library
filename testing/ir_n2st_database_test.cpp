@@ -38,7 +38,7 @@ void test_read(unsigned int key, const char *rightdata, ir::ec rightcode)
 int main()
 {
 	ir::ec code = ir::ec::ec_ok;
-	database = new ir::N2STDatabase(SS("database.idt"), ir::Database::create_new_always, &code);
+	database = new ir::N2STDatabase(SS("database.idt"), ir::Database::create_new, &code);
 	database->set_ram_mode(true, true);
 
 	if (code == ir::ec::ec_ok)

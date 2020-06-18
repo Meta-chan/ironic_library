@@ -10,11 +10,19 @@
 
 #ifndef IR_RESERVE
 #define IR_RESERVE
-	
+///@defgroup ir_reserve Reserve function
+///@{
+
+///Reserve data block
+///@param pdata pointer to pointer on data block
+///@param preserved Pointer to unsigned int that keeps the current size of data block
+///@param toreserve	Required size of data block
+///@return 1 on success, 0 on fail
 unsigned char reserve(void **pdata, unsigned int *preserved, unsigned int toreserve);
 
 #if (defined(IR_IMPLEMENT) || defined(IR_RESERVE_IMPLEMENT)) && !defined(IR_RESERVE_NOT_IMPLEMENT)
 	#include <implementation/ir_reserve_implementation.h>
 #endif
 
+///@}
 #endif

@@ -22,7 +22,7 @@ test ir_neuro_test.cpp			&& \
 test ir_openmap_test.cpp		&& \
 test ir_resource_test.cpp		&& \
 test ir_s2st_database_test.cpp	&& \
-test ir_utf_test.c				&& \
+test ir_utf_test.cpp			&& \
 test ir_vector_test.cpp
 
 rm *.exe -f

@@ -10,16 +10,24 @@
 
 #ifndef IR_SYSCHAR
 #define IR_SYSCHAR
+///@defgroup ir_syschar Syschar
+///Ironic library's char
+///@{
 	
 	namespace ir
-	{
+	{			
 		#ifdef _WIN32
+			///Ironic library's char
 			typedef wchar_t syschar;
+			///Identifies a string as string in platform's native encoding
 			#define SS(_TEXT) L ## _TEXT
 		#else
+			///Ironic library's char
 			typedef char syschar;
+			///Identifies a string as string in platform's native encoding
 			#define SS(_TEXT) _TEXT
 		#endif
 	}
 	
+///@}
 #endif	//#ifndef IR_SYSCHAR

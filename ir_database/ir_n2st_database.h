@@ -8,9 +8,6 @@
 	Reinventing bicycles since 2020
 */
 
-//Ironic Number to String Table Database
-//A light and simple database
-
 #ifndef IR_N2ST_DATABASE
 #define IR_N2ST_DATABASE
 
@@ -23,6 +20,11 @@
 
 namespace ir
 {
+///@addtogroup ir_database
+///@{
+
+	///Number to String Table Database
+	///String should be understood as any sequence of bytes
 	class N2STDatabase : public Database
 	{
 	protected:
@@ -89,21 +91,52 @@ namespace ir
 
 	public:
 		
-		N2STDatabase(const syschar *filepath, createmode createmode, ec *code);
+		///Creates a database
+		///@param filepath Relative or absolute path to database files
+		///@param mode Creation mode
+		///@param code Pointer to ir::ec that receives return status if is not nullptr
+		N2STDatabase(const syschar *filepath, createmode mode, ec *code);
+		///Ask if identifier exists and can be read if no supernatural error occurs
+		///@param index Integer identifier
 		ec probe(unsigned int index);
+		///Read value related to identifier
+		///@param index Integer identifier
+		///@param data Pointer to ir::ConstBlock to receive result
 		ec read(unsigned int index, ConstBlock *data);
+		///Insert value related to identifier into database
+		///@param index Integer identifier
+		///@param data Related value
+		///@param mode Insertion mode
 		ec insert(unsigned int index, ConstBlock data, insertmode mode = insert_always);
+		///Delete value from database
+		///@param index Integer identifier
+		///@param mode Deletion mode
 		ec delet(unsigned int index, deletemode mode = delete_always);
+		///Get number of elements stored in database
 		unsigned int count();
+		///Get size of the table, in elements
 		unsigned int get_table_size();
+		///Get size of main database (excluding table), in bytes
 		unsigned int get_file_size();
+		///Get used size of main database. Database will have this size after optimizing
 		unsigned int get_file_used_size();
+		///Sets table size. It may be a good idea to set table size if you know number of elements explicitly
+		///@param newtablesize New table size, must be power of two
 		ec set_table_size(unsigned int newtablesize);
+		///Sets main file size. It may be a good idea to set file size if you know know it explicitly
+		///@param newfilesize New file size, in bytes
 		ec set_file_size(unsigned int newfilesize);
+		///Tells if table and main file need to be kept in RAM or on hard drive. Values from database are read with two database accessions: to table and to main file. So if both are kept in RAM, access costs two RAM accesses. If both are not, access cost two hard drive accesses, etc.
+		///@param holdfile Hold main file in RAM
+		///@param holdmeta Hold table in RAM
 		ec set_ram_mode(bool holdfile, bool holdmeta);
+		///Optimize database for size
 		ec optimize();
+		///Destroys database and write files kept in RAM to hard drive
 		~N2STDatabase();
 	};
+	
+///@}
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_N2ST_DATABASE_IMPLEMENT)) && !defined(IT_N2ST_DATABASE_NOT_IMPLEMENT)

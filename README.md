@@ -11,7 +11,7 @@ The code presented here is some pieces of my home projects. Here you will find:
  - ir_plot			- plotting function
 
 ### Platforms
-The code is developed and tested mostly under Windows x86. Some of libraries were specially tested under Linux x86. Some are cross-platform by chance. Some need just several corrections and renamings to make them work on your platform. Some are really stuck to WinAPI, some may crash on ARM. It that case, I beg your pardon.
+The code is developed and tested mostly under Windows x86. Most of libraries were specially tested under Linux x86. Some are cross-platform by chance. Some need just several corrections and renamings to make them work on your platform. Some are really stuck to WinAPI, some may crash on ARM. It that case, I beg your pardon.
  
 ### How to install?
 I wanted to make the installation really simple. The simplest way to install the library is to choose one of .cpp files and paste 
@@ -36,7 +36,7 @@ template class ir::vector<float>;
 And after doing so you can use your `ir::vector<float>` in every file. But actually you can just include the header in every file, the compiler is smart enough and does not complain about multiple implementations (just like in STL). But doing so will increase the compile time.
 
 ### How to get help?
-The code is pretty self-documented. Every header file (without \_implementation suffix) contains one, less often several functions or classes, which purpose can be read even with basic programming skills. Well, at least I believe it can. If something is not obvious, there is high possibility that it is explained in comments. Later I will consider to use wiki or some documentation system. And feel free to contact me!
+The code is pretty self-documented. But more inportant, I provide Doxygen documentation now! It does not look too pretty since I am not an expert, but it is still quite informative. I woukd recommend to start with **Modules** page. And of course, feel free to contact me!
 
 ### About Natvis
 For some classes I provide Natvis files! Include theese files to your Visual Studio project and enjoy debugging. [More](https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects).

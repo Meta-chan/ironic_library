@@ -15,14 +15,24 @@
 
 namespace ir
 {
-	template <class T> class MemIniterFreer
-	{
-	public:
-		static T *initvalue;
-		static void free(T *mem);
-	};
+///@addtogroup ir_resource
+///@{
 	
+	#ifndef DOXYGEN
+		template <class T> class MemIniterFreer
+		{
+		public:
+			static T *initvalue;
+			static void free(T *mem);
+		};
+	#endif
+	
+	///Memory resource
+	///Acts almost like raw pointer of some type
+	///If it's value is not nullptr at the end of the visibility range, memory is freed with standatd C free	
 	template <class T> using MemResource =  Resource<T*, MemIniterFreer<T>>;
+	
+///@}
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_MEM_RESOURCE_IMPLEMENT)) && !defined(IR_MEM_RESOURCE_NOT_IMPLEMENT)

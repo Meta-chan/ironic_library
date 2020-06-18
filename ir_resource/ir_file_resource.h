@@ -16,14 +16,25 @@
 
 namespace ir
 {
-	class FileIniterFreer
-	{
-	public:
-		static FILE *initvalue;
-		static void free(FILE *file);
-	};
+///@addtogroup ir_resource
+///@{
+		
+	#ifndef DOXYGEN
+		class FileIniterFreer
+		{
+		private:
+			static FILE *initvalue;
+			static void free(FILE *file);
+			friend Resource<FILE*, FileIniterFreer>;
+		};
+	#endif
 	
+	///File resource
+	///Acts almost like standard C file FILE*
+	///If it's value is not nullptr at the end of the visibility range, file is closed
 	typedef Resource<FILE*, FileIniterFreer> FileResource;
+	
+///@}
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_FILE_RESOURCE_IMPLEMENT)) && !defined(IR_FILE_RESOURCE_NOT_IMPLEMENT)

@@ -18,19 +18,32 @@
 
 namespace ir
 {
-	typedef double(GetValueFunction)(void *user, unsigned int i);
+///@defgroup ir_plot Plotting function
+///@{
 
+	///Callback function used by ir::plot
+	///@param user Pointer to data given by user
+	///@param index Index of point, <tt> 0 <= index < n </tt>
+	///@return @c X or @c Y coordinate of the point 
+	typedef double(GetValueFunction)(void *user, unsigned int index);
+
+	///Input for @c ir::plot, represents set of points of graphic
 	struct Plot
 	{
-		GetValueFunction *xfunc = nullptr;
-		GetValueFunction *yfunc = nullptr;
-		void *xuser = nullptr;
-		void *yuser = nullptr;
-		unsigned int n = 0;
-		unsigned int color = 0;
+		GetValueFunction *xfunc	= nullptr;	///< Function returning @c X coordinate
+		GetValueFunction *yfunc	= nullptr;	///< Function returning @c Y coordinate
+		void *xuser				= nullptr;	///< Data given to @c xfunc
+		void *yuser				= nullptr;	///< Data given to @c yfunc			
+		unsigned int n			= 0;		///< Number of points in graphic
+		unsigned int color		= 0;		///< RGB color of line
 	};
 
+	///Plots graphs
+	///@param nplots	Number of @c ir::Plot structures given to the function
+	///@param plot1		First @c ir::Plot to draw
 	ec plot(unsigned int nplots, Plot plot1, ...);
+	
+///@}
 };
 
 #if (defined(IR_IMPLEMENT) || defined (IR_PLOT_IMPLEMENT)) && !defined(IR_PLOT_NOT_IMPLEMENT)

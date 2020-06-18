@@ -16,14 +16,25 @@
 
 namespace ir
 {
-	class HInternetIniterFreer
-	{
-	public:
-		static HINTERNET initvalue;
-		static void free(HINTERNET hinternet);
-	};
+///@addtogroup ir_resource
+///@{
 	
+	#ifndef DOXYGEN
+		class HInternetIniterFreer
+		{
+		private:
+			static HINTERNET initvalue;
+			static void free(HINTERNET hinternet);
+			friend Resource<HINTERNET, HInternetIniterFreer>;
+		};
+	#endif
+	
+	///Windows native Internet handle resource
+	///Acts almost like Windows native Internet handle
+	///If it's value is not NULL or INVALID_HANDLE_VALUE at the end of the visibility range, the handle is closed
 	typedef Resource<HINTERNET, HInternetIniterFreer> HInternetResource;
+	
+///@}
 };
 
 #if (defined(IR_IMPLEMENT) || defined(IR_HINTERNET_RESOURCE_IMPLEMENT)) && !defined(IR_HINTERNET_RESOURCE_NOT_IMPLEMENT)

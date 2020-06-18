@@ -215,7 +215,7 @@ void ir::Neuro<ActivationFunction, Align>::_free_vectors(float **vector, unsigne
 template <class ActivationFunction, unsigned int Align>
 ir::ec ir::Neuro<ActivationFunction, Align>::set_input(const float *input, bool copy)
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	if (input == nullptr) return ec::ec_null;
 	if (copy)
 	{
@@ -238,7 +238,7 @@ ir::ec ir::Neuro<ActivationFunction, Align>::set_input(const float *input, bool 
 template <class ActivationFunction, unsigned int Align>
 ir::ec ir::Neuro<ActivationFunction, Align>::set_goal(const float *goal, bool copy)
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	if (goal == nullptr) return ec::ec_null;
 	if (copy)
 	{
@@ -260,7 +260,7 @@ ir::ec ir::Neuro<ActivationFunction, Align>::set_goal(const float *goal, bool co
 template <class ActivationFunction, unsigned int Align>
 ir::ec ir::Neuro<ActivationFunction, Align>::set_coefficient(float coefficient)
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	if (coefficient < 0.0f) return ec::ec_invalid_input;
 	_coefficient = coefficient;
 	return ec::ec_ok;
@@ -269,7 +269,7 @@ ir::ec ir::Neuro<ActivationFunction, Align>::set_coefficient(float coefficient)
 template <class ActivationFunction, unsigned int Align>
 ir::ec ir::Neuro<ActivationFunction, Align>::set_inductance(float inductance)
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	if (inductance < 0.0f) return ec::ec_invalid_input;
 	_inductance = inductance;
 	return ec::ec_ok;
@@ -278,7 +278,7 @@ ir::ec ir::Neuro<ActivationFunction, Align>::set_inductance(float inductance)
 template <class ActivationFunction, unsigned int Align>
 ir::ec ir::Neuro<ActivationFunction, Align>::set_output_pointer(float *output, bool copy)
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	if (output == nullptr) return ec::ec_null;
 	if (!copy)
 	{
@@ -297,7 +297,7 @@ ir::ec ir::Neuro<ActivationFunction, Align>::set_output_pointer(float *output, b
 template <class ActivationFunction, unsigned int Align>
 ir::ec ir::Neuro<ActivationFunction, Align>::get_output() const
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	if (_user_output != nullptr && _copy_output)
 		memcpy(_user_output, _IR_NEURO_BLOCK_UPALIGN(_vectors[_nlayers - 1]), _layers[_nlayers - 1] * sizeof(float));
 	return ec::ec_ok;
@@ -306,7 +306,7 @@ ir::ec ir::Neuro<ActivationFunction, Align>::get_output() const
 template <class ActivationFunction, unsigned int Align>
 ir::ec ir::Neuro<ActivationFunction, Align>::forward()
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	
 	for (unsigned int i = 0; i < (_nlayers - 1); i++)
 	{
@@ -324,7 +324,7 @@ ir::ec ir::Neuro<ActivationFunction, Align>::forward()
 template <class ActivationFunction, unsigned int Align>
 ir::ec ir::Neuro<ActivationFunction, Align>::backward()
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 	
 	//Calculating error for layer [_nlayer - 1] from target and output of layer [_nlayer - 1]
 	_last_backward(_layers[_nlayers - 1],
@@ -357,7 +357,7 @@ ir::ec ir::Neuro<ActivationFunction, Align>::backward()
 template <class ActivationFunction, unsigned int Align>
 ir::ec ir::Neuro<ActivationFunction, Align>::save(const syschar *filepath) const
 {
-	if (!_ok) return ec::ec_object_not_ok;
+	if (!_ok) return ec::ec_object_not_inited;
 
 	#ifdef _WIN32
 		FileResource file = _wfsopen(filepath, L"wb", _SH_DENYNO);

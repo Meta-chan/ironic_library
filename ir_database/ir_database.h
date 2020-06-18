@@ -13,33 +13,38 @@
 
 namespace ir
 {
+///@defgroup ir_database Database
+///@{
+
+	///Class containing modes for databases
 	class Database
 	{
 	public:
-	
+		///Insertion mode
 		enum insertmode
 		{
-			insert_always,
-			insert_existing,
-			insert_not_existing
+			insert_always,		///< Insert always, replace value if identifier already exists
+			insert_existing,	///< Update value only if identifier already exists, otherwise fail
+			insert_not_existing	///< Set value only if identifier does not exist, otherwise fail
 		};
 
+		///Deletion mode
 		enum deletemode
 		{
-			delete_always,
-			delete_existing
+			delete_always,		///< Delete value if identifier exists, do nothing otherwise
+			delete_existing		///< Delete value if identifier exist, otherwise fail
 		};
-
+		
+		///Creation mode
 		enum createmode
 		{
-			create_readonly,
-			create_new_never,
-			create_new_if_no,
-			create_new_if_corrupted,
-			create_new_if_no_or_corrupted,
-			create_new_always
+			create_read,		///< Open database with read access if files are not corrupted
+			create_edit,		///< Open database with read and write access if files are not corrupted
+			create_new,			///< Create empty database with read and write access, delete existing files
 		};
 	};
+
+///@}
 };
 
 #endif	//#ifndef IR_DATABASE
