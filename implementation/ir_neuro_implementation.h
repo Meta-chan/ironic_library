@@ -161,13 +161,13 @@ ir::ec ir::Neuro<ActivationFunction, Align>::_init_from_file(const syschar *file
 		memcmp(header.signature, sample.signature, 3) != 0	||
 		header.version != sample.version) return ec::ec_invalid_signature;
 	
-	unsigned int nlayers;
-	if (fread(&nlayers, sizeof(unsigned int), 1, file) == 0) return ec::ec_read_file;
+	if (fread(&_nlayers, sizeof(unsigned int), 1, file) == 0) return ec::ec_read_file;
 	
-	MemResource<unsigned int> layers = (unsigned int*)malloc(nlayers * sizeof(unsigned int));
-	if (fread(layers, sizeof(unsigned int), nlayers, file) < nlayers) return ec::ec_read_file;
+	_layers = (unsigned int*)malloc(_nlayers * sizeof(unsigned int));
+	if (_layers == nullptr) return ec::ec_alloc;
+	if (fread(_layers, sizeof(unsigned int), _nlayers, file) < _nlayers) return ec::ec_read_file;
 	
-	return _init(nlayers, layers, 0.0f, file);
+	return _init(0.0f, file);
 };
 
 template <class ActivationFunction, unsigned int Align>
