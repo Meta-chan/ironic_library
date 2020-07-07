@@ -4,41 +4,44 @@ The code presented here is some pieces of my home projects. Here you will find:
  - ir_neuro			- neural network
  - ir_resource		- helpful class wrappers around non-class things (RAII)
  - ir_utf			- encoding library
- - ir_container		- library's containers, vectors, blocks
+ - ir_container		- library's containers, vectors, blocks, registers
  - ir_math			- some math algorithms
  - ir_md5			- MD5 hash algorithm
  - ir_openmap		- mapping function
  - ir_plot			- plotting function
 
 ### Platforms
-The code is developed and tested mostly under Windows x86. Most of libraries were specially tested under Linux x86. Some are cross-platform by chance. Some need just several corrections and renamings to make them work on your platform. Some are really stuck to WinAPI, some may crash on ARM. It that case, I beg your pardon.
+The code is developed and tested mostly under Windows x86. Most of libraries were specially tested under Linux x86. Some are cross-platform by chance. Some need just several corrections and renamings to make them work on your platform. Some are really stuck to WinAPI, some may crash on ARM, POWER, SPARC etc. In that case, I beg your pardon.
  
 ### How to install?
-I wanted to make the installation really simple. The simplest way to install the library is to choose one of .cpp files and paste 
+I wanted to make the installation really simple. The simplest way to install the library is to choose one of `.cpp` files, defile `IR_IMPLEMENT` and include all libraries you are interested in. After doing so you can use headers in every file like header-only libraries.
 ```c++
 #define IR_IMPLEMENT
-#include <ir_NAME.h>
+#include <ir_EXAMPLE.h>
 ```
 
-If you want to manage yourself, which files to compile (for example, you want to compile one part as debug, one as release), you can also use these symbols:
+Include principles can be more flexible, but you need to understand how they works. `IR_IMPLEMENT` makes the compiler to include all implementations, `IR_EXAMPLE_IMPLEMENT` makes it include specific implementation, `IR_EXAMPLE_NOT_IMPLEMENT` makes it exclude one. With this mechanism you can control compiler options which you compile Ironic code with and solve linker errors. For clarity, typical Ironic header looks like this:
 ```c++
-#define IR_NAME_IMPLEMENT
-#define IR_NAME_NOT_IMPLEMENT
+//ir_example.h
+int example();
+#if (defined(IR_IMPLEMENT) || defined(IR_EXAMPLE_IMPLEMENT)) && !defined(IR_EXAMPLE_NOT_IMPLEMENT)
+	#include <implementation/ir_example_implementation.h>
+#endif
 ```
 
-Templates are quite non-ironic-way thing, and there are difficulties. The Ironic way of using templates is (on example of vector):
+Templates are quite non-ironic-way thing, and there are difficulties. The Ironic way of using templates is (on example of `ir::Vector`):
 ```c++
 #define IR_IMPLEMENT
 #include <ir_vector.h>
-template class ir::vector<float>;
+template class ir::Vector<float>;
 ```
 
-And after doing so you can use your `ir::vector<float>` in every file. But actually you can just include the header in every file, the compiler is smart enough and does not complain about multiple implementations (just like in STL). But doing so will increase the compile time.
+After doing so you can use your `ir::Vector<float>` in every file. But actually you can define `IR_VECTOR_IMPELMENT` and include `ir_vector.h` in every file, and use `ir::Vector` with any template parameters (almost like you do with STL). The compiler is smart enough and does not complain about multiple implementations. But doing so will increase the compile time.
 
 ### How to get help?
-The code is pretty self-documented. But more inportant, I provide Doxygen documentation now! It does not look too pretty since I am not an expert, but it is still quite informative. I woukd recommend to start with **Modules** page. And of course, feel free to contact me!
+The code is pretty self-documented. But more importantly, I provide [Doxygen](https://www.doxygen.nl/manual/starting.html) documentation! It does not look too pretty since I am not an expert, but it is still quite informative. I would recommend to start with **Modules** page. And of course, feel free to contact me!
 
 ### About Natvis
-For some classes I provide Natvis files! Include theese files to your Visual Studio project and enjoy debugging. [More](https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects).
+For some classes I provide [Natvis](https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects) files! Include these files to your Visual Studio project and enjoy debugging.
 
 ###### P.S. My code is not dirty, it is alternatively clean.
