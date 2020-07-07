@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-  <Type Name="ir::QuietVector&lt;*&gt;" Priority="MediumLow">
+  <Type Name="ir::QuietRegister&lt;*,*&gt;" Priority="MediumLow">
     <DisplayString>{{ size={_header->size} }}</DisplayString>
     <Expand>
       <Item Name="[capacity]" ExcludeView="simple">_header->capacity</Item>

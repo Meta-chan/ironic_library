@@ -17,6 +17,8 @@ call :test ir_utf_test.cpp
 if %TESTRESULT%==1 goto end
 call :test ir_vector_test.cpp
 if %TESTRESULT%==1 goto end
+call :test ir_register_test.cpp
+if %TESTRESULT%==1 goto end
 :end
 del *.exe
 del *.obj

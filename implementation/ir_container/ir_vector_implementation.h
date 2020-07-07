@@ -30,6 +30,9 @@ template<class T> ir::Vector<T>::Vector(Vector &vector) noexcept
 {
 	clear();
 	_header = vector._header;
+	#ifdef _DEBUG
+		_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
+	#endif
 	if (_header != nullptr) _header->refcount++;
 };
 
@@ -116,6 +119,9 @@ template<class T> void ir::Vector<T>::reserve(size_t newcapacity)
 	if (_header == nullptr)
 	{
 		_header = (Header*) malloc(sizeof(Header) + newcapacity * sizeof(T));
+		#ifdef _DEBUG
+			_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
+		#endif
 		if (_header == nullptr) throw std::bad_alloc();
 		_header->refcount = 1;
 		_header->size = 0;
@@ -124,6 +130,9 @@ template<class T> void ir::Vector<T>::reserve(size_t newcapacity)
 	else if (_header->capacity < newcapacity)
 	{
 		_header = (Header*)realloc(_header, sizeof(Header) + newcapacity * sizeof(T));
+		#ifdef _DEBUG
+			_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
+		#endif
 		if (_header == nullptr) throw std::bad_alloc();
 		_header->capacity = newcapacity;
 	}
@@ -163,6 +172,9 @@ template<class T> void ir::Vector<T>::clear() noexcept
 		_header->refcount--;
 		if (_header->refcount == 0) free(_header);
 		_header = nullptr;
+		#ifdef _DEBUG
+				_debugarray = nullptr;
+		#endif
 	}
 };
 
@@ -174,7 +186,7 @@ template<class T> void ir::Vector<T>::detach()
 		const void *olddata = data();
 		clear();
 		resize(oldsize);
-		memcpy(data(), olddata, oldsize);
+		memcpy(data(), olddata, oldsize * sizeof(T));
 	}
 };
 

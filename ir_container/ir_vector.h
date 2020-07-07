@@ -18,9 +18,10 @@ namespace ir
 ///@addtogroup ir_container
 ///@{
 
-	///Ironic library's vector
-	///It stores a pointer to memory that may be shared between several equal vectors
+	///Ironic library's vector @n
+	///It stores a pointer to memory that may be shared between several equal vectors @n
 	///Throws exceptions on errors
+	///@tparam T Type of objects that the vector contains
 	template <class T> class Vector
 	{
 	protected:
@@ -31,6 +32,9 @@ namespace ir
 			size_t refcount	= 0;
 		};
 		Header *_header = nullptr;
+		#ifdef _DEBUG
+			T *_debugarray = nullptr;
+		#endif
 		static char const * const _out_of_range_message;
 
 	public:

@@ -18,10 +18,11 @@ namespace ir
 ///@addtogroup ir_container
 ///@{
 		
-	///Ironic library's vector
-	///It stores a pointer to memory that may be shared between several equal vectors
-	///Never throws exceptions on errors, but indicates failure through return values
-	///If in methods that returns references a given index exceeds the borders, a reference to internal static dummy is returned
+	///Ironic library's quiet vector @n
+	///It stores a pointer to memory that may be shared between several equal vectors @n
+	///Never throws exceptions on errors, but indicates failure through return values @n
+	///If method that must return reference fails, it returns reference to internal static dummy
+	///@tparam T Type of objects that the vector contains
 	template <class T> class QuietVector
 	{
 	protected:
@@ -32,6 +33,9 @@ namespace ir
 			size_t refcount	= 0;
 		};
 		Header *_header = nullptr;
+		#ifdef _DEBUG
+			T *_debugarray = nullptr;
+		#endif
 		static T _dummy;
 
 	public:

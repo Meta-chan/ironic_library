@@ -30,6 +30,9 @@ template<class T> ir::QuietVector<T>::QuietVector(QuietVector &vector) noexcept
 {
 	clear();
 	_header = vector._header;
+	#ifdef _DEBUG
+		_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
+	#endif
 	if (_header != nullptr) _header->refcount++;
 };
 
@@ -139,6 +142,9 @@ template<class T> bool ir::QuietVector<T>::reserve(size_t newcapacity) noexcept
 	if (_header == nullptr)
 	{
 		_header = (Header*)malloc(sizeof(Header) + newcapacity * sizeof(T));
+		#ifdef _DEBUG
+			_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
+		#endif
 		if (_header == nullptr) return false;
 		_header->refcount = 1;
 		_header->size = 0;
@@ -147,6 +153,9 @@ template<class T> bool ir::QuietVector<T>::reserve(size_t newcapacity) noexcept
 	else if (_header->capacity < newcapacity)
 	{
 		_header = (Header*)realloc(_header, sizeof(Header) + newcapacity * sizeof(T));
+		#ifdef _DEBUG
+			_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
+		#endif
 		if (_header == nullptr) return false;
 		_header->capacity = newcapacity;
 	}
@@ -189,6 +198,9 @@ template<class T> void ir::QuietVector<T>::clear() noexcept
 		_header->refcount--;
 		if (_header->refcount == 0) free(_header);
 		_header = nullptr;
+		#ifdef _DEBUG
+			_debugarray = nullptr;
+		#endif
 	}
 };
 
@@ -200,7 +212,7 @@ template<class T> bool ir::QuietVector<T>::detach() noexcept
 		const void *olddata = data();
 		clear();
 		if (!resize(oldsize)) return false;
-		memcpy(data(), olddata, oldsize);
+		memcpy(data(), olddata, oldsize * sizeof(T));
 	}
 	return true;
 };

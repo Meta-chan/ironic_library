@@ -7,7 +7,7 @@
       <Item Name="[reference count]" ExcludeView="simple">_header->refcount</Item>
       <ArrayItems>
         <Size>_header->size</Size>
-        <ValuePointer>($T1*)(_header + 1)</ValuePointer>
+        <ValuePointer>_debugarray</ValuePointer>
       </ArrayItems>
     </Expand>
   </Type>
