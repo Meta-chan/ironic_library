@@ -51,20 +51,16 @@ unsigned int _ir_internal_utf_c_encode(unsigned int code, void *symbols, unsigne
 
 unsigned int _ir_internal_utf_c_decode(const void *string, unsigned int *nsymbols)
 {
-	const unsigned char *s = (const unsigned char*)string;
-	unsigned int nskipped = 0;
-	while (1)
+	unsigned char c = *((unsigned char*)string);
+	if (c < 0x80)
 	{
-		if (s[0] < 0x80)
-		{
-			if (nsymbols != NULL) *nsymbols = nskipped + 1;
-			return (s[0] & 0x7F);
-		}
-		else
-		{
-			nskipped++;
-			s++;
-		}
+		if (nsymbols != NULL) *nsymbols = 1;
+		return c;
+	}
+	else
+	{
+		*nsymbols = 0;
+		return 0;
 	}
 };
 
@@ -135,34 +131,30 @@ unsigned int _ir_internal_utf_utf8_encode(unsigned int code, void *symbols, unsi
 unsigned int _ir_internal_utf_utf8_decode(const void *string, unsigned int *nsymbols)
 {
 	const unsigned char *s = (const unsigned char*)string;
-	unsigned int nskipped = 0;
-	while (1)
+	if ((s[0] & 0x80) == 0)
 	{
-		if ((s[0] & 0x80) == 0)
-		{
-			if (nsymbols != NULL) *nsymbols = nskipped + 1;
-			return s[0];
-		}
-		else if ((s[0] & 0xE0) == 0xC0 && (s[1] & 0xC0) == 0x80)
-		{
-			if (nsymbols != NULL) *nsymbols = nskipped + 2;
-			return ((s[0] & 0x1F) << 6) | (s[1] & 0x3F);
-		}
-		else if ((s[0] & 0xF0) == 0xE0 && (s[1] & 0xC0) == 0x80 && (s[2] & 0xC0) == 0x80)
-		{
-			if (nsymbols != NULL) *nsymbols = nskipped + 3;
-			return ((s[0] & 0x0F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
-		}
-		else if ((s[0] & 0xF8) == 0xF0 && (s[1] & 0xC0) == 0x80 && (s[2] & 0xC0) == 0x80 && (s[3] & 0xC0) == 0x80)
-		{
-			if (nsymbols != NULL) *nsymbols = nskipped + 4;
-			return ((s[0] & 0x07) << 18) | ((s[1] & 0x3F) << 12) | ((s[2] & 0x3F) << 6) | (s[3] & 0x3F);
-		}
-		else
-		{
-			nskipped++;
-			s++;
-		}
+		if (nsymbols != NULL) *nsymbols = 1;
+		return s[0];
+	}
+	else if ((s[0] & 0xE0) == 0xC0 && (s[1] & 0xC0) == 0x80)
+	{
+		if (nsymbols != NULL) *nsymbols = 2;
+		return ((s[0] & 0x1F) << 6) | (s[1] & 0x3F);
+	}
+	else if ((s[0] & 0xF0) == 0xE0 && (s[1] & 0xC0) == 0x80 && (s[2] & 0xC0) == 0x80)
+	{
+		if (nsymbols != NULL) *nsymbols = 3;
+		return ((s[0] & 0x0F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
+	}
+	else if ((s[0] & 0xF8) == 0xF0 && (s[1] & 0xC0) == 0x80 && (s[2] & 0xC0) == 0x80 && (s[3] & 0xC0) == 0x80)
+	{
+		if (nsymbols != NULL) *nsymbols = 4;
+		return ((s[0] & 0x07) << 18) | ((s[1] & 0x3F) << 12) | ((s[2] & 0x3F) << 6) | (s[3] & 0x3F);
+	}
+	else
+	{
+		*nsymbols = 0;
+		return 0;
 	}
 };
 
@@ -212,24 +204,20 @@ unsigned int _ir_internal_utf_utf16_encode(unsigned int code, void *symbols, uns
 unsigned int _ir_internal_utf_utf16_decode(const void *string, unsigned int *nsymbols)
 {
 	const unsigned short int *s = (const unsigned short int*)string;
-	unsigned int nskipped = 0;
-	while (1)
+	if (!(s[0] >= 0xD800 && s[0] < 0xE000))
 	{
-		if (!(s[0] >= 0xD800 && s[0] < 0xE000))
-		{
-			if (nsymbols != NULL) *nsymbols = nskipped + 1;
-			return s[0];
-		}
-		else if ((s[0] >= 0xD800 && s[0] < 0xDC00) && (s[1] >= 0xDC00 && s[1] < 0xE000))
-		{
-			if (nsymbols != NULL) *nsymbols = nskipped + 2;
-			return 0;
-		}
-		else
-		{
-			nskipped++;
-			s++;
-		}
+		if (nsymbols != NULL) *nsymbols = 1;
+		return s[0];
+	}
+	else if ((s[0] >= 0xD800 && s[0] < 0xDC00) && (s[1] >= 0xDC00 && s[1] < 0xE000))
+	{
+		if (nsymbols != NULL) *nsymbols = 2;
+		return 0;
+	}
+	else
+	{
+		*nsymbols = 0;
+		return 0;
 	}
 };
 
@@ -331,30 +319,26 @@ unsigned int _ir_internal_utf_1251_encode(unsigned int code, void *symbols, unsi
 
 unsigned int _ir_internal_utf_1251_decode(const void *string, unsigned int *nsymbols)
 {
-	const unsigned char *s = (const unsigned char*)string;
-	unsigned int nskipped = 0;
-	while (1)
+	unsigned char c = *((unsigned char*)string);
+	if (c < 0x80)
 	{
-		if (s[0] < 0x80)
-		{
-			if (nsymbols != NULL) *nsymbols = nskipped + 1;
-			return s[0];
-		}
-		else if (s[0] < 0xC0)
-		{
-			if (nsymbols != NULL) *nsymbols = nskipped + 1;
-			return _ir_internal_utf_1251_symbols[s[0] - 0x80];
-		}
-		else if (s[0] != 0x98)
-		{
-			if (nsymbols != NULL) *nsymbols = nskipped + 1;
-			return s[0] - 0xC0 + 0x410;
-		}
-		else
-		{
-			nskipped++;
-			s++;
-		}
+		if (nsymbols != NULL) *nsymbols = 1;
+		return c;
+	}
+	else if (c < 0xC0)
+	{
+		if (nsymbols != NULL) *nsymbols = 1;
+		return _ir_internal_utf_1251_symbols[c - 0x80];
+	}
+	else if (c != 0x98)
+	{
+		if (nsymbols != NULL) *nsymbols = 1;
+		return c - 0xC0 + 0x410;
+	}
+	else
+	{
+		*nsymbols = 0;
+		return 0;
 	}
 };
 
@@ -440,27 +424,27 @@ unsigned int _ir_internal_utf_866_encode(unsigned int code, void *symbols, unsig
 
 unsigned int _ir_internal_utf_866_decode(const void *string, unsigned int *nsymbols)
 {
-	const unsigned char *s = (const unsigned char*)string;
+	unsigned char c = *((unsigned char*)string);
 	if (nsymbols != NULL) *nsymbols = 1;
-	if (s[0] < 0x80)
+	if (c < 0x80)
 	{
-		return s[0];
+		return c;
 	}
-	else if (s[0] < 0xB0)
+	else if (c < 0xB0)
 	{
-		return s[0] - 0x80 + 0x410;
+		return c - 0x80 + 0x410;
 	}
-	else if (s[0] < 0xE0)
+	else if (c < 0xE0)
 	{
-		return _ir_internal_utf_866_symbols1[s[0] - 0xB0];
+		return _ir_internal_utf_866_symbols1[c - 0xB0];
 	}
-	else if (s[0] < 0xF0)
+	else if (c < 0xF0)
 	{
-		return s[0] - 0xE0 + 0x440;
+		return c - 0xE0 + 0x440;
 	}
 	else
 	{
-		return _ir_internal_utf_866_symbols2[s[0] - 0xF0];
+		return _ir_internal_utf_866_symbols2[c - 0xF0];
 	}
 };
 
