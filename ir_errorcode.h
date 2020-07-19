@@ -65,7 +65,7 @@ namespace ir
 * - ir_resource		- helpful class wrappers around non-class things (RAII)
 * - ir_utf			- encoding library
 * - ir_container	- library's containers, vectors, blocks, registers
-* - ir_math			- some math algorithms
+* - ir_math			- some mathematics algorithms
 * - ir_md5			- MD5 hash algorithm
 * - ir_openmap		- mapping function
 * - ir_plot			- plotting function
@@ -74,7 +74,7 @@ namespace ir
 *The code is developed and tested mostly under Windows x86. Most of libraries were specially tested under Linux x86. Some are cross-platform by chance. Some need just several corrections and renamings to make them work on your platform. Some are really stuck to WinAPI, some may crash on ARM, POWER, SPARC etc. In that case, I beg your pardon.
 * 
 *### How to install?
-*I wanted to make the installation really simple. The simplest way to install the library is to choose one of `.cpp` files, defile `IR_IMPLEMENT` and include all libraries you are interested in. After doing so you can use headers in every file like header-only libraries.
+*I wanted to make the installation really simple. The simplest way to install the library is to choose one of `.cpp` files, define `IR_IMPLEMENT` and include all libraries you are interested in. After doing so you can use headers in every file like header-only libraries.
 *@code{.cpp}
 #define IR_IMPLEMENT
 #include <ir_EXAMPLE.h>
