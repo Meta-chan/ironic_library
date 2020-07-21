@@ -124,7 +124,7 @@ template<typename T, unsigned int A> bool ir::MathC<T, A>::add_vvv(const VectorC
 {
 	if(a->_data == nullptr || b->_data == nullptr || r->_data == nullptr
 	|| a == b || a == r || b == r
-	|| a->_height != b->_heigth || r->_height != b->_heigth) return false;
+	|| a->_height != b->_height || r->_height != b->_height) return false;
 	
 	unsigned int blockheight = a->block_height();
 	const BlockC<T, A> * IR_MATHC_RESTRICT adata = a->block_data();
@@ -145,7 +145,7 @@ template<typename T, unsigned int A> bool ir::MathC<T, A>::subtract_vvv(const Ve
 {
 	if(a->_data == nullptr || b->_data == nullptr || r->_data == nullptr
 	|| a == b || a == r || b == r
-	|| a->_height != b->_heigth || r->_height != b->_heigth) return false;
+	|| a->_height != b->_height || r->_height != b->_height) return false;
 	
 	unsigned int blockheight = a->block_height();
 	const BlockC<T, A> * IR_MATHC_RESTRICT adata = a->block_data();
@@ -194,18 +194,18 @@ template<typename T, unsigned int A> bool ir::MathC<T, A>::multiply_mvv(const Ma
 
 #ifdef IR_MATHC_3DNOW
 
-template<> bool ir::MathC<float, 2>::add_vvv(const VectorC<T, A> * IR_MATHC_RESTRICT a, const VectorC<T, A> * IR_MATHC_RESTRICT b, VectorC<T, A> * IR_MATHC_RESTRICT r)
+template<> bool ir::MathC<float, 2>::add_vvv(const VectorC<float, 2> * IR_MATHC_RESTRICT a, const VectorC<float, 2> * IR_MATHC_RESTRICT b, VectorC<float, 2> * IR_MATHC_RESTRICT r)
 {
 	if(a->_data == nullptr || b->_data == nullptr || r->_data == nullptr
 	|| a == b || a == r || b == r
-	|| a->_height != b->_heigth || r->_height != b->_heigth) return false;
+	|| a->_height != b->_height || r->_height != b->_height) return false;
 	
 	unsigned int blockheight = a->block_height();
 	const __m64 * IR_MATHC_RESTRICT adata = (const __m64*)a->block_data();
 	const __m64 * IR_MATHC_RESTRICT bdata = (const __m64*)b->block_data();
 	__m64 * IR_MATHC_RESTRICT rdata = (__m64*)r->block_data();
 	
-	for (int blockline = 0; blockline < blockheight; blockline++)
+	for (unsigned int blockline = 0; blockline < blockheight; blockline++)
 	{
 		rdata[blockline] = _m_pfadd(adata[blockline], bdata[blockline]);
 	}
@@ -213,18 +213,18 @@ template<> bool ir::MathC<float, 2>::add_vvv(const VectorC<T, A> * IR_MATHC_REST
 	return true;
 };
 
-template<> bool ir::MathC<float, 2>::subtract_vvv(const VectorC<T, A> * IR_MATHC_RESTRICT a, const VectorC<T, A> * IR_MATHC_RESTRICT b, VectorC<T, A> * IR_MATHC_RESTRICT r)
+template<> bool ir::MathC<float, 2>::subtract_vvv(const VectorC<float, 2> * IR_MATHC_RESTRICT a, const VectorC<float, 2> * IR_MATHC_RESTRICT b, VectorC<float, 2> * IR_MATHC_RESTRICT r)
 {
 	if(a->_data == nullptr || b->_data == nullptr || r->_data == nullptr
 	|| a == b || a == r || b == r
-	|| a->_height != b->_heigth || r->_height != b->_heigth) return false;
+	|| a->_height != b->_height || r->_height != b->_height) return false;
 	
 	unsigned int blockheight = a->block_height();
 	const __m64 * IR_MATHC_RESTRICT adata = (const __m64*)a->block_data();
 	const __m64 * IR_MATHC_RESTRICT bdata = (const __m64*)b->block_data();
 	__m64 * IR_MATHC_RESTRICT rdata = (__m64*)r->block_data();
 	
-	for (int blockline = 0; blockline < blockheight; blockline++)
+	for (unsigned int blockline = 0; blockline < blockheight; blockline++)
 	{
 		rdata[blockline] = _m_pfsub(adata[blockline], bdata[blockline]);
 	}
@@ -232,11 +232,11 @@ template<> bool ir::MathC<float, 2>::subtract_vvv(const VectorC<T, A> * IR_MATHC
 	return true;
 };
 
-template<> bool ir::MathC<float, 2>::multiply_mvv(const MatrixC * IR_MATHC_RESTRICT a, const VectorC * IR_MATHC_RESTRICT b, VectorC * IR_MATHC_RESTRICT r)
+template<> bool ir::MathC<float, 2>::multiply_mvv(const MatrixC<float, 2> * IR_MATHC_RESTRICT a, const VectorC<float, 2> * IR_MATHC_RESTRICT b, VectorC<float, 2> * IR_MATHC_RESTRICT r)
 {
 	if(a->_data == nullptr || b->_data == nullptr || r->_data == nullptr
-	|| a == r
-	|| a->_width != b->_heigth || a->_height != r->_height) return false;
+	|| b == r
+	|| a->_width != b->_height || a->_height != r->_height) return false;
 	
 	unsigned int height = a->_height;
 	unsigned int blockwidth = a->block_width();
@@ -244,13 +244,13 @@ template<> bool ir::MathC<float, 2>::multiply_mvv(const MatrixC * IR_MATHC_RESTR
 	int * IR_MATHC_RESTRICT rdata = (int*)r->data();
 	
 	const __m64 zero = _m_from_int(0);
-	for (int line = 0; (unsigned int)line < height; line++)
+	for (unsigned int line = 0; line < height; line++)
 	{
 		const __m64 * IR_MATHC_RESTRICT alinedata = (const __m64*)a->block_data(line);
 		__m64 sum = zero;
 		for (unsigned int columnblock = 0; columnblock < blockwidth; columnblock++)
 		{
-			sum = _m_pfadd(sum, _m_pfmul(alinedata[columnblock], prevvector[columnblock]);
+			sum = _m_pfadd(sum, _m_pfmul(alinedata[columnblock], bdata[columnblock]));
 		}
 		sum = _m_pfacc(sum, zero);
 		rdata[line] = _m_to_int(sum);
