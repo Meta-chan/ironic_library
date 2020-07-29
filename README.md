@@ -3,6 +3,7 @@ The code presented here is some pieces of my home projects. Here you will find:
  - ir_database		- ultra-light databases
  - ir_neuro			- neural network
  - ir_resource		- helpful class wrappers around non-class things (RAII)
+ - ir_parallel		- parallel calculations, kind of OpenMP replacement
  - ir_utf			- encoding library
  - ir_container		- library's containers, vectors, blocks, registers
  - ir_math			- some mathematics algorithms

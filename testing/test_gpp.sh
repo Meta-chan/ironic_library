@@ -24,7 +24,8 @@ test ir_resource_test.cpp		&& \
 test ir_s2st_database_test.cpp	&& \
 test ir_utf_test.cpp			&& \
 test ir_vector_test.cpp			&& \
-test ir_register_test.cpp
+test ir_register_test.cpp		&& \
+test ir_parallel_test.cpp
 
 rm *.exe -f
 rm *.obj -f
