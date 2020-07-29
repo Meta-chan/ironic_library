@@ -57,7 +57,7 @@ namespace ir
 		//Non-constant element access:
 		///Returns reference to element with specified identifier
 		///@param key Null-terminated string identifer
-		T &operator()(const C *key)						noexcept;
+		T &operator[](const C *key)						noexcept;
 		///Returns reference to element with specified identifier
 		///@param key Null-terminated string identifer
 		T &at(const C *key)								noexcept;

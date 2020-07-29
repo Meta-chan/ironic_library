@@ -102,7 +102,7 @@ template <class T, class C> ir::QuietRegister<T, C>::QuietRegister(QuietRegister
 		
 };
 	
-template <class T, class C> T &ir::QuietRegister<T, C>::operator()(const C *key) noexcept
+template <class T, class C> T &ir::QuietRegister<T, C>::operator[](const C *key) noexcept
 {
 	return at(key, _strlen(key));
 };
