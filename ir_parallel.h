@@ -31,8 +31,8 @@ namespace ir
 
 	private:
 
-		volatile Function *_function	= nullptr;
-		volatile const void *_user		= nullptr;
+		Function * volatile _function	= nullptr;
+		const void * volatile _user		= nullptr;
 		unsigned int _n					= 0;
 		unsigned int _timeout			= 0;
 		volatile unsigned int _finished	= 0;

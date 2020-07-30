@@ -54,8 +54,7 @@ unsigned int ir::Parallel::_increment(volatile unsigned int *i)
 		}
 		else
 		{
-			const void *u; memcpy(&u, &parallel->_user, sizeof(const void*));
-			parallel->_function(u, id);
+			parallel->_function(parallel->_user, id);
 			_increment(&parallel->_finished);
 			task++;
 		}
