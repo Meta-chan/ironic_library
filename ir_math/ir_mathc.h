@@ -62,7 +62,7 @@ namespace ir
 	};
 
 	///Matrix, two-dimensional array of type @c T
-	template <typename T, unsigned int A> class MatrixC : public ObjectG
+	template <typename T, unsigned int A> class MatrixC
 	{
 		friend MathC<T, A>;
 
