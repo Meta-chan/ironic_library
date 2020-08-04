@@ -113,11 +113,11 @@ template<class T> void ir::Vector<T>::resize(size_t newsize)
 	if (newsize > size())
 	{
 		_header->size = newsize;
-		for (unsigned int i = size(); i < newsize; i++)	new(&at(i)) T();
+		for (size_t i = size(); i < newsize; i++)	new(&at(i)) T();
 	}
 	else if (newsize < size())
 	{
-		for (unsigned int i = newsize; i < size(); i++)	at(i).~T();
+		for (size_t i = newsize; i < size(); i++)	at(i).~T();
 		_header->size = newsize;
 	}
 };
@@ -200,7 +200,7 @@ template<class T> void ir::Vector<T>::clear() noexcept
 		_header->refcount--;
 		if (_header->refcount == 0)
 		{
-			for (unsigned int i = 0; i < size(); i++) at(i).~T();
+			for (size_t i = 0; i < size(); i++) at(i).~T();
 			free(_header);
 		}
 		_header = nullptr;
@@ -215,7 +215,7 @@ template<class T> void ir::Vector<T>::detach()
 	detach(size());
 };
 
-template<class T> void ir::Vector<T>::detach(unsigned int newcapacity)
+template<class T> void ir::Vector<T>::detach(size_t newcapacity)
 {
 	if (_header != nullptr && _header->refcount > 1)
 	{
@@ -226,7 +226,7 @@ template<class T> void ir::Vector<T>::detach(unsigned int newcapacity)
 			clear();
 			reserve(newcapacity > oldsize ? newcapacity : oldsize);
 			T *newdata = (T*)(_header + 1);
-			for (unsigned int i = 0; i < oldsize; i++) new (&newdata[i]) T(olddata[i]);
+			for (size_t i = 0; i < oldsize; i++) new (&newdata[i]) T(olddata[i]);
 			_header->refcount = 1;
 			_header->size = oldsize;
 		}

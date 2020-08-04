@@ -110,7 +110,7 @@ namespace ir
 		void detach();
 		///Makes the vector unique, not shared with other vectors and allocates more memory for it
 		///@param newcapacity Required capacity
-		void detach(unsigned int newcapacity);
+		void detach(size_t newcapacity);
 		///Destroys the vector
 		~Vector()							noexcept;
 	};
