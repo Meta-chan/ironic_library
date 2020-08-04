@@ -26,7 +26,9 @@ test ir_utf_test.cpp			&& \
 test ir_vector_test.cpp			&& \
 test ir_register_test.cpp		&& \
 test ir_parallel_test.cpp		&& \
-test ir_mathc_test.cpp
+test ir_mathc_test.cpp			&& \
+test ir_list_test.cpp
+
 
 rm *.exe -f
 rm *.obj -f

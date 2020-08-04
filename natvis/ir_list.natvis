@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="ir::List&lt;*&gt;" Priority="MediumLow">
+    <DisplayString>{{ size={_head->size} }}</DisplayString>
+    <Expand>
+      <Item Name="[reference count]" ExcludeView="simple">_head->refcount</Item>
+      <LinkedListItems>
+        <Size>_head->size</Size>
+        <HeadPointer>_debuglist</HeadPointer>
+        <NextPointer>next</NextPointer>
+        <ValueNode>element</ValueNode>
+      </LinkedListItems>
+    </Expand>
+  </Type>
+</AutoVisualizer>

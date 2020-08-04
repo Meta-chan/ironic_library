@@ -23,6 +23,8 @@ call :test ir_parallel_test.cpp
 if %TESTRESULT%==1 goto end
 call :test ir_mathc_test.cpp
 if %TESTRESULT%==1 goto end
+call :test ir_list_test.cpp
+if %TESTRESULT%==1 goto end
 
 :end
 del *.exe
