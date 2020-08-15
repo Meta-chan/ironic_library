@@ -168,7 +168,7 @@ template<class T> void ir::Vector<T>::insert(size_t i, const T &elem)
 	if (i > size()) throw std::out_of_range(_out_of_range_message);
 	if (_header != nullptr && _header->refcount > 1) detach(size() + 1);
 	else reserve(size() + 1);
-	memcpy(data() + i + 1, data() + i, (size() - i - 1) * sizeof(T));
+	memcpy(data() + i + 1, data() + i, (size() - i) * sizeof(T));
 	_header->size = size() + 1;
 	new (&at(i)) T(elem);
 };

@@ -179,7 +179,7 @@ template<class T> bool ir::QuietVector<T>::insert(size_t i, T elem) noexcept
 {
 	if (i > size()) return false;
 	if (!resize(size() + 1)) return false;
-	memcpy(data() + i + 1, data() + i, (size() - i - 1) * sizeof(T));
+	memcpy(data() + i + 1, data() + i, (size() - i) * sizeof(T));
 	data()[i] = elem;
 	return true;
 };
