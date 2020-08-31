@@ -77,4 +77,13 @@ template<class T> bool ir::ifft(std::complex<T> *data, size_t size)
 	return true;
 };
 
+template<class T> bool ir::ifft_nodivide(std::complex<T> *data, size_t size)
+{
+	if (size == 0 || (size & (size - 1)) != 0) return false;
+	for (size_t i = 0; i < size; i++) data[i] = conj(data[i]);
+	if (!fft(data, size)) return false;
+	for (size_t i = 0; i < size; i++) data[i] = conj(data[i]);
+	return true;
+};
+
 #endif	//#ifndef IR_FFT_IMPLEMENTATION

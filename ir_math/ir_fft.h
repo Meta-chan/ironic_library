@@ -13,6 +13,7 @@
 
 #define _USE_MATH_DEFINES
 #include <complex>
+#include <math.h>
 #include <stddef.h>
 
 namespace ir
@@ -28,6 +29,9 @@ namespace ir
 	
 	///Inverse Fast Fourier Transformation
 	template<class T>bool ifft(std::complex<T> *data, size_t size);
+
+	///Inverse Fast Fourier Transformation without dividing on @c size
+	template<class T>bool ifft_nodivide(std::complex<T> *data, size_t size);
 	
 ///@}
 };
