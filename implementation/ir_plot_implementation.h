@@ -17,9 +17,13 @@
 
 struct
 {
-	ir::Plot *plots;
-	unsigned int nplots;
-	double minx, miny, maxx, maxy;
+	ir::Plot *plots		= nullptr;
+	unsigned int nplots	= 0;
+	double minx			= 0.0;
+	double miny			= 0.0;
+	double maxx			= 0.0;
+	double maxy			= 0.0;
+	bool registered		= false;
 } currentplots;
 
 void plotwindowpaint(HWND hWnd)
@@ -82,7 +86,8 @@ ir::ec ir::plot(unsigned int nplots, Plot plot1, ...)
 
 	//Copying parameters to global
 	currentplots.nplots = nplots;
-	currentplots.plots = (Plot*)malloc(nplots * sizeof(Plot));
+	if (currentplots.plots == nullptr) currentplots.plots = (Plot*)malloc(nplots * sizeof(Plot));
+	else currentplots.plots = (Plot*)realloc(currentplots.plots, nplots * sizeof(Plot));
 	if (currentplots.plots == nullptr) return ec::ec_alloc;
 	memcpy(currentplots.plots, &plot1, nplots * sizeof(Plot));
 
@@ -119,20 +124,23 @@ ir::ec ir::plot(unsigned int nplots, Plot plot1, ...)
 	currentplots.miny -= interval;
 	currentplots.maxy += interval;
 
-	//Registering class
-	LPCTSTR classname = TEXT("ir_plot_window_class");
-	WNDCLASS windowclass = { 0 };
-	windowclass.lpfnWndProc = plotwindowproc;
-	windowclass.style = CS_HREDRAW | CS_VREDRAW;
-	windowclass.hInstance = GetModuleHandle(NULL);
-	windowclass.lpszClassName = classname;
-	windowclass.hbrBackground = (HBRUSH)COLOR_APPWORKSPACE;
-	if (RegisterClass(&windowclass) == 0) return ec::ec_windows_register_class;
+	if (!currentplots.registered)
+	{
+		//Registering class
+		WNDCLASS windowclass = { 0 };
+		windowclass.lpfnWndProc = plotwindowproc;
+		windowclass.style = CS_HREDRAW | CS_VREDRAW;
+		windowclass.hInstance = GetModuleHandle(NULL);
+		windowclass.lpszClassName = TEXT("ir_plot_window_class");
+		windowclass.hbrBackground = (HBRUSH)COLOR_APPWORKSPACE;
+		if (RegisterClass(&windowclass) == 0) return ec::ec_windows_register_class;
+		currentplots.registered = true;
+	}
 
 	//Creating window
 	RECT screen;
 	GetWindowRect(GetDesktopWindow(), &screen);
-	HWND hWnd = CreateWindow(classname, TEXT("ir_plot"), WS_VISIBLE | WS_OVERLAPPEDWINDOW,
+	HWND hWnd = CreateWindow(TEXT("ir_plot_window_class"), TEXT("ir_plot"), WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 		screen.right / 4, screen.bottom / 4, screen.right / 2, screen.bottom / 2,
 		NULL, NULL, GetModuleHandle(NULL), NULL);
 	if (!hWnd) return ec::ec_windows_create_window;
@@ -146,6 +154,7 @@ ir::ec ir::plot(unsigned int nplots, Plot plot1, ...)
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
 	return ec::ec_ok;
 };
 
