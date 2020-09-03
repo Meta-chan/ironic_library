@@ -78,6 +78,7 @@ template<typename T> typename ir::Ring<T>::Block ir::Ring<T>::read_direct(size_t
 		b.size[0] = count;
 		b.data[1] = nullptr;
 		b.size[1] = 0;
+		_tail += count;
 	}
 	else
 	{
