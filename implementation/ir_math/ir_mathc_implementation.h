@@ -136,7 +136,7 @@ template<typename T, unsigned int A> bool ir::MathC<T, A>::add_vvv(const VectorC
 	#endif
 	for (int blockline = 0; blockline < blockheight; blockline++)
 	{
-		for (unsigned int a = 0; a < A; a++) rdata[blockline].r[a] = adata[blockline].r[a] + bdata[blockline].r[a];
+		for (unsigned int p = 0; p < A; p++) rdata[blockline].r[p] = adata[blockline].r[p] + bdata[blockline].r[p];
 	}
 	return true;
 };
@@ -157,7 +157,7 @@ template<typename T, unsigned int A> bool ir::MathC<T, A>::subtract_vvv(const Ve
 	#endif
 	for (int blockline = 0; blockline < blockheight; blockline++)
 	{
-		for (unsigned int a = 0; a < A; a++) rdata[blockline].r[a] = adata[blockline].r[a] - bdata[blockline].r[a];
+		for (unsigned int p = 0; p < A; p++) rdata[blockline].r[p] = adata[blockline].r[p] - bdata[blockline].r[p];
 	}
 	return true;
 };
@@ -180,13 +180,13 @@ template<typename T, unsigned int A> bool ir::MathC<T, A>::multiply_mvv(const Ma
 	{
 		const BlockC<T, A> * IR_MATHC_RESTRICT alinedata = a->block_data(line);
 		BlockC<T, A> sum;
-		for (unsigned a = 0; a < A; a++) sum.r[a] = 0.0f;
+		for (unsigned int p = 0; p < A; p++) sum.r[p] = 0.0f;
 		for (unsigned int columnblock = 0; columnblock < blockwidth; columnblock++)
 		{
-			for (unsigned a = 0; a < A; a++) sum.r[a] += alinedata[columnblock].r[a] * bdata[columnblock].r[a];
+			for (unsigned int p = 0; p < A; p++) sum.r[p] += alinedata[columnblock].r[p] * bdata[columnblock].r[p];
 		}
 		float endsum = 0.0f;
-		for (unsigned a = 0; a < A; a++) endsum += sum.r[a];
+		for (unsigned int p = 0; p < A; p++) endsum += sum.r[p];
 		rdata[line] = endsum;
 	}
 	return true;

@@ -45,7 +45,7 @@ void test()
 	return;
 };
 
-int main(int argc, char **argv)
+int main()
 {
 	test();
 	getchar();

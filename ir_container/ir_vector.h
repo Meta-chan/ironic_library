@@ -47,10 +47,10 @@ namespace ir
 		///Copies vector
 		///@param vector Vector to be copied
 		Vector(const Vector &vector)		noexcept;
-		///Returns raw pointer to data
-		inline T *data()					noexcept;
 
 		//Non-constant access:
+		///Returns raw pointer to data
+		inline T *data()					noexcept;
 		///Returns reference to element with specified index
 		///@param i Index of required element
 		inline T &operator[](size_t i);
@@ -78,6 +78,7 @@ namespace ir
 		///Returns if vector is empty
 		
 		//Maintenance:
+		///Returns whether vector is empty
 		inline bool empty()					const noexcept;
 		///Returns number of elements in vector
 		inline size_t size()				const noexcept;
