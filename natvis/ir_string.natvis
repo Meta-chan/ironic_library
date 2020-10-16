@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="ir::String" Priority="MediumLow">
+    <DisplayString>{ (_s.mode == 0 ? _s.data : (_h.mode == 1 ? (char*)(_h.data + 1) : _c.data)),na }</DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">(_s.mode == 0 ? _s.size : (_h.mode == 1 ? _h.size : _c.size))</Item>
+      <Item Name="[capacity]" ExcludeView="simple">(_s.mode == 0 ? 7 : (_h.mode == 1 ? _h.data->reserved : 0))</Item>
+      <Item Name="[reference count]" ExcludeView="simple">(_s.mode == 0 ? 1 : (_h.mode == 1 ? _h.data->refcount : 0))</Item>
+    </Expand>
+  </Type>
+</AutoVisualizer>

@@ -64,7 +64,7 @@ namespace ir
 * - ir_neuro		- neural network
 * - ir_resource		- helpful class wrappers around non-class things (RAII)
 * - ir_utf			- encoding library
-* - ir_container	- library's containers, vectors, blocks, registers
+* - ir_container	- library's containers: vectors, blocks, registers, rings, strings
 * - ir_math			- some mathematics algorithms
 * - ir_md5			- MD5 hash algorithm
 * - ir_openmap		- mapping function
@@ -80,7 +80,7 @@ namespace ir
 #include <ir_EXAMPLE.h>
 *@endcode
 *
-*Include principles can be more flexible, but you need to understand how they works. `IR_IMPLEMENT` makes the compiler to include all implementations, `IR_EXAMPLE_IMPLEMENT` makes it include specific implementation, `IR_EXAMPLE_NOT_IMPLEMENT` makes it exclude one. With this mechanism you can control compiler options which you compile Ironic code with and solve linker errors. For clarity, typical Ironic header looks like this:
+*Include principles can be more flexible, but you need to understand how they work. `IR_IMPLEMENT` makes the compiler to include all implementations, `IR_EXAMPLE_IMPLEMENT` makes it include specific implementation, `IR_EXAMPLE_NOT_IMPLEMENT` makes it exclude one. With this mechanism you can control compiler options which you compile Ironic code with and solve linker errors. For clarity, typical Ironic header looks like this:
 *@code{.cpp}
 //ir_example.h
 int example();
