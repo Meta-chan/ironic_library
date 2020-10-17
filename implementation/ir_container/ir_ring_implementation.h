@@ -78,7 +78,6 @@ template<typename T> typename ir::Ring<T>::Block ir::Ring<T>::read_direct(size_t
 		b.size[0] = count;
 		b.data[1] = nullptr;
 		b.size[1] = 0;
-		_tail += count;
 	}
 	else
 	{
@@ -90,7 +89,6 @@ template<typename T> typename ir::Ring<T>::Block ir::Ring<T>::read_direct(size_t
 			b.size[0] = _size - _tail;
 			b.data[1] = _data;
 			b.size[1] = count - b.size[0];
-			_tail = b.size[1];
 		}
 		else
 		{
@@ -99,12 +97,9 @@ template<typename T> typename ir::Ring<T>::Block ir::Ring<T>::read_direct(size_t
 			b.size[0] = count;
 			b.data[1] = nullptr;
 			b.size[1] = 0;
-			_tail += count;
-			if (_tail == _size) _tail = 0;
 		}
 	}
 
-	_count -= count;
 	return b;
 };
 
@@ -115,11 +110,12 @@ template<typename T> void ir::Ring<T>::write(const T *data, size_t count)
 	for (size_t i = 0; i < b.size[1]; i++) b.data[1][i] = data[b.size[0] + i];
 };
 
-template<typename T> void ir::Ring<T>::read(T *data, size_t count)
+template<typename T> void ir::Ring<T>::read(T *data, size_t count, bool eras)
 {
 	Block b = read_direct(count);
 	for (size_t i = 0; i < b.size[0]; i++) data[i] = b.data[0][i];
 	for (size_t i = 0; i < b.size[1]; i++) data[b.size[0] + i] = b.data[1][i];
+	if (eras) erase(count);
 };
 
 template<typename T> void ir::Ring<T>::write(const T &elem)
@@ -128,10 +124,47 @@ template<typename T> void ir::Ring<T>::write(const T &elem)
 	b.data[0][0] = elem;
 };
 
-template<typename T> T ir::Ring<T>::read()
+template<typename T> T ir::Ring<T>::read(bool eras)
 {
 	Block b = read_direct(1);
-	return b.data[0][0];
+	if (eras)
+	{
+		T buffer = b.data[0][0];
+		erase(1);
+		return buffer;
+	}
+	else
+	{
+		return b.data[0][0];
+	}
+};
+
+template<typename T> void ir::Ring<T>::erase(size_t count)
+{
+	if (count > _count) throw std::runtime_error(_empty_message);
+
+	if (_head >= _tail)
+	{
+		//Normal situation, head is greater or equal to tail
+		_tail += count;
+	}
+	else
+	{
+		//Inverse situation, tail is greater than head
+		if (count > (_size - _tail))
+		{
+			//Does not fit in one part
+			_tail = count - (_size - _tail);
+		}
+		else
+		{
+			//Fits in one part
+			_tail += count;
+			if (_tail == _size) _tail = 0;
+		}
+	}
+
+	_count -= count;
 };
 
 template<typename T> size_t ir::Ring<T>::count() const noexcept

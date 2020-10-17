@@ -51,7 +51,7 @@ namespace ir
 		///Gives direct access to memory that should be written
 		///@param count Requested number of elements
 		Block write_direct(size_t count);
-		///Gives direct access to memory that should be read
+		///Gives direct access to memory that should be read. Does not erase elements
 		///@param count Requested number of elements
 		Block read_direct(size_t count);
 		///Writes elements to Ring
@@ -61,12 +61,17 @@ namespace ir
 		///Reads elements from Ring
 		///@param data Elements to read
 		///@param count Number of elements to read
-		void read(T *data, size_t count);
+		///@param eras Erases read elements
+		void read(T *data, size_t count, bool eras = true);
 		///Writes one element to Ring
 		///@param elem Element to write 
 		void write(const T &elem);
 		///Reads one element from Ring
-		T read();
+		///@param eras Erases read element
+		T read(bool eras = true);
+		///Erases elements from the end of the ring
+		///@param count Number of elements to be erased
+		void erase(size_t count = 1);
 		///Returns number of currently stored elements
 		size_t count() const noexcept;
 		///Returns size of Ring
