@@ -1,50 +1,44 @@
+@echo off
 call vsdevcmd
-call :test ir_math_test.cpp
-if %TESTRESULT%==1 goto end
-call :test ir_n2st_database_test.cpp
-if %TESTRESULT%==1 goto end
-call :test ir_neuro_test.cpp
-if %TESTRESULT%==1 goto end
-call :test ir_openmap_test.cpp
-if %TESTRESULT%==1 goto end
-call :test ir_plot_test.cpp user32.lib gdi32.lib
-if %TESTRESULT%==1 goto end
-call :test ir_resource_test.cpp
-if %TESTRESULT%==1 goto end
-call :test ir_s2st_database_test.cpp
-if %TESTRESULT%==1 goto end
-call :test ir_utf_test.cpp
-if %TESTRESULT%==1 goto end
-call :test ir_vector_test.cpp
-if %TESTRESULT%==1 goto end
-call :test ir_register_test.cpp
-if %TESTRESULT%==1 goto end
-call :test ir_parallel_test.cpp
-if %TESTRESULT%==1 goto end
-call :test ir_mathc_test.cpp
-if %TESTRESULT%==1 goto end
-call :test ir_list_test.cpp
-if %TESTRESULT%==1 goto end
-call :test ir_string_test.cpp
-if %TESTRESULT%==1 goto end
+
+if not exist rgb.exe (
+	cl rgb.c
+	if ERRORLEVEL 1 (
+		echo Fail
+		goto end
+	)
+)
+
+for %%f in (*.c *.cpp) do (
+	if not %%f==rgb.c (
+		call :test %%f
+		if "%RESULT%"=="1" ( goto end )
+	)
+)
 
 :end
-del *.exe
+for %%f in (*.exe) do if not %%f==rgb.exe del %%f
 del *.obj
 pause
 exit /b
 
 :test
-	cl %* /I .. /W4 /sdl /EHsc
+	if %*==ir_plot_test.cpp (
+		set LIBS=user32.lib gdi32.lib
+	) else (
+		set LIBS=
+	)
+	
+	cl %* %LIBS% /I .. /W4 /sdl /EHsc
 	if ERRORLEVEL 1 (
 		rgb r
 		echo Fail
 		rgb rgb
-		SET TESTRESULT=1
+		SET RESULT=1
 	) else (
-		rgb g;
+		rgb g
 		echo Success
 		rgb rgb
-		SET TESTRESULT=0
+		SET RESULT=0
 	)
 	exit /b
