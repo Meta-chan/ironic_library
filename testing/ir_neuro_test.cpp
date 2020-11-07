@@ -3,34 +3,30 @@
 #include <random>
 #include <stdio.h>
 
+template class ir::Neuro<float, 1, ir::Tanh<float>>;
+
 int main()
 {
 	//simple net trying to learn xor operation
 
-	ir::ec code;
 	unsigned int lays[3] = { 2, 2, 1 };
-	ir::Neuro<ir::TanhFunction, 2> net(3, lays, 0.5f, &code);
+	ir::Neuro<> net(3, lays, 0.5, nullptr);
 	
-	net.set_coefficient(1.0f);
-	net.set_inductance(100.0f);
+	net.set_coefficient(0.05);
 	
-	for (unsigned int i = 0; i < 100000; i++)
+	for (unsigned int i = 0; i < 10000; i++)
 	{
-		char b[2];
-		b[0] = rand() % 2;
-		b[1] = rand() % 2;
-		float input[2] = { 2 * ((float)b[0] - 0.5f), 2 * ((float)b[1] - 0.5f) };
-		float goal = 2 * ((float)(b[0] ^ b[1]) - 0.5f);
-		float output;
+		bool a = rand() % 2;
+		bool b = rand() % 2;
+		bool r = a ^ b;
 
-		net.set_input(input, true);
-		net.set_output_pointer(&output, true);
+		net.get_input()->data()[0] = a ? 1 : -1;
+		net.get_input()->data()[1] = b ? 1 : -1;
 		net.forward();
-		net.get_output();
-		net.set_goal(&goal, true);
-		net.backward();
+		printf("%i %i -> %f\n", a ? 1 : -1, b ? 1 : -1, net.get_output()->data()[0]);
 
-		printf("%i %i -> %f\n", b[0], b[1], output);
+		net.get_goal()->data()[0] = r ? 1 : -1;
+		net.backward();
 	}
 
 	net.save(SS("xor.inr"));

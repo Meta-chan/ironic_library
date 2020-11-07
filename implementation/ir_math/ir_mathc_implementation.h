@@ -11,6 +11,8 @@
 #ifndef IR_MATHC_IMPLEMENTATION
 #define IR_MATHC_IMPLEMENTATION
 
+#include <assert.h>
+
 #ifdef IR_MATHC_3DNOW
 	#include <type_traits>
 	#ifdef _WIN32
@@ -20,7 +22,8 @@
 	#endif	
 #endif
 
-template <typename T, unsigned int A> ir::VectorC<T, A>::VectorC(unsigned int height, bool *ok)
+template <typename T, unsigned int A>
+ir::VectorC<T, A>::VectorC(unsigned int height, bool *ok)
 {
 	_height = height;
 	unsigned int size = (block_height() * A + A - 1) * sizeof(T);
@@ -29,43 +32,51 @@ template <typename T, unsigned int A> ir::VectorC<T, A>::VectorC(unsigned int he
 	if (ok != nullptr) *ok = (_data != nullptr);
 };
 
-template <typename T, unsigned int A> unsigned int ir::VectorC<T, A>::height() const
+template <typename T, unsigned int A>
+unsigned int ir::VectorC<T, A>::height() const
 {
-	return _heigth;
+	return _height;
 };
 
-template <typename T, unsigned int A> T *ir::VectorC<T, A>::data()
+template <typename T, unsigned int A>
+T * IR_MATHC_RESTRICT ir::VectorC<T, A>::data()
 {
 	return (_data != nullptr) ? (T*)(((size_t)_data + A * sizeof(T) - 1) & (~(A * sizeof(T) - 1))) : nullptr;
 };
 
-template <typename T, unsigned int A> const T *ir::VectorC<T, A>::data() const
+template <typename T, unsigned int A>
+const T * IR_MATHC_RESTRICT ir::VectorC<T, A>::data() const
 {
 	return (_data != nullptr) ? (const T*)(((size_t)_data + A * sizeof(T) - 1) & (~(A * sizeof(T) - 1))) : nullptr;
 };
 
-template <typename T, unsigned int A> unsigned int ir::VectorC<T, A>::block_height() const
+template <typename T, unsigned int A>
+unsigned int ir::VectorC<T, A>::block_height() const
 {
 	return (_height + A - 1) / A;
 };
 
-template <typename T, unsigned int A> ir::BlockC<T, A> *ir::VectorC<T, A>::block_data()
+template <typename T, unsigned int A>
+ir::BlockC<T, A> * IR_MATHC_RESTRICT ir::VectorC<T, A>::block_data()
 {
 	return (BlockC<T, A>*)data();
 };
 
-template <typename T, unsigned int A> const ir::BlockC<T, A> *ir::VectorC<T, A>::block_data() const
+template <typename T, unsigned int A>
+const ir::BlockC<T, A> * IR_MATHC_RESTRICT ir::VectorC<T, A>::block_data() const
 {
 	return (BlockC<T, A>*)data();
 };
 
-template <typename T, unsigned int A> ir::VectorC<T, A>::~VectorC()
+template <typename T, unsigned int A>
+ir::VectorC<T, A>::~VectorC()
 {
 	if (_data != nullptr) free(_data);
 	_data = nullptr;
 };
 
-template <typename T, unsigned int A> ir::MatrixC<T, A>::MatrixC(unsigned int width, unsigned int height, bool *ok)
+template <typename T, unsigned int A>
+ir::MatrixC<T, A>::MatrixC(unsigned int width, unsigned int height, bool *ok)
 {
 	_height = height;
 	_width = width;
@@ -75,185 +86,176 @@ template <typename T, unsigned int A> ir::MatrixC<T, A>::MatrixC(unsigned int wi
 	if (ok != nullptr) *ok = (_data != nullptr);
 };
 
-template <typename T, unsigned int A> unsigned int ir::MatrixC<T, A>::width() const
+template <typename T, unsigned int A>
+unsigned int ir::MatrixC<T, A>::width() const
 {
 	return _width;
 };
 
-template <typename T, unsigned int A> unsigned int ir::MatrixC<T, A>::height() const
+template <typename T, unsigned int A>
+unsigned int ir::MatrixC<T, A>::height() const
 {
 	return _height;
 };
 
-template <typename T, unsigned int A> T *ir::MatrixC<T, A>::data(unsigned int line)
+template <typename T, unsigned int A>
+T * IR_MATHC_RESTRICT ir::MatrixC<T, A>::data(unsigned int line)
 {
 	if (_data == nullptr) return nullptr;
 	T *aligneddata = (T*)(((size_t)_data + A * sizeof(T) - 1) & (~(A * sizeof(T) - 1)));
 	return aligneddata + line * block_width() * A;
 };
 
-template <typename T, unsigned int A> const T *ir::MatrixC<T, A>::data(unsigned int line) const
+template <typename T, unsigned int A>
+const T * IR_MATHC_RESTRICT ir::MatrixC<T, A>::data(unsigned int line) const
 {
 	if (_data == nullptr) return nullptr;
 	T *aligneddata = (T*)(((size_t)_data + A * sizeof(T) - 1) & (~(A * sizeof(T) - 1)));
 	return aligneddata + line * block_width() * A;
 };
 
-template <typename T, unsigned int A> unsigned int ir::MatrixC<T, A>::block_width() const
+template <typename T, unsigned int A>
+unsigned int ir::MatrixC<T, A>::block_width() const
 {
 	return (_width + A - 1) / A;
 };
 
-template <typename T, unsigned int A> ir::BlockC<T, A> *ir::MatrixC<T, A>::block_data(unsigned int line)
+template <typename T, unsigned int A>
+ir::BlockC<T, A> * IR_MATHC_RESTRICT  ir::MatrixC<T, A>::block_data(unsigned int line)
 {
 	return (BlockC<T, A>*)data(line);
 };
 
-template <typename T, unsigned int A> const ir::BlockC<T, A> *ir::MatrixC<T, A>::block_data(unsigned int line) const
+template <typename T, unsigned int A>
+const ir::BlockC<T, A> * IR_MATHC_RESTRICT ir::MatrixC<T, A>::block_data(unsigned int line) const
 {
 	return (const BlockC<T, A>*)data(line);
 };
 
-template <typename T, unsigned int A> ir::MatrixC<T, A>::~MatrixC()
+template <typename T, unsigned int A>
+ir::MatrixC<T, A>::~MatrixC()
 {
 	if (_data != nullptr) free(_data);
 	_data = nullptr;
 };
 
-template<typename T, unsigned int A> bool ir::MathC<T, A>::add_vvv(const VectorC<T, A> * IR_MATHC_RESTRICT a, const VectorC<T, A> * IR_MATHC_RESTRICT b, VectorC<T, A> * IR_MATHC_RESTRICT r)
+template<typename T, unsigned int A>
+void ir::MathC<T, A>::add_vvv(const VectorC<T, A> *a, const VectorC<T, A> *b, VectorC<T, A> *r)
 {
-	if(a->_data == nullptr || b->_data == nullptr || r->_data == nullptr
-	|| a == b || a == r || b == r
-	|| a->_height != b->_height || r->_height != b->_height) return false;
-	
-	unsigned int blockheight = a->block_height();
-	const BlockC<T, A> * IR_MATHC_RESTRICT adata = a->block_data();
-	const BlockC<T, A> * IR_MATHC_RESTRICT bdata = b->block_data();
-	BlockC<T, A> * IR_MATHC_RESTRICT rdata = r->block_data();
+	assert(a != nullptr && b != nullptr && r != nullptr);
+	assert(a != b && b != r && a != r);
+	assert(a->height() == b->height() && b->height() == r->height());
 	
 	#ifdef IR_MATHC_OPENMP
-		#pragma omp parallel for firstprivate(blockheight, adata, bdata, rdata)
+		#pragma omp parallel for firstprivate(a, b, r)
 	#endif
-	for (int blockline = 0; blockline < blockheight; blockline++)
+	for (int lineblock = 0; lineblock < a->block_height(); lineblock++)
 	{
-		for (unsigned int p = 0; p < A; p++) rdata[blockline].r[p] = adata[blockline].r[p] + bdata[blockline].r[p];
+		for (unsigned int p = 0; p < A; p++)
+			r->block_data()[lineblock].r[p] = a->block_data()[lineblock].r[p] + b->block_data()[lineblock].r[p];
 	}
-	return true;
 };
 
-template<typename T, unsigned int A> bool ir::MathC<T, A>::subtract_vvv(const VectorC<T, A> * IR_MATHC_RESTRICT a, const VectorC<T, A> * IR_MATHC_RESTRICT b, VectorC<T, A> * IR_MATHC_RESTRICT r)
+template<typename T, unsigned int A>
+void ir::MathC<T, A>::subtract_vvv(const VectorC<T, A> * IR_MATHC_RESTRICT a, const VectorC<T, A> * IR_MATHC_RESTRICT b, VectorC<T, A> * IR_MATHC_RESTRICT r)
 {
-	if(a->_data == nullptr || b->_data == nullptr || r->_data == nullptr
-	|| a == b || a == r || b == r
-	|| a->_height != b->_height || r->_height != b->_height) return false;
-	
-	unsigned int blockheight = a->block_height();
-	const BlockC<T, A> * IR_MATHC_RESTRICT adata = a->block_data();
-	const BlockC<T, A> * IR_MATHC_RESTRICT bdata = b->block_data();
-	BlockC<T, A> * IR_MATHC_RESTRICT rdata = r->block_data();
+	assert(a != nullptr && b != nullptr && r != nullptr);
+	assert(a != b && b != r && a != r);
+	assert(a->height() == b->height() && b->height() == r->height());
 	
 	#ifdef IR_MATHC_OPENMP
-		#pragma omp parallel for firstprivate(blockheight, adata, bdata, rdata)
+		#pragma omp parallel for firstprivate(a, b, r)
 	#endif
-	for (int blockline = 0; blockline < blockheight; blockline++)
+	for (int lineblock = 0; lineblock < a->block_height(); lineblock++)
 	{
-		for (unsigned int p = 0; p < A; p++) rdata[blockline].r[p] = adata[blockline].r[p] - bdata[blockline].r[p];
+		for (unsigned int p = 0; p < A; p++)
+			r->block_data()[lineblock].r[p] = a->block_data()[lineblock].r[p] - b->block_data()[lineblock].r[p];
 	}
-	return true;
 };
 
-template<typename T, unsigned int A> bool ir::MathC<T, A>::multiply_mvv(const MatrixC<T, A> * IR_MATHC_RESTRICT a, const VectorC<T, A> * IR_MATHC_RESTRICT b, VectorC<T, A> * IR_MATHC_RESTRICT r)
+template<typename T, unsigned int A>
+void ir::MathC<T, A>::multiply_mvv(const MatrixC<T, A> * IR_MATHC_RESTRICT a, const VectorC<T, A> * IR_MATHC_RESTRICT b, VectorC<T, A> * IR_MATHC_RESTRICT r)
 {
-	if(a->_data == nullptr || b->_data == nullptr || r->_data == nullptr
-	|| b == r
-	|| a->_width != b->_height || a->_height != r->_height) return false;
-	
-	unsigned int height = a->_height;
-	unsigned int blockwidth = a->block_width();
-	const BlockC<T, A> * IR_MATHC_RESTRICT bdata = b->block_data();
-	T * IR_MATHC_RESTRICT rdata = r->data();
+	assert(a != nullptr && b != nullptr && r != nullptr);
+	assert(a != b && b != r && a != r);
+	assert(a->width() == b->height() && a->height() == r->height());
 	
 	#ifdef IR_MATHC_OPENMP
-		#pragma omp parallel for firstprivate(a, height, blockwidth, bdata, rdata)
+		#pragma omp parallel for firstprivate(a, b, r)
 	#endif
-	for (int line = 0; (unsigned int)line < height; line++)
+	for (int line = 0; (unsigned int)line < r->height(); line++)
 	{
-		const BlockC<T, A> * IR_MATHC_RESTRICT alinedata = a->block_data(line);
 		BlockC<T, A> sum;
-		for (unsigned int p = 0; p < A; p++) sum.r[p] = 0.0f;
-		for (unsigned int columnblock = 0; columnblock < blockwidth; columnblock++)
+		for (unsigned int p = 0; p < A; p++) sum.r[p] = 0.0;
+		for (unsigned int columnblock = 0; columnblock < a->block_height(); columnblock++)
 		{
-			for (unsigned int p = 0; p < A; p++) sum.r[p] += alinedata[columnblock].r[p] * bdata[columnblock].r[p];
+			for (unsigned int p = 0; p < A; p++)
+				sum.r[p] += a->block_data(line)[columnblock].r[p] * b->block_data()[columnblock].r[p];
 		}
-		float endsum = 0.0f;
-		for (unsigned int p = 0; p < A; p++) endsum += sum.r[p];
-		rdata[line] = endsum;
+		T linesum = 0.0;
+		for (unsigned int p = 0; p < A; p++) linesum += sum.r[p];
+		r->data()[line] = linesum;
 	}
-	return true;
 };
 
 #ifdef IR_MATHC_3DNOW
 
-template<> bool ir::MathC<float, 2>::add_vvv(const VectorC<float, 2> * IR_MATHC_RESTRICT a, const VectorC<float, 2> * IR_MATHC_RESTRICT b, VectorC<float, 2> * IR_MATHC_RESTRICT r)
+template<>
+void ir::MathC<float, 2>::add_vvv(const VectorC<float, 2> *a, const VectorC<float, 2> *b, VectorC<float, 2> *r)
 {
-	if(a->_data == nullptr || b->_data == nullptr || r->_data == nullptr
-	|| a == b || a == r || b == r
-	|| a->_height != b->_height || r->_height != b->_height) return false;
+	assert(a != nullptr && b != nullptr && r != nullptr);
+	assert(a != b && b != r && a != r);
+	assert(a->height() == b->height() && b->height() == r->height());
 	
-	unsigned int blockheight = a->block_height();
 	const __m64 * IR_MATHC_RESTRICT adata = (const __m64*)a->block_data();
 	const __m64 * IR_MATHC_RESTRICT bdata = (const __m64*)b->block_data();
 	__m64 * IR_MATHC_RESTRICT rdata = (__m64*)r->block_data();
 	
-	for (unsigned int blockline = 0; blockline < blockheight; blockline++)
+	for (unsigned int lineblock = 0; lineblock < a->block_height(); lineblock++)
 	{
-		rdata[blockline] = _m_pfadd(adata[blockline], bdata[blockline]);
+		rdata[lineblock] = _m_pfadd(adata[lineblock], bdata[lineblock]);
 	}
 	_m_femms();
-	return true;
 };
 
-template<> bool ir::MathC<float, 2>::subtract_vvv(const VectorC<float, 2> * IR_MATHC_RESTRICT a, const VectorC<float, 2> * IR_MATHC_RESTRICT b, VectorC<float, 2> * IR_MATHC_RESTRICT r)
+template<>
+void ir::MathC<float, 2>::subtract_vvv(const VectorC<float, 2> * IR_MATHC_RESTRICT a, const VectorC<float, 2> * IR_MATHC_RESTRICT b, VectorC<float, 2> * IR_MATHC_RESTRICT r)
 {
-	if(a->_data == nullptr || b->_data == nullptr || r->_data == nullptr
-	|| a == b || a == r || b == r
-	|| a->_height != b->_height || r->_height != b->_height) return false;
-	
-	unsigned int blockheight = a->block_height();
+	assert(a != nullptr && b != nullptr && r != nullptr);
+	assert(a != b && b != r && a != r);
+	assert(a->height() == b->height() && b->height() == r->height());
+
 	const __m64 * IR_MATHC_RESTRICT adata = (const __m64*)a->block_data();
 	const __m64 * IR_MATHC_RESTRICT bdata = (const __m64*)b->block_data();
 	__m64 * IR_MATHC_RESTRICT rdata = (__m64*)r->block_data();
-	
-	for (unsigned int blockline = 0; blockline < blockheight; blockline++)
+
+	for (unsigned int lineblock = 0; lineblock < a->block_height(); lineblock++)
 	{
-		rdata[blockline] = _m_pfsub(adata[blockline], bdata[blockline]);
+		rdata[lineblock] = _m_pfsub(adata[lineblock], bdata[lineblock]);
 	}
 	_m_femms();
-	return true;
 };
 
-template<> bool ir::MathC<float, 2>::multiply_mvv(const MatrixC<float, 2> * IR_MATHC_RESTRICT a, const VectorC<float, 2> * IR_MATHC_RESTRICT b, VectorC<float, 2> * IR_MATHC_RESTRICT r)
+template<>
+void ir::MathC<float, 2>::multiply_mvv(const MatrixC<float, 2> * IR_MATHC_RESTRICT a, const VectorC<float, 2> * IR_MATHC_RESTRICT b, VectorC<float, 2> * IR_MATHC_RESTRICT r)
 {
-	if(a->_data == nullptr || b->_data == nullptr || r->_data == nullptr
-	|| b == r
-	|| a->_width != b->_height || a->_height != r->_height) return false;
+	assert(a != nullptr && b != nullptr && r != nullptr);
+	assert(a != b && b != r && a != r);
+	assert(a->width() == b->height() && a->height() == r->height());
 	
-	unsigned int height = a->_height;
-	unsigned int blockwidth = a->block_width();
 	const __m64 * IR_MATHC_RESTRICT bdata = (const __m64*)b->block_data();
-	int * IR_MATHC_RESTRICT rdata = (int*)r->data();
-	
 	const __m64 zero = _m_from_int(0);
-	for (unsigned int line = 0; line < height; line++)
+
+	for (unsigned int line = 0; line < r->height(); line++)
 	{
 		const __m64 * IR_MATHC_RESTRICT alinedata = (const __m64*)a->block_data(line);
 		__m64 sum = zero;
-		for (unsigned int columnblock = 0; columnblock < blockwidth; columnblock++)
+		for (unsigned int columnblock = 0; columnblock < a->block_width(); columnblock++)
 		{
 			sum = _m_pfadd(sum, _m_pfmul(alinedata[columnblock], bdata[columnblock]));
 		}
 		sum = _m_pfacc(sum, zero);
-		rdata[line] = _m_to_int(sum);
+		*((int*)(r->data() + line)) = _m_to_int(sum);
 	}
 	_m_femms();
 	return true;

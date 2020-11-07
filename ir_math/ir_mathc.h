@@ -11,10 +11,12 @@
 #ifndef IR_MATHC
 #define IR_MATHC
 
-#ifdef IR_MATHC_NO_RESTRICT
-	#define IR_MATHC_RESTRICT
-#else
-	#define IR_MATHC_RESTRICT __restrict
+#ifndef IR_MATHC_RESTRICT
+	#ifdef __cplusplus
+		#define IR_MATHC_RESTRICT __restrict
+	#else
+		#define IR_MATHC_RESTRICT restrict
+	#endif
 #endif
 
 namespace ir
@@ -48,15 +50,15 @@ namespace ir
 		///Returns dimension (height) of vector
 		unsigned int height() const;
 		///Returns dimension (height) of vector
-		T *data();
+		T * IR_MATHC_RESTRICT data();
 		///Returns constant pointer to data
-		const T *data() const;
+		const T * IR_MATHC_RESTRICT data() const;
 		///Returns dimension (height) of vector in blocks
 		unsigned int block_height() const;
 		///Returns pointer to data in blocks
-		BlockC<T, A> *block_data();
+		BlockC<T, A> * IR_MATHC_RESTRICT block_data();
 		///Returns constant pointer to data in blocks
-		const BlockC<T, A> *block_data() const;
+		const BlockC<T, A> * IR_MATHC_RESTRICT block_data() const;
 		///Destroys vector
 		~VectorC();
 	};
@@ -83,15 +85,15 @@ namespace ir
 		///Returns height of matrix
 		unsigned int height() const;
 		///Returns pointer to data on specified line
-		T *data(unsigned int line);
+		T * IR_MATHC_RESTRICT data(unsigned int line);
 		///Returns constant pointer to data on specified line
-		const T *data(unsigned int line) const;
+		const T * IR_MATHC_RESTRICT data(unsigned int line) const;
 		///Returns width of matrix in blocks
 		unsigned int block_width() const;
 		///Returns pointer to data on specified line in blocks
-		BlockC<T, A> *block_data(unsigned int line);
+		BlockC<T, A> * IR_MATHC_RESTRICT block_data(unsigned int line);
 		///Returns constant pointer to data on specified line in blocks
-		const BlockC<T, A> *block_data(unsigned int line) const;
+		const BlockC<T, A> * IR_MATHC_RESTRICT block_data(unsigned int line) const;
 		///Destroys matrix
 		~MatrixC();
 	};
@@ -103,13 +105,13 @@ namespace ir
 	public:
 		///Performs add operation on vectors <tt>r = a + b</tt>
 		///@return @c true or @c false dependent on success or fail
-		static bool add_vvv(const VectorC<T, A> * IR_MATHC_RESTRICT a, const VectorC<T, A> * IR_MATHC_RESTRICT b, VectorC<T, A> * IR_MATHC_RESTRICT r);
+		static void add_vvv(const VectorC<T, A> *a, const VectorC<T, A> *b, VectorC<T, A> *r);
 		///Performs subtract operation <tt>r = a - b</tt>
 		///@return @c true or @c false dependent on success or fail
-		static bool subtract_vvv(const VectorC<T, A> * IR_MATHC_RESTRICT a, const VectorC<T, A> * IR_MATHC_RESTRICT b, VectorC<T, A> * IR_MATHC_RESTRICT r);
+		static void subtract_vvv(const VectorC<T, A> *a, const VectorC<T, A> *b, VectorC<T, A> *r);
 		///Performs multiply operation <tt>r = A * b</tt>
 		///@return @c true or @c false dependent on success or fail
-		static bool multiply_mvv(const MatrixC<T, A> * IR_MATHC_RESTRICT a, const VectorC<T, A> * IR_MATHC_RESTRICT b, VectorC<T, A> * IR_MATHC_RESTRICT r);
+		static void multiply_mvv(const MatrixC<T, A> *a, const VectorC<T, A> *b, VectorC<T, A> *r);
 	};
 	
 ///@}
