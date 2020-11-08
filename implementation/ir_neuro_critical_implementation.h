@@ -13,30 +13,26 @@
 
 #include <assert.h>
 
-#ifdef IR_NEURO_CRITICAL_3DNOW
-	#ifdef _WIN32
-		#include <intrin.h>
-	#else
-		#include <x86intrin.h>
-	#endif	
-#endif
-
-template<class T> T ir::Tanh<T>::function(const T input)
+template<class T>
+inline T ir::Tanh<T>::function(const T input)
 {
 	return tanhf(input);
 };
 
-template<class T> T ir::Tanh<T>::derivative(const T output)
+template<class T>
+inline T ir::Tanh<T>::derivative(const T output)
 {
 	return 1 - output * output;
 };
 
-template<class T> T ir::ReLU<T>::function(const T input)
+template<class T>
+inline T ir::ReLU<T>::function(const T input)
 {
 	return input >= 0 ? input : 0.01 * input;
 };
 
-template<class T> T ir::ReLU<T>::derivative(const T output)
+template<class T>
+inline T ir::ReLU<T>::derivative(const T output)
 {
 	return output >= 0 ? 1.0 : 0.01;
 };
@@ -49,19 +45,15 @@ void ir::Neuro<T, A, F>::_forward(const MatrixC<T, A> *w, const VectorC<T, A> *p
 	#ifdef IR_NEURO_CRITICAL_OPENMP
 		#pragma omp parallel for firstprivate(w, pv, nv)
 	#endif
-	for (int line = 0; (unsigned int)line < nv->height(); line++)
+	for (int row = 0; (unsigned int)row < nv->height(); row++)
 	{
 		BlockC<T, A> sum;
-		for (unsigned int p = 0; p < A; p++) sum.r[p] = 0.0;
+		sum.assign_zero();
 		for (unsigned int columnblock = 0; columnblock < pv->block_height(); columnblock++)
 		{
-			for (unsigned int p = 0; p < A; p++)
-				sum.r[p] += w->block_data(line)[columnblock].r[p] * pv->block_data()[columnblock].r[p];
+			sum += w->block(row, columnblock) * pv->block(columnblock);
 		}
-		T linesum = 0.0;
-		for (unsigned int p = 0; p < A; p++) linesum += sum.r[p];
-		linesum += w->data(line)[pv->height()];
-		nv->data()[line] = F::function(linesum);
+		nv->data()[row] = F::function(sum.sum() + w->at(row, pv->height()));
 	}
 };
 
@@ -73,12 +65,12 @@ void ir::Neuro<T, A, F>::_lastbackward(const VectorC<T, A> *g, const VectorC<T, 
 	#ifdef IR_NEURO_CRITICAL_OPENMP
 		#pragma omp parallel for firstprivate(g, l, e)
 	#endif
-	for (int lineblock = 0; (unsigned int)lineblock < g->block_height(); lineblock++)
+	for (int rowblock = 0; (unsigned int)rowblock < g->block_height(); rowblock++)
 	{
 		for (unsigned int p = 0; p < A; p++)
 		{
-			e->block_data()[lineblock].r[p] = F::derivative(l->block_data()[lineblock].r[p])
-				* (g->block_data()[lineblock].r[p] - l->block_data()[lineblock].r[p]);
+			e->block(rowblock).r[p] = F::derivative(l->block(rowblock).r[p])
+				* (g->block(rowblock).r[p] - l->block(rowblock).r[p]);
 		}
 	}
 };
@@ -94,26 +86,21 @@ void ir::Neuro<T, A, F>::_backward(const MatrixC<T, A> *w, const VectorC<T, A> *
 	#endif
 	for (int column = 0; (unsigned int)column < pe->height(); column++)
 	{
-		BlockC<T, A> sum; for (unsigned p = 0; p < A; p++) sum.r[p] = 0.0;
+		BlockC<T, A> sum;
+		sum.assign_zero();
 
-		unsigned int lineblock = 0;
-		while (lineblock < ne->height() / A)
+		unsigned int rowblock = 0;
+		while (rowblock < w->complete_column_block_height())
 		{
-			BlockC<T, A> v;
-			for (unsigned int p = 0; p < A; p++) v.r[p] = w->data(A * lineblock + p)[column];
-			for (unsigned int p = 0; p < A; p++) sum.r[p] += v.r[p] * ne->block_data()[lineblock].r[p];
-			lineblock++;
+			sum += w->complete_column_block(rowblock, column) * ne->block(rowblock);
+			rowblock++;
 		}
-		if (ne->height() > A * lineblock)
+		if (rowblock * A < w->height())
 		{
-			BlockC<T, A> v;
-			for (unsigned int p = 0; p < (ne->height() - A * lineblock); p++) v.r[p] = w->data(A * lineblock + p)[column];
-			for (unsigned int p = 0; p < A; p++) sum.r[p] += v.r[p] * ne->block_data()[lineblock].r[p];
+			sum += w->column_block(rowblock, column) * ne->block(rowblock);
 		}
 
-		T columnerror = 0.0;
-		for (unsigned p = 0; p < A; p++) columnerror += sum.r[p];
-		pe->data()[column] = F::derivative(pv->data()[column]) * columnerror;
+		pe->at(column) = F::derivative(pv->at(column)) * sum.sum();
 	}
 };
 
@@ -125,15 +112,16 @@ void ir::Neuro<T, A, F>::_corrigate(T coef, const VectorC<T, A> *pv, const Vecto
 	#ifdef IR_NEURO_CRITICAL_OPENMP
 		#pragma omp parallel for firstprivate(coef, pv, ne, w)
 	#endif
-	for (int line = 0; (unsigned int)line < ne->height(); line++)
+	for (int row = 0; (unsigned int)row < ne->height(); row++)
 	{
-		T linecoef = coef * ne->data()[line];
+		BlockC<T, A> rowcoef;
+		for (unsigned int a = 0; a < A; a++) rowcoef.r[a] = coef * ne->at(row);
+
 		for (unsigned int columnblock = 0; columnblock < pv->block_height(); columnblock++)
 		{
-			for (unsigned int p = 0; p < A; p++)
-				w->block_data(line)[columnblock].r[p] += linecoef * pv->block_data()[columnblock].r[p];
+			w->block(row, columnblock) += rowcoef * pv->block(columnblock);
 		}
-		w->data(line)[pv->height()] += linecoef;
+		w->at(row, pv->height()) += coef * ne->at(row);
 	}
 };
 

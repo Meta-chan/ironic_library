@@ -9,36 +9,36 @@
 */
 
 #define IR_IMPLEMENT
-//#define IR_MATHC_THREADS 4
+//#define IR_MATHC_OPENMP
 
 #include <ir_math/ir_mathc.h>
-#include <random>
 #include <time.h>
 
-#define SIZE 1000
-#define N 100
-#define ALIGN 4
+#define TYPE double
+#define SIZE 10000
+#define N 10
+#define ALIGN 16
 
 void test()
 {
-	std::default_random_engine generator;
-	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
 	bool ok;
-	
-	ir::MatrixC<float, ALIGN> ac(SIZE, SIZE, &ok); if (!ok) return;
-	for (unsigned int i = 0; i < SIZE; i++)
-		for (unsigned int j = 0; j < SIZE; j++)	ac.data(i)[j] = distribution(generator);
+	ir::MatrixC<TYPE, ALIGN> ac(SIZE, SIZE, &ok);
+	if (!ok) return;
+	ac.assign_random(-1.0, 1.0);
 
-	ir::VectorC<float, ALIGN> bc(SIZE, &ok); if (!ok) return;
-	for (unsigned int i = 0; i < SIZE; i++)	bc.data()[i] = distribution(generator);
+	ir::VectorC<TYPE, ALIGN> bc(SIZE, &ok);
+	if (!ok) return;
+	bc.assign_random(-1.0, 1.0);
 
-	ir::VectorC<float, ALIGN> cc(SIZE, &ok); if (!ok) return;
-	
-	ir::MathC<float, ALIGN>::multiply_mvv(&ac, &bc, &cc);
+	ir::VectorC<TYPE, ALIGN> cc(SIZE, &ok);
+	if (!ok) return;
+	cc.assign_random(-1.0, 1.0);
+
+	cc.assign_mul(&ac, &bc);
 	clock_t cl = clock();
 	for (unsigned int i = 0; i < N; i++)
 	{
-		ir::MathC<float, ALIGN>::multiply_mvv(&ac, &bc, &cc);
+		cc.assign_mul(&ac, &bc);
 	}
 	printf("Done in %f seconds\n", (float)(clock() - cl)/CLOCKS_PER_SEC);
 
