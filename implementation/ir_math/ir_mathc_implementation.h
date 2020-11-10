@@ -361,27 +361,6 @@ inline const ir::BlockC<T, A> & restrict ir::MatrixC<T, A>::block(unsigned int r
 };
 
 template <class T, unsigned int A>
-inline ir::BlockC<T, A> ir::MatrixC<T, A>::column_block(unsigned int rowblock, unsigned int column) const noexcept
-{
-	assert(_data != nullptr);
-	assert(rowblock < ((_height * A - 1) / A) * A);
-	assert(column < _width);
-
-	ir::BlockC<T, A> b;
-	if (rowblock < _height / A)
-	{
-		for (unsigned int a = 0; a < A; a++) b.r[a] = at(A * rowblock + a, column);
-	}
-	else
-	{
-		b.assign_zero();
-		for (unsigned int a = 0; a < _height - A * rowblock; a++) b.r[a] = at(A * rowblock + a, column);
-	}
-
-	return b;
-};
-
-template <class T, unsigned int A>
 inline unsigned int ir::MatrixC<T, A>::complete_column_block_height() const noexcept
 {
 	assert(_data != nullptr);
@@ -397,6 +376,26 @@ inline ir::BlockC<T, A> ir::MatrixC<T, A>::complete_column_block(unsigned int ro
 	ir::BlockC<T, A> b;
 	for (unsigned int a = 0; a < A; a++) b.r[a] = at(A * rowblock + a, column);
 	return b;
+};
+
+template <class T, unsigned int A>
+inline ir::BlockC<T, A> ir::MatrixC<T, A>::column_block(unsigned int rowblock, unsigned int column) const noexcept
+{
+	assert(_data != nullptr);
+	assert(rowblock < (_height + A - 1) / A);
+	assert(column < _width);
+
+	ir::BlockC<T, A> b;
+	if (rowblock < complete_column_block_height())
+	{
+		return complete_column_block(rowblock, column);
+	}
+	else
+	{
+		b.assign_zero();
+		for (unsigned int a = 0; a < _height - A * rowblock; a++) b.r[a] = at(A * rowblock + a, column);
+		return b;
+	}
 };
 
 template <class T, unsigned int A>

@@ -47,6 +47,7 @@ ir::ec ir::Neuro<T, A, F>::_init(T amplitude, FILE *file) noexcept
 
 	//Init weights
 	std::default_random_engine generator;
+	generator.seed((unsigned int)time(nullptr));
 	std::uniform_real_distribution<T> distribution(-amplitude, amplitude);
 	_weights = (MatrixC<T, A>*)malloc((_nlayers - 1) * sizeof(MatrixC<T, A>));
 	if (_weights == nullptr) return ec::ec_alloc;
@@ -81,7 +82,7 @@ ir::ec ir::Neuro<T, A, F>::_init(T amplitude, FILE *file) noexcept
 	if (!ok) return ec::ec_alloc;
 
 	_ok = true;
-	return ec::ec_alloc;
+	return ec::ec_ok;
 };
 
 template <class T, unsigned int A, class F>
@@ -105,11 +106,12 @@ ir::Neuro<T, A, F>::Neuro(const syschar *filepath, ec *code) noexcept
 	#endif
 
 	FileHeader header, sample;
-	if (fread(&header, sizeof(FileHeader), 1, file) == 0) { if (code != nullptr) *code = ec::ec_read_file; return; }
-	if (fread(&_nlayers, sizeof(unsigned int), 1, file) == 0) { if (code != nullptr) *code = ec::ec_read_file; return; }
+	if (fread(&header, sizeof(FileHeader), 1, file) == 0)					{ if (code != nullptr) *code = ec::ec_read_file; return; }
+	if (memcmp(&header, &sample, sizeof(FileHeader)) != 0)					{ if (code != nullptr) *code = ec::ec_invalid_signature; return; }
+	if (fread(&_nlayers, sizeof(unsigned int), 1, file) == 0)				{ if (code != nullptr) *code = ec::ec_read_file; return; }
 	_layers = (unsigned int*)malloc(_nlayers * sizeof(unsigned int));
-	if (_layers == nullptr) { if (code != nullptr) *code = ec::ec_read_file; return; }
-	if (fread(_layers, sizeof(unsigned int), _nlayers, file) < _nlayers) { if (code != nullptr) *code = ec::ec_read_file; return; }
+	if (_layers == nullptr)													{ if (code != nullptr) *code = ec::ec_read_file; return; }
+	if (fread(_layers, sizeof(unsigned int), _nlayers, file) < _nlayers)	{ if (code != nullptr) *code = ec::ec_read_file; return; }
 	ec c = _init(0.0, file);
 	if (code != nullptr) *code = c;
 };
@@ -123,8 +125,8 @@ bool ir::Neuro<T, A, F>::ok() const noexcept
 template <class T, unsigned int A, class F>
 ir::VectorC<T, A> *ir::Neuro<T, A, F>::get_input() noexcept
 {
-	if (!_ok) return nullptr;
-	else return &_vectors[0];
+	assert(_ok);
+	return &_vectors[0];
 };
 
 template <class T, unsigned int A, class F>

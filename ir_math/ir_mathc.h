@@ -139,13 +139,13 @@ namespace ir
 		inline BlockC<T, A> & restrict block(unsigned int row, unsigned int columnblock) noexcept;
 		///Returns constant reference to block of vector
 		inline const BlockC<T, A> & restrict block(unsigned int row, unsigned int columnblock) const noexcept;
-		///Returns column-major block
-		inline BlockC<T, A> column_block(unsigned int rowblock, unsigned int column) const noexcept;
 		///Returns number of column-major blocks can be safely read with @c main_column_block
 		inline unsigned int complete_column_block_height() const noexcept;
 		///Returns column-major block, may be faster than @c column_block
 		inline BlockC<T, A> complete_column_block(unsigned int rowblock, unsigned int column) const noexcept;
-
+		///Returns column-major block
+		inline BlockC<T, A> column_block(unsigned int rowblock, unsigned int column) const noexcept;
+		
 		//Operations:
 		///Assigns matrix to zero values
 		void assign_zero() noexcept;

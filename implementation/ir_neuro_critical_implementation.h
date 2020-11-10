@@ -12,11 +12,12 @@
 #define IR_NEURO_CRITICAL_IMPLEMENTATION
 
 #include <assert.h>
+#include <math.h>
 
 template<class T>
 inline T ir::Tanh<T>::function(const T input)
 {
-	return tanhf(input);
+	return tanh(input);
 };
 
 template<class T>
