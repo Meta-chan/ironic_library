@@ -11,4 +11,4 @@ int main()
 	reg.set("The Goddess", 2);
 	reg.set("Mercury", 3);
 	printf("%i\n", reg["Mercury"]);
-};
+}

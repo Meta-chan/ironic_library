@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -79,7 +79,7 @@ static unsigned char PADDING[64] = {
   0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
+}
 
 /* F, G, H and I are basic MD5 functions. */
 #define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
@@ -320,7 +320,7 @@ static void ir_md5decode(IR_MD5UINT4 *output, const unsigned char *input, unsign
 			ir_md5update(&context, (const unsigned char *)data, bytelength);
 			ir_md5final((unsigned char*)hash, &context);
 		}
-	};
+	}
 #else
 	void ir_md5(const void *data, unsigned int bitlength, void *hash)
 	{
@@ -328,7 +328,7 @@ static void ir_md5decode(IR_MD5UINT4 *output, const unsigned char *input, unsign
 		ir_md5init(&context);
 		ir_md5update(&context, (const unsigned char *)data, 8 * bitlength);
 		ir_md5final((unsigned char*)hash, &context);
-	};
+	}
 #endif
 
 #endif	//#ifndef IR_MD5_IMPLEMENTATION

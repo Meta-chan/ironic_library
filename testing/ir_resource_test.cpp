@@ -10,9 +10,7 @@ class FloatIniterFreer
 {
 public:
 	static float initvalue;
-	static void free(float f)
-	{
-	};
+	static void free(float f) {}
 };
 
 float FloatIniterFreer::initvalue = 0;
@@ -30,4 +28,4 @@ int main()
 	ir::FileResource fil = fopen("file.txt", "w");
 	fwrite("file", 1, 4, fil);
 	return 0;
-};
+}

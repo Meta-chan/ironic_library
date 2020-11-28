@@ -22,4 +22,4 @@ int main()
 
 	ir::gauss(2, m, v);
 	return 0;
-};
+}

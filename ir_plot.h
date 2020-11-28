@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -44,7 +44,7 @@ namespace ir
 	ec plot(unsigned int nplots, Plot plot1, ...);
 	
 ///@}
-};
+}
 
 #if (defined(IR_IMPLEMENT) || defined (IR_PLOT_IMPLEMENT)) && !defined(IR_PLOT_NOT_IMPLEMENT)
 	#include <implementation/ir_plot_implementation.h>

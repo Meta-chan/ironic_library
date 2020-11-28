@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -27,7 +27,7 @@ namespace ir
 	template<class T> bool gauss(size_t size, T **matrix, T *vector, T *result = (T*)nullptr);
 	
 ///@}
-};
+}
 
 #if (defined(IR_IMPLEMENT) || defined(IR_GAUSS_IMPLEMENT)) && !defined(IT_GAUSS_NOT_IMPLEMENT)
 	#include <implementation/ir_math/ir_gauss_implementation.h>

@@ -39,7 +39,7 @@ namespace ir
 	};
 	
 ///@}
-};
+}
 
 #if (defined(IR_IMPLEMENT) || defined(IR_LAMBDA_RESOURCE_IMPLEMENT)) && !defined(IR_LAMBDA_RESOURCE_NOT_IMPLEMENT)
 	#include <implementation/ir_resource/ir_lambda_resource_implementation.h>

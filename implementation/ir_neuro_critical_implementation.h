@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -18,25 +18,25 @@ template<class T>
 inline T ir::Tanh<T>::function(const T input)
 {
 	return tanh(input);
-};
+}
 
 template<class T>
 inline T ir::Tanh<T>::derivative(const T output)
 {
 	return 1 - output * output;
-};
+}
 
 template<class T>
 inline T ir::ReLU<T>::function(const T input)
 {
 	return input >= 0 ? input : 0.01 * input;
-};
+}
 
 template<class T>
 inline T ir::ReLU<T>::derivative(const T output)
 {
 	return output >= 0 ? 1.0 : 0.01;
-};
+}
 
 template<class T, unsigned int A, class F>
 void ir::Neuro<T, A, F>::_forward(const MatrixC<T, A> *w, const VectorC<T, A> *pv, VectorC<T, A> *nv) noexcept
@@ -56,7 +56,7 @@ void ir::Neuro<T, A, F>::_forward(const MatrixC<T, A> *w, const VectorC<T, A> *p
 		}
 		nv->data()[row] = F::function(sum.sum() + w->at(row, pv->height()));
 	}
-};
+}
 
 template<class T, unsigned int A, class F>
 void ir::Neuro<T, A, F>::_lastbackward(const VectorC<T, A> *g, const VectorC<T, A> *l, VectorC<T, A> *e) noexcept
@@ -74,7 +74,7 @@ void ir::Neuro<T, A, F>::_lastbackward(const VectorC<T, A> *g, const VectorC<T, 
 				* (g->block(rowblock).r[p] - l->block(rowblock).r[p]);
 		}
 	}
-};
+}
 
 template<class T, unsigned int A, class F>
 void ir::Neuro<T, A, F>::_backward(const MatrixC<T, A> *w, const VectorC<T, A> *ne, const VectorC<T, A> *pv, VectorC<T, A> *pe) noexcept
@@ -103,7 +103,7 @@ void ir::Neuro<T, A, F>::_backward(const MatrixC<T, A> *w, const VectorC<T, A> *
 
 		pe->at(column) = F::derivative(pv->at(column)) * sum.sum();
 	}
-};
+}
 
 template<class T, unsigned int A, class F>
 void ir::Neuro<T, A, F>::_corrigate(T coef, const VectorC<T, A> *pv, const VectorC<T, A> *ne, MatrixC<T, A> *w) noexcept
@@ -124,6 +124,6 @@ void ir::Neuro<T, A, F>::_corrigate(T coef, const VectorC<T, A> *pv, const Vecto
 		}
 		w->at(row, pv->height()) += coef * ne->at(row);
 	}
-};
+}
 
 #endif	//#ifndef IR_NEURO_CRITICAL_IMPLEMENTATION

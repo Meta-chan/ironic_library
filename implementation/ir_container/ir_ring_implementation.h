@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -22,7 +22,7 @@ template<typename T> ir::Ring<T>::Ring(size_t size)
 	_data = (T*)malloc(size * sizeof(T));
 	if (_data == nullptr) throw std::bad_alloc();
 	_size = size;
-};
+}
 
 template<typename T> typename ir::Ring<T>::Block ir::Ring<T>::write_direct(size_t count)
 {
@@ -64,7 +64,7 @@ template<typename T> typename ir::Ring<T>::Block ir::Ring<T>::write_direct(size_
 
 	_count += count;
 	return b;
-};
+}
 
 template<typename T> typename ir::Ring<T>::Block ir::Ring<T>::read_direct(size_t count)
 {
@@ -101,14 +101,14 @@ template<typename T> typename ir::Ring<T>::Block ir::Ring<T>::read_direct(size_t
 	}
 
 	return b;
-};
+}
 
 template<typename T> void ir::Ring<T>::write(const T *data, size_t count)
 {
 	Block b = write_direct(count);
 	for (size_t i = 0; i < b.size[0]; i++) b.data[0][i] = data[i];
 	for (size_t i = 0; i < b.size[1]; i++) b.data[1][i] = data[b.size[0] + i];
-};
+}
 
 template<typename T> void ir::Ring<T>::read(T *data, size_t count, bool eras)
 {
@@ -116,13 +116,13 @@ template<typename T> void ir::Ring<T>::read(T *data, size_t count, bool eras)
 	for (size_t i = 0; i < b.size[0]; i++) data[i] = b.data[0][i];
 	for (size_t i = 0; i < b.size[1]; i++) data[b.size[0] + i] = b.data[1][i];
 	if (eras) erase(count);
-};
+}
 
 template<typename T> void ir::Ring<T>::write(const T &elem)
 {
 	Block b = write_direct(1);
 	b.data[0][0] = elem;
-};
+}
 
 template<typename T> T ir::Ring<T>::read(bool eras)
 {
@@ -137,7 +137,7 @@ template<typename T> T ir::Ring<T>::read(bool eras)
 	{
 		return b.data[0][0];
 	}
-};
+}
 
 template<typename T> void ir::Ring<T>::erase(size_t count)
 {
@@ -165,21 +165,21 @@ template<typename T> void ir::Ring<T>::erase(size_t count)
 	}
 
 	_count -= count;
-};
+}
 
 template<typename T> size_t ir::Ring<T>::count() const noexcept
 {
 	return _count;
-};
+}
 
 template<typename T> size_t ir::Ring<T>::size() const noexcept
 {
 	return _size;
-};
+}
 
 template<typename T> ir::Ring<T>::~Ring()
 {
 	if (_data != nullptr) free(_data);
-};
+}
 
 #endif //#ifndef IR_RING_IMPLEMENTATION

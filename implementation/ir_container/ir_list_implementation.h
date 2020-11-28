@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -55,16 +55,16 @@ template<class T> typename ir::List<T>::Element *ir::List<T>::_find(size_t i) co
 	_lastn = i;
 	_lastp = iter;
 	return iter;
-};
+}
 
 template<class T> ir::List<T>::List() noexcept
 {
-};
+}
 
 template<class T> ir::List<T>::List(size_t newsize)
 {
 	resize(newsize);
-};
+}
 
 template<class T> ir::List<T>::List(const List &list) noexcept
 {
@@ -76,64 +76,64 @@ template<class T> ir::List<T>::List(const List &list) noexcept
 	if (_head != nullptr) _head->refcount++;
 	_lastn = list._lastn;
 	_lastp = list._lastp;
-};
+}
 
 template<class T> T &ir::List<T>::operator[](size_t i)
 {
 	return at(i);
-};
+}
 
 template<class T> T &ir::List<T>::at(size_t i)
 {
 	if (_head == nullptr || i >= _head->size) throw std::out_of_range(_out_of_range_message);
 	if (_head->refcount > 1) detach();
 	return _find(i)->element;
-};
+}
 
 template<class T> T &ir::List<T>::front()
 {
 	if (size() == 0) throw std::out_of_range(_out_of_range_message);
 	return _head->element;
-};
+}
 
 template<class T> T &ir::List<T>::back()
 {
 	if (size() == 0) throw std::out_of_range(_out_of_range_message);
 	return _head->previous->element;
-};
+}
 
 template<class T> const T &ir::List<T>::operator[](size_t i) const
 {
 	return at(i);
-};
+}
 
 template<class T> const T &ir::List<T>::at(size_t i) const
 {
 	if (_head == nullptr || i >= _head->size) throw std::out_of_range(_out_of_range_message);
 	return _find(i)->element;
-};
+}
 
 template<class T> const T &ir::List<T>::front() const
 {
 	if (size() == 0) throw std::out_of_range(_out_of_range_message);
 	return _head->element;
-};
+}
 
 template<class T> const T &ir::List<T>::back() const
 {
 	if (size() == 0) throw std::out_of_range(_out_of_range_message);
 	return _head->previous->element;
-};
+}
 
 template<class T> bool ir::List<T>::empty() const noexcept
 {
 	return (_head == nullptr || _head->size == 0);
-};
+}
 
 template<class T> size_t ir::List<T>::size() const noexcept
 {
 	return (_head == nullptr ? 0 : _head->size);
-};
+}
 
 template<class T> void ir::List<T>::resize(size_t newsize)
 {
@@ -146,7 +146,7 @@ template<class T> void ir::List<T>::resize(size_t newsize)
 	{
 		for (size_t i = newsize; i < size(); i++)	pop_back();
 	}
-};
+}
 
 template<class T> void ir::List<T>::push_back(const T &elem)
 {
@@ -178,7 +178,7 @@ template<class T> void ir::List<T>::push_back(const T &elem)
 		_head->size++;						//manage global
 		new(&newtail->element) T(elem);		//create
 	}
-};
+}
 
 template<class T> void ir::List<T>::pop_back()
 {
@@ -206,7 +206,7 @@ template<class T> void ir::List<T>::pop_back()
 		_head->size--;												//manage global
 		if (_lastn == _head->size) { _lastn = 0; _lastp = _head; }	//manage last
 	}
-};
+}
 	
 template<class T> void ir::List<T>::insert(size_t i, const T &elem)
 {
@@ -227,7 +227,7 @@ template<class T> void ir::List<T>::insert(size_t i, const T &elem)
 		new(&newielem->element) T(elem);							//create
 		if (_lastn >= i) _lastn++;									//manage last
 	}
-};
+}
 
 template<class T> void ir::List<T>::erase(size_t i)
 {
@@ -248,7 +248,7 @@ template<class T> void ir::List<T>::erase(size_t i)
 		if (_lastn == i) _lastp = nextelem;		//manage last
 		else if (_lastn > i) _lastn--;
 	}
-};
+}
 
 template<class T> const ir::List<T> &ir::List<T>::operator=(const List<T> &list) noexcept
 {
@@ -261,7 +261,7 @@ template<class T> const ir::List<T> &ir::List<T>::operator=(const List<T> &list)
 	_lastn = list._lastn;
 	_lastp = list._lastp;
 	return *this;
-};
+}
 
 template<class T> void ir::List<T>::clear() noexcept
 {
@@ -278,7 +278,7 @@ template<class T> void ir::List<T>::clear() noexcept
 			_debuglist= nullptr;
 		#endif
 	}
-};
+}
 
 template<class T> void ir::List<T>::detach()
 {
@@ -295,11 +295,11 @@ template<class T> void ir::List<T>::detach()
 		}
 		else clear();
 	}
-};
+}
 
 template<class T> ir::List<T>::~List() noexcept
 {
 	clear();
-};
+}
 
 #endif //#ifndef IR_LIST_IMPLEMENTATION

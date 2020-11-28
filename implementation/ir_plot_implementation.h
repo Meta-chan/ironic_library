@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -62,7 +62,7 @@ void plotwindowpaint(HWND hWnd)
 	}
 
 	EndPaint(hWnd, &paintstruct);
-};
+}
 
 LRESULT CALLBACK plotwindowproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -78,17 +78,17 @@ LRESULT CALLBACK plotwindowproc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	return 0;
-};
+}
 
 ir::ec ir::plot(unsigned int nplots, Plot plot1, ...)
 {
-	if (nplots == 0) return ec::ec_ok;
+	if (nplots == 0) return ec::ok;
 
 	//Copying parameters to global
 	currentplots.nplots = nplots;
 	if (currentplots.plots == nullptr) currentplots.plots = (Plot*)malloc(nplots * sizeof(Plot));
 	else currentplots.plots = (Plot*)realloc(currentplots.plots, nplots * sizeof(Plot));
-	if (currentplots.plots == nullptr) return ec::ec_alloc;
+	if (currentplots.plots == nullptr) return ec::alloc;
 	memcpy(currentplots.plots, &plot1, nplots * sizeof(Plot));
 
 	//Searching minimum and maximum
@@ -133,7 +133,7 @@ ir::ec ir::plot(unsigned int nplots, Plot plot1, ...)
 		windowclass.hInstance = GetModuleHandle(NULL);
 		windowclass.lpszClassName = TEXT("ir_plot_window_class");
 		windowclass.hbrBackground = (HBRUSH)COLOR_APPWORKSPACE;
-		if (RegisterClass(&windowclass) == 0) return ec::ec_windows_register_class;
+		if (RegisterClass(&windowclass) == 0) return ec::windows_register_class;
 		currentplots.registered = true;
 	}
 
@@ -143,19 +143,19 @@ ir::ec ir::plot(unsigned int nplots, Plot plot1, ...)
 	HWND hWnd = CreateWindow(TEXT("ir_plot_window_class"), TEXT("ir_plot"), WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 		screen.right / 4, screen.bottom / 4, screen.right / 2, screen.bottom / 2,
 		NULL, NULL, GetModuleHandle(NULL), NULL);
-	if (!hWnd) return ec::ec_windows_create_window;
+	if (!hWnd) return ec::windows_create_window;
 
 	//Displaying window
 	MSG msg = { 0 };
 	int ok = 0;
 	while ((ok = GetMessage(&msg, NULL, 0, 0)) != 0)
 	{
-		if (ok == -1) return ec::ec_windows_getmessage;
+		if (ok == -1) return ec::windows_getmessage;
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
 
-	return ec::ec_ok;
-};
+	return ec::ok;
+}
 
 #endif //#ifndef IR_PLOT_IMPLEMENATTION

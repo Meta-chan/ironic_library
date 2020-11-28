@@ -38,7 +38,7 @@ int main()
 	clock_t b = clock();
 	for (unsigned int i = 0; i < 10; i++)
 	{
-		void *map = ir::openmap(&cache, file, READSTART, READEND - READSTART, ir::openmapmode::openmap_read);
+		void *map = ir::openmap(&cache, file, READSTART, READEND - READSTART, ir::openmap_mode::read);
 		if (map == nullptr) return 1;
 		memcpy(destbuffer, map, BUFSIZE);
 	}
@@ -48,4 +48,4 @@ int main()
 	printf("fread time: %f\n", (float)(b - a) / CLOCKS_PER_SEC);
 	printf("openmap time: %f\n", (float)(c - b) / CLOCKS_PER_SEC);
 	getchar();
-};
+}

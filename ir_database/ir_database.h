@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -21,30 +21,30 @@ namespace ir
 	{
 	public:
 		///Insertion mode
-		enum insertmode
+		enum class insert_mode
 		{
-			insert_always,		///< Insert always, replace value if identifier already exists
-			insert_existing,	///< Update value only if identifier already exists, otherwise fail
-			insert_not_existing	///< Set value only if identifier does not exist, otherwise fail
+			always,			///< Insert always, replace value if identifier already exists
+			existing,		///< Update value only if identifier already exists, otherwise fail
+			not_existing	///< Set value only if identifier does not exist, otherwise fail
 		};
 
 		///Deletion mode
-		enum deletemode
+		enum class delete_mode
 		{
-			delete_always,		///< Delete value if identifier exists, do nothing otherwise
-			delete_existing		///< Delete value if identifier exist, otherwise fail
+			always,		///< Delete value if identifier exists, do nothing otherwise
+			existing	///< Delete value if identifier exist, otherwise fail
 		};
 		
 		///Creation mode
-		enum createmode
+		enum create_mode
 		{
-			create_read,		///< Open database with read access if files are not corrupted
-			create_edit,		///< Open database with read and write access if files are not corrupted
-			create_new,			///< Create empty database with read and write access, delete existing files
+			read,		///< Open database with read access if files are not corrupted
+			edit,		///< Open database with read and write access if files are not corrupted
+			neww		///< Create empty database with read and write access, delete existing files
 		};
 	};
 
 ///@}
-};
+}
 
 #endif	//#ifndef IR_DATABASE

@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -18,6 +18,6 @@ template <class T> T *ir::MemIniterFreer<T>::initvalue = nullptr;
 template<class T> void ir::MemIniterFreer<T>::free(T *mem)
 {
 	if (mem != nullptr) ::free(mem);
-};
+}
 
 #endif	//#ifndef IR_MEM_RESOURCE_IMPLEMENTATION

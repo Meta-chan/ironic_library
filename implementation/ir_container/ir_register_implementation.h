@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -25,7 +25,7 @@ template <class T, class C> size_t ir::Register<T, C>::_strlen(const C *key) noe
 		while (key[length] != 0) length++;
 		return length;
 	}
-};
+}
 
 template <class T, class C> C *ir::Register<T, C>::_strdup(const C *key, size_t length)
 {
@@ -34,7 +34,7 @@ template <class T, class C> C *ir::Register<T, C>::_strdup(const C *key, size_t 
 	memcpy(newkey, key, length * sizeof(C));
 	newkey[length] = 0;
 	return newkey;
-};
+}
 
 template <class T, class C> int ir::Register<T, C>::_strcmp(const C *key1, size_t keysize1, const C *key2, size_t keysize2) noexcept
 {
@@ -50,7 +50,7 @@ template <class T, class C> int ir::Register<T, C>::_strcmp(const C *key1, size_
 		}
 		return 0;
 	}
-};
+}
 	
 template <class T, class C> bool ir::Register<T, C>::_find(const C *key, size_t length, size_t *position) const noexcept
 {
@@ -91,40 +91,40 @@ template <class T, class C> bool ir::Register<T, C>::_find(const C *key, size_t 
 			else				{ *position = right + 1; return false; }
 		}
 	}
-};
+}
 	
 template <class T, class C> ir::Register<T, C>::Register() noexcept
 {
 
-};
+}
 	
 template <class T, class C> ir::Register<T, C>::Register(Register<T, C> &reg) noexcept
 : Vector<RegisterElement<T, C>>(reg)
 {
 
-};
+}
 	
 template <class T, class C> T &ir::Register<T, C>::operator[](const C *key)
 {
 	return at(key, _strlen(key));
-};
+}
 	
 template <class T, class C> T &ir::Register<T, C>::at(const C *key)
 {
 	return at(key, _strlen(key));
-};
+}
 	
 template <class T, class C> T &ir::Register<T, C>::at(const C *key, size_t length)
 {
 	size_t position;
 	if (_find(key, length, &position)) return super::at(position).data;
 	else throw std::out_of_range(_not_found_message);
-};
+}
 	
 template <class T, class C> void ir::Register<T, C>::create(const C *key)
 {
 	create(key, _strlen(key));
-};
+}
 
 template <class T, class C> void ir::Register<T, C>::create(const C *key, size_t length)
 {
@@ -136,12 +136,12 @@ template <class T, class C> void ir::Register<T, C>::create(const C *key, size_t
 		elem.keysize = length;
 		super::insert(position, elem);
 	}
-};
+}
 
 template <class T, class C> void ir::Register<T, C>::set(const C *key, const T &elem)
 {
 	return set(key, _strlen(key), elem);
-};
+}
 
 template <class T, class C> void ir::Register<T, C>::set(const C *key, size_t length, const T &elem)
 {
@@ -156,12 +156,12 @@ template <class T, class C> void ir::Register<T, C>::set(const C *key, size_t le
 		welem.data = elem;
 		super::insert(position, welem);
 	}
-};
+}
 	
 template <class T, class C> void ir::Register<T, C>::erase(const C *key) noexcept
 {
 	return erase(key, _strlen(key));
-};
+}
 	
 template <class T, class C> void ir::Register<T, C>::erase(const C *key, size_t length) noexcept
 {
@@ -171,55 +171,55 @@ template <class T, class C> void ir::Register<T, C>::erase(const C *key, size_t 
 		free(super::at(position).key);
 		super::erase(position);
 	}
-};
+}
 	
 template <class T, class C> T &ir::Register<T, C>::direct(size_t index) noexcept
 {
 	return super::at(index).data;
-};
+}
 	
 template <class T, class C> const T &ir::Register<T, C>::operator[](const C *key) const
 {
 	return at(key, _strlen(key));
-};
+}
 
 template <class T, class C> const T &ir::Register<T, C>::at(const C *key) const
 {
 	return at(key, _strlen(key));
-};
+}
 
 template <class T, class C> const T &ir::Register<T, C>::at(const C *key, size_t length) const
 {
 	size_t position;
 	if (_find(key, length, &position)) return super::at(position).data;
 	else throw std::out_of_range(_not_found_message);
-};
+}
 	
 template <class T, class C> bool ir::Register<T, C>::has(const C *key) const noexcept
 {
 	return has(key, _strlen(key));
-};
+}
 	
 template <class T, class C> bool ir::Register<T, C>::has(const C *key, size_t length) const noexcept
 {
 	size_t position;
 	return _find(key, length, &position);
-};
+}
 	
 template <class T, class C> const T &ir::Register<T, C>::direct(size_t index) const
 {
 	return super::at(index).data;
-};
+}
 	
 template <class T, class C> const C *ir::Register<T, C>::direct_key(size_t index) const
 {
 	return super::at(index).key;
-};
+}
 
 template <class T, class C> size_t ir::Register<T, C>::direct_key_length(size_t index) const
 {
 	return super::at(index).keysize;
-};
+}
 
 template <class T, class C> void ir::Register<T, C>::clear() noexcept
 {
@@ -228,7 +228,7 @@ template <class T, class C> void ir::Register<T, C>::clear() noexcept
 		free(super::at(i).key);
 	}
 	super::clear();
-};
+}
 	
 template <class T, class C> void ir::Register<T, C>::detach()
 {
@@ -237,11 +237,11 @@ template <class T, class C> void ir::Register<T, C>::detach()
 	{
 		super::at(i).key = _strdup(super::at(i).key, super::at(i).keysize);
 	}
-};
+}
 	
 template <class T, class C> ir::Register<T, C>::~Register() noexcept
 {
 	clear();
-};
+}
 
 #endif //#ifndef IR_REGISTER_IMPLEMENTATION

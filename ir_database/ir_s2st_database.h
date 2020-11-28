@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -50,7 +50,7 @@ namespace ir
 			unsigned int keysize : 31;
 			unsigned int deleted : 1;
 			unsigned int datasize;
-			MetaCell();
+			MetaCell() noexcept;
 		};
 
 		struct FileMetaCommon
@@ -80,76 +80,78 @@ namespace ir
 		ir::OpenmapCache _mapcache;
 		
 		//Primitive read & write section
-		static unsigned int _align(unsigned int i);
-		ec _read(void *buffer, unsigned int offset, unsigned int size);
-		ec _write(const void *buffer, unsigned int offset, unsigned int size);
-		ec _readpointer(void **p, unsigned int offset, unsigned int size);
-		ec _metaread(MetaCell *cell, unsigned int index);
-		ec _metawrite(MetaCell cell, unsigned int index);
+		static unsigned int _align(unsigned int i)											noexcept;
+		ec _read(void *buffer, unsigned int offset, unsigned int size)						noexcept;
+		ec _write(const void *buffer, unsigned int offset, unsigned int size)				noexcept;
+		ec _readpointer(void **p, unsigned int offset, unsigned int size)					noexcept;
+		ec _metaread(MetaCell *cell, unsigned int index)									noexcept;
+		ec _metawrite(MetaCell cell, unsigned int index)									noexcept;
 
 		//Complex section
-		unsigned int _hash(ConstBlock key);
-		ec _find(ConstBlock key, unsigned int *metaoffset, MetaCell *cell);
-		ec _rehash(unsigned int newmetasize);
+		unsigned int _hash(ConstBlock key)													noexcept;
+		ec _find(ConstBlock key, unsigned int *metaoffset, MetaCell *cell)					noexcept;
+		ec _rehash(unsigned int newmetasize)												noexcept;
 
 		//Init section
-		ec _check(const syschar *filepath, const syschar *metapath);
-		ec _openwrite(const syschar *filepath, const syschar *metapath, bool createnew);
-		ec _init(const syschar *filepath, createmode cmode);
+		ec _check(const syschar *filepath, const syschar *metapath)							noexcept;
+		ec _openwrite(const syschar *filepath, const syschar *metapath, bool createnew)		noexcept;
+		ec _init(const syschar *filepath, create_mode mode)									noexcept;
 	public:
 
 		///Creates a database
 		///@param filepath Relative or absolute path to database files
 		///@param mode Creation mode
 		///@param code Pointer to ir::ec that receives return status if is not nullptr
-		S2STDatabase(const syschar *filepath, createmode mode, ec *code);
+		S2STDatabase(const syschar *filepath, create_mode mode, ec *code)					noexcept;
+		///Returns whether database is ok
+		bool ok()																			const noexcept;
 		///Ask if identifier exists and can be read if no supernatural error occurs
 		///@param key String identifier
-		ec probe(ConstBlock key);
+		ec probe(ConstBlock key)															noexcept;
 		///Read value related to identifier
 		///@param key String identifier
 		///@param data Pointer to ir::ConstBlock to receive result
-		ec read(ConstBlock key, ConstBlock *data);
+		ec read(ConstBlock key, ConstBlock *data)											noexcept;
 		///Read value of given index from table. May be used to search in database
 		///@param index Index in table
 		///@param key Pointer to ir::ConstBlock to receive identifier, may be nullptr
 		///@param data Pointer to ir::ConstBlock to receive value, may be nullptr
-		ec read_direct(unsigned int index, ConstBlock *key, ConstBlock *data);
+		ec read_direct(unsigned int index, ConstBlock *key, ConstBlock *data)				noexcept;
 		///Insert value related to identifier into database
 		///@param key String identifier
 		///@param data Related value
 		///@param mode Insertion mode
-		ec insert(ConstBlock key, ConstBlock data, insertmode mode = insert_always);
+		ec insert(ConstBlock key, ConstBlock data, insert_mode mode = insert_mode::always)	noexcept;
 		///Delete value from database
 		///@param key String identifier
 		///@param mode Deletion mode
-		ec delet(ConstBlock key, deletemode mode = delete_always);
+		ec delet(ConstBlock key, delete_mode mode = delete_mode::always)					noexcept;
 		///Get number of elements stored in database
-		unsigned int count();
+		unsigned int count()																const noexcept;
 		///Get size of the table, in elements
-		unsigned int get_table_size();
+		unsigned int get_table_size()														const noexcept;
 		///Get size of main database (excluding table), in bytes
-		unsigned int get_file_size();
+		unsigned int get_file_size()														const noexcept;
 		///Get used size of main database. Database will have this size after optimizing
-		unsigned int get_file_used_size();
+		unsigned int get_file_used_size()													const noexcept;
 		///Sets table size. It may be a good idea to set table size if you know number of elements explicitly
 		///@param newtablesize New table size, must be power of two
-		ec set_table_size(unsigned int newtablesize);
+		ec set_table_size(unsigned int newtablesize)										noexcept;
 		///Sets main file size. It may be a good idea to set file size if you know know it explicitly
 		///@param newfilesize New file size, in bytes
-		ec set_file_size(unsigned int newfilesize);
+		ec set_file_size(unsigned int newfilesize)											noexcept;
 		///Tells if table and main file need to be kept in RAM or on hard drive. Values from database are read with two database accessions: to table and to main file. So if both are kept in RAM, access costs two RAM accesses. If both are not, access cost two hard drive accesses, etc.
 		///@param holdfile Hold main file in RAM
 		///@param holdmeta Hold table in RAM
-		ec set_ram_mode(bool holdfile, bool holdmeta);
+		ec set_ram_mode(bool holdfile, bool holdmeta)										noexcept;
 		///Optimize database for size
-		ec optimize();
+		ec optimize()																		noexcept;
 		///Destroy database and write files kept in RAM to hard drive
-		~S2STDatabase();
+		~S2STDatabase()																		noexcept;
 	};
 	
 ///@}	
-};
+}
 
 #if (defined(IR_IMPLEMENT) || defined(IR_S2ST_DATABASE_IMPLEMENT)) && !defined(IR_S2ST_DATABASE_NOT_IMPLEMENT)
 	#include <implementation/ir_database/ir_s2st_database_implementation.h>

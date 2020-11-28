@@ -17,4 +17,4 @@ int main(int argc, char **argv)
 	}
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), attributes);
 	return 	0;
-};
+}

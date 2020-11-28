@@ -21,7 +21,7 @@ void printutf32(unsigned int *s)
 		printf("%u ", *s);
 		s++;
 	}
-};
+}
 
 int main(void)
 {
@@ -53,4 +53,4 @@ int main(void)
 	getchar();
 
 	return 0;
-};
+}

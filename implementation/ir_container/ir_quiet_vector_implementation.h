@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -19,12 +19,12 @@ template<class T> T ir::QuietVector<T>::_dummy;
 
 template<class T> ir::QuietVector<T>::QuietVector() noexcept
 {
-};
+}
 
 template<class T> ir::QuietVector<T>::QuietVector(size_t newsize) noexcept
 {
 	resize(newsize);
-};
+}
 
 template<class T> ir::QuietVector<T>::QuietVector(QuietVector &vector) noexcept
 {
@@ -34,18 +34,18 @@ template<class T> ir::QuietVector<T>::QuietVector(QuietVector &vector) noexcept
 		_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
 	#endif
 	if (_header != nullptr) _header->refcount++;
-};
+}
 
 template <class T> T *ir::QuietVector<T>::data() noexcept
 {
 	if (_header == nullptr) return nullptr;
 	else return (T*)(_header + 1);
-};
+}
 
 template<class T> T &ir::QuietVector<T>::operator[](size_t i) noexcept
 {
 	return at(i);
-};
+}
 
 template<class T> T &ir::QuietVector<T>::at(size_t i) noexcept
 {
@@ -55,35 +55,35 @@ template<class T> T &ir::QuietVector<T>::at(size_t i) noexcept
 		return _dummy;
 	}
 	else return data()[i];
-};
+}
 
 template<class T> T &ir::QuietVector<T>::front() noexcept
 {
 	return at(0);
-};
+}
 
 template<class T> T &ir::QuietVector<T>::back() noexcept
 {
 	return at(size() - 1);
-};
+}
 
 template<class T> bool ir::QuietVector<T>::set(size_t i, T elem) noexcept
 {
 	if (i >= size()) return false;
 	data()[i] = elem;
 	return true;
-};
+}
 
 template <class T> const T *ir::QuietVector<T>::data() const noexcept
 {
 	if (size() == 0) return nullptr;
 	else return (const T*)(_header + 1);
-};
+}
 
 template<class T> const T &ir::QuietVector<T>::operator[](size_t i) const noexcept
 {
 	return at(i);
-};
+}
 
 template<class T> const T &ir::QuietVector<T>::at(size_t i) const noexcept
 {
@@ -93,41 +93,41 @@ template<class T> const T &ir::QuietVector<T>::at(size_t i) const noexcept
 		return _dummy;
 	}
 	else return data()[i];
-};
+}
 
 template<class T> const T &ir::QuietVector<T>::front() const noexcept
 {
 	return at(0);
-};
+}
 
 template<class T> const T &ir::QuietVector<T>::back() const noexcept
 {
 	return at(size() - 1);
-};
+}
 
 template<class T> bool ir::QuietVector<T>::get(size_t i, T *elem) const noexcept
 {
 	if (i >= size()) return false;
 	*elem = data()[i];
 	return true;
-};
+}
 
 template<class T> bool ir::QuietVector<T>::empty() const noexcept
 {
 	return (size() == 0);
-};
+}
 
 template<class T> size_t ir::QuietVector<T>::size() const noexcept
 {
 	if (_header == nullptr) return 0;
 	else return _header->size;
-};
+}
 
 template<class T> size_t ir::QuietVector<T>::capacity() const noexcept
 {
 	if (_header == nullptr) return 0;
 	else return _header->capacity;
-};
+}
 
 template<class T> bool ir::QuietVector<T>::resize(size_t newsize) noexcept
 {
@@ -135,7 +135,7 @@ template<class T> bool ir::QuietVector<T>::resize(size_t newsize) noexcept
 	if (newsize > size()) memset(data() + size(), 0, (newsize - size()) * sizeof(T));
 	_header->size = newsize;
 	return true;
-};
+}
 
 template<class T> bool ir::QuietVector<T>::reserve(size_t newcapacity) noexcept
 {
@@ -160,20 +160,20 @@ template<class T> bool ir::QuietVector<T>::reserve(size_t newcapacity) noexcept
 		_header->capacity = newcapacity;
 	}
 	return true;
-};
+}
 
 template<class T> bool ir::QuietVector<T>::push_back(T elem) noexcept
 {
 	if (!resize(size() + 1)) return false;
 	back() = elem;
 	return true;
-};
+}
 
 template<class T> bool ir::QuietVector<T>::pop_back() noexcept
 {
 	if (size() == 0) return false;
 	else return resize(size() - 1);
-};
+}
 
 template<class T> bool ir::QuietVector<T>::insert(size_t i, T elem) noexcept
 {
@@ -182,14 +182,14 @@ template<class T> bool ir::QuietVector<T>::insert(size_t i, T elem) noexcept
 	memcpy(data() + i + 1, data() + i, (size() - i) * sizeof(T));
 	data()[i] = elem;
 	return true;
-};
+}
 
 template<class T> bool ir::QuietVector<T>::erase(size_t i) noexcept
 {
 	if (i >= size()) return false;
 	memcpy(data() + i, data() + i + 1, (size() - i - 1) * sizeof(T));
 	return resize(size() - 1);
-};
+}
 
 template<class T> void ir::QuietVector<T>::clear() noexcept
 {
@@ -202,7 +202,7 @@ template<class T> void ir::QuietVector<T>::clear() noexcept
 			_debugarray = nullptr;
 		#endif
 	}
-};
+}
 
 template<class T> bool ir::QuietVector<T>::detach() noexcept
 {
@@ -215,11 +215,11 @@ template<class T> bool ir::QuietVector<T>::detach() noexcept
 		memcpy(data(), olddata, oldsize * sizeof(T));
 	}
 	return true;
-};
+}
 
 template<class T> ir::QuietVector<T>::~QuietVector() noexcept
 {
 	clear();
-};
+}
 
 #endif //#ifndef IR_QUIET_VECTOR_IMPLEMENTATION

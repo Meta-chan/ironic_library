@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -23,7 +23,7 @@ template <class T, class C> size_t ir::QuietRegister<T, C>::_strlen(const C *key
 		while (key[length] != 0) length++;
 		return length;
 	}
-};
+}
 
 template <class T, class C> C *ir::QuietRegister<T, C>::_strdup(const C *key, size_t length) noexcept
 {
@@ -32,7 +32,7 @@ template <class T, class C> C *ir::QuietRegister<T, C>::_strdup(const C *key, si
 	memcpy(newkey, key, length * sizeof(C));
 	newkey[length] = 0;
 	return newkey;
-};
+}
 
 template <class T, class C> int ir::QuietRegister<T, C>::_strcmp(const C *key1, size_t keysize1, const C *key2, size_t keysize2) noexcept
 {
@@ -48,7 +48,7 @@ template <class T, class C> int ir::QuietRegister<T, C>::_strcmp(const C *key1, 
 		}
 		return 0;
 	}
-};
+}
 	
 template <class T, class C> bool ir::QuietRegister<T, C>::_find(const C *key, size_t length, size_t *position) const noexcept
 {
@@ -89,28 +89,28 @@ template <class T, class C> bool ir::QuietRegister<T, C>::_find(const C *key, si
 			else				{ *position = right + 1; return false; }
 		}
 	}
-};
+}
 	
 template <class T, class C> ir::QuietRegister<T, C>::QuietRegister() noexcept
 {
 		
-};
+}
 	
 template <class T, class C> ir::QuietRegister<T, C>::QuietRegister(QuietRegister<T, C> &reg) noexcept
 : QuietVector<RegisterElement<T, C>>(reg)
 {
 		
-};
+}
 	
 template <class T, class C> T &ir::QuietRegister<T, C>::operator[](const C *key) noexcept
 {
 	return at(key, _strlen(key));
-};
+}
 	
 template <class T, class C> T &ir::QuietRegister<T, C>::at(const C *key) noexcept
 {
 	return at(key, _strlen(key));
-};
+}
 	
 template <class T, class C> T &ir::QuietRegister<T, C>::at(const C *key, size_t length) noexcept
 {
@@ -126,12 +126,12 @@ template <class T, class C> T &ir::QuietRegister<T, C>::at(const C *key, size_t 
 		if (!super::insert(position, elem)) { free(elem.key); return _dummy.data; }
 		return super::at(position).data;
 	}
-};
+}
 	
 template <class T, class C> bool ir::QuietRegister<T, C>::set(const C *key, T elem) noexcept
 {
 	return set(key, _strlen(key), elem);
-};
+}
 	
 template <class T, class C> bool ir::QuietRegister<T, C>::set(const C *key, size_t length, T elem) noexcept
 {
@@ -148,12 +148,12 @@ template <class T, class C> bool ir::QuietRegister<T, C>::set(const C *key, size
 		if (!super::insert(position, welem)) { free(welem.key); return false; }
 	}
 	return true;
-};
+}
 	
 template <class T, class C> bool ir::QuietRegister<T, C>::erase(const C *key) noexcept
 {
 	return erase(key, _strlen(key));
-};
+}
 	
 template <class T, class C> bool ir::QuietRegister<T, C>::erase(const C *key, size_t length) noexcept
 {
@@ -164,67 +164,67 @@ template <class T, class C> bool ir::QuietRegister<T, C>::erase(const C *key, si
 		return super::erase(position);
 	}
 	else return false;
-};
+}
 	
 template <class T, class C> T &ir::QuietRegister<T, C>::direct(size_t index) noexcept
 {
 	return super::at(index).data;
-};
+}
 	
 template <class T, class C> const T &ir::QuietRegister<T, C>::operator[](const C *key) const noexcept
 {
 	return at(key, _strlen(key));
-};
+}
 
 template <class T, class C> const T &ir::QuietRegister<T, C>::at(const C *key) const noexcept
 {
 	return at(key, _strlen(key));
-};
+}
 
 template <class T, class C> const T &ir::QuietRegister<T, C>::at(const C *key, size_t length) const noexcept
 {
 	size_t position;
 	if (_find(key, length, &position)) return super::at(position).data;
 	else return _dummy.data;
-};
+}
 
 template <class T, class C> bool ir::QuietRegister<T, C>::get(const C *key, T *elem) const noexcept
 {
 	return get(key, _strlen(key), elem);
-};
+}
 	
 template <class T, class C> bool ir::QuietRegister<T, C>::get(const C *key, size_t length, T *elem) const noexcept
 {
 	size_t position;
 	if (_find(key, length, &position)) { *elem = super::at(position).data; return true; }
 	else return false;
-};
+}
 	
 template <class T, class C> bool ir::QuietRegister<T, C>::has(const C *key) const noexcept
 {
 	return has(key, _strlen(key));
-};
+}
 	
 template <class T, class C> bool ir::QuietRegister<T, C>::has(const C *key, size_t length) const noexcept
 {
 	size_t position;
 	return _find(key, length, &position);
-};
+}
 	
 template <class T, class C> const T &ir::QuietRegister<T, C>::direct(size_t index) const noexcept
 {
 	return super::at(index).data;
-};
+}
 	
 template <class T, class C> const C *ir::QuietRegister<T, C>::direct_key(size_t index) const noexcept
 {
 	return super::at(index).key;
-};
+}
 
 template <class T, class C> size_t ir::QuietRegister<T, C>::direct_key_length(size_t index) const noexcept
 {
 	return super::at(index).keysize;
-};
+}
 
 template <class T, class C> void ir::QuietRegister<T, C>::clear() noexcept
 {
@@ -233,7 +233,7 @@ template <class T, class C> void ir::QuietRegister<T, C>::clear() noexcept
 		free(super::at(i).key);
 	}
 	super::clear();
-};
+}
 	
 template <class T, class C> bool ir::QuietRegister<T, C>::detach() noexcept
 {
@@ -246,11 +246,11 @@ template <class T, class C> bool ir::QuietRegister<T, C>::detach() noexcept
 		}
 	}
 	return true;
-};
+}
 	
 template <class T, class C> ir::QuietRegister<T, C>::~QuietRegister() noexcept
 {
 	clear();
-};
+}
 
 #endif //#ifndef IR_QUIET_REGISTER_IMPLEMENTATION

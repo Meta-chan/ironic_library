@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -19,12 +19,12 @@ template<class T> char const * const ir::Vector<T>::_out_of_range_message = "ir:
 
 template<class T> ir::Vector<T>::Vector() noexcept
 {
-};
+}
 
 template<class T> ir::Vector<T>::Vector(size_t newsize)
 {
 	resize(newsize);
-};
+}
 
 template<class T> ir::Vector<T>::Vector(const Vector &vector) noexcept
 {
@@ -34,78 +34,78 @@ template<class T> ir::Vector<T>::Vector(const Vector &vector) noexcept
 		_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
 	#endif
 	if (_header != nullptr) _header->refcount++;
-};
+}
 
 template <class T> T *ir::Vector<T>::data() noexcept
 {
 	if (_header == nullptr) return nullptr;
 	if (_header->refcount > 1) detach();
 	return (T*)(_header + 1);
-};
+}
 
 template<class T> T &ir::Vector<T>::operator[](size_t i)
 {
 	return at(i);
-};
+}
 
 template<class T> T &ir::Vector<T>::at(size_t i)
 {
 	if (_header == nullptr || i >= _header->size) throw std::out_of_range(_out_of_range_message);
 	if (_header->refcount > 1) detach();
 	return ((T*)(_header + 1))[i];
-};
+}
 
 template<class T> T &ir::Vector<T>::front()
 {
 	return at(0);
-};
+}
 
 template<class T> T &ir::Vector<T>::back()
 {
 	return at(size() - 1);
-};
+}
 
 template <class T> const T *ir::Vector<T>::data() const noexcept
 {
 	if (_header == nullptr) return nullptr;
 	return (T*)(_header + 1);
-};
+}
 
 template<class T> const T &ir::Vector<T>::operator[](size_t i) const
 {
 	return at(i);
-};
+}
 
 template<class T> const T &ir::Vector<T>::at(size_t i) const
 {
 	if (_header == nullptr || i >= _header->size) throw std::out_of_range(_out_of_range_message);
 	return ((T*)(_header + 1))[i];
-};
+}
 
 template<class T> const T &ir::Vector<T>::front() const
 {
 	return at(0);
-};
+}
 
 template<class T> const T &ir::Vector<T>::back() const
 {
 	return at(size() - 1);
-};
+}
 
 template<class T> bool ir::Vector<T>::empty() const noexcept
 {
 	return (_header == nullptr || _header->size == 0);
-};
+}
 
 template<class T> size_t ir::Vector<T>::size() const noexcept
 {
 	return (_header == nullptr ? 0 : _header->size);
-};
+}
 
 template<class T> size_t ir::Vector<T>::capacity() const noexcept
 {
 	return (_header == nullptr ? 0 : _header->capacity);
-};
+}
 
 template<class T> void ir::Vector<T>::resize(size_t newsize)
 {
@@ -120,7 +120,7 @@ template<class T> void ir::Vector<T>::resize(size_t newsize)
 		for (size_t i = newsize; i < size(); i++)	at(i).~T();
 		_header->size = newsize;
 	}
-};
+}
 
 template<class T> void ir::Vector<T>::reserve(size_t newcapacity)
 {
@@ -145,7 +145,7 @@ template<class T> void ir::Vector<T>::reserve(size_t newcapacity)
 		if (_header == nullptr) throw std::bad_alloc();
 		_header->capacity = newcapacity;
 	}
-};
+}
 
 template<class T> void ir::Vector<T>::push_back(const T &elem)
 {
@@ -153,7 +153,7 @@ template<class T> void ir::Vector<T>::push_back(const T &elem)
 	reserve(size() + 1);
 	_header->size = size() + 1;
 	new (&back()) T(elem);	
-};
+}
 
 template<class T> void ir::Vector<T>::pop_back()
 {
@@ -161,7 +161,7 @@ template<class T> void ir::Vector<T>::pop_back()
 	if (_header->refcount > 1) detach();
 	back().~T();
 	_header->size = size() - 1;
-};
+}
 	
 template<class T> void ir::Vector<T>::insert(size_t i, const T &elem)
 {
@@ -171,7 +171,7 @@ template<class T> void ir::Vector<T>::insert(size_t i, const T &elem)
 	memcpy(data() + i + 1, data() + i, (size() - i) * sizeof(T));
 	_header->size = size() + 1;
 	new (&at(i)) T(elem);
-};
+}
 
 template<class T> void ir::Vector<T>::erase(size_t i)
 {
@@ -180,7 +180,7 @@ template<class T> void ir::Vector<T>::erase(size_t i)
 	at(i).~T();
 	memcpy(data() + i, data() + i + 1, (size() - i - 1) * sizeof(T));
 	_header->size = size() - 1;
-};
+}
 
 template<class T> const ir::Vector<T> &ir::Vector<T>::operator=(const Vector<T> &vector) noexcept
 {
@@ -191,7 +191,7 @@ template<class T> const ir::Vector<T> &ir::Vector<T>::operator=(const Vector<T> 
 	#endif
 	if (_header != nullptr) _header->refcount++;
 	return *this;
-};
+}
 
 template<class T> void ir::Vector<T>::clear() noexcept
 {
@@ -208,12 +208,12 @@ template<class T> void ir::Vector<T>::clear() noexcept
 			_debugarray = nullptr;
 		#endif
 	}
-};
+}
 
 template<class T> void ir::Vector<T>::detach()
 {
 	detach(size());
-};
+}
 
 template<class T> void ir::Vector<T>::detach(size_t newcapacity)
 {
@@ -232,11 +232,11 @@ template<class T> void ir::Vector<T>::detach(size_t newcapacity)
 		}
 		else clear();
 	}
-};
+}
 
 template<class T> ir::Vector<T>::~Vector() noexcept
 {
 	clear();
-};
+}
 
 #endif //#ifndef IR_VECTOR_IMPLEMENTATION

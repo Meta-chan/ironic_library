@@ -31,4 +31,4 @@ int main()
 
 	net.save(SS("xor.inr"));
 	getchar();
-};
+}

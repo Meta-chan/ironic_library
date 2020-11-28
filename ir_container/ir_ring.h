@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -81,7 +81,7 @@ namespace ir
 	};
 
 ///@}
-};
+}
 
 #if (defined(IR_IMPLEMENT) || defined(IR_RING_IMPLEMENT)) && !defined(IR_RING_NOT_IMPLEMENT)
 	#include <implementation/ir_container/ir_ring_implementation.h>

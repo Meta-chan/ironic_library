@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -19,42 +19,42 @@ namespace ir
 ///@{
 
 	///Ironic library's standard return code
-	enum ec : unsigned int
+	enum class ec : unsigned int
 	{
-		ec_ok = 0,					///< Indicates success
-		ec_other = 1,				///< Undocumented, rare or platform-specific error
-		ec_not_implemented = 2,		///< Function is not yet implemented
+		ok = 0,					///< Indicates success
+		other = 1,				///< Undocumented, rare or platform-specific error
+		not_implemented = 2,	///< Function is not yet implemented
 
 		//common sector
-		ec_alloc,					///< Memory allocation failed
-		ec_null,					///< One of arguments is nullptr while it is not allowed
-		ec_create_file,				///< Opening file with write access failed
-		ec_open_file,				///< Opening file with read access failed
-		ec_read_file,				///< Reading from file failed
-		ec_write_file,				///< Writing to file failed
-		ec_seek_file,				///< Seeking in file failed
-		ec_invalid_signature,		///< Signature or size of file is invalid
-		ec_object_not_inited,		///< Initialization of object has failed, the object can not be used
-		ec_align,					///< Memory is not properly aligned
-		ec_invalid_input,			///< Input or arguments are obviously invalid
+		alloc,					///< Memory allocation failed
+		null,					///< One of arguments is nullptr while it is not allowed
+		create_file,			///< Opening file with write access failed
+		open_file,				///< Opening file with read access failed
+		read_file,				///< Reading from file failed
+		write_file,				///< Writing to file failed
+		seek_file,				///< Seeking in file failed
+		invalid_signature,		///< Signature or size of file is invalid
+		object_not_inited,		///< Initialization of object has failed, the object can not be used
+		align,					///< Memory is not properly aligned
+		invalid_input,			///< Input or arguments are obviously invalid
 
 		//Windows specific sector
-		ec_windows_register_class,	///< RegisterClass function failed, (Windows-specific)
-		ec_windows_create_window,	///< CreateWindow function failed (Windows-specific)
-		ec_windows_getmessage,		///< GetMessage function failed (Windows-specific)
-		ec_windows_createthread,	///< CreateThread function failed (Windows-specific)
+		windows_register_class,	///< RegisterClass function failed, (Windows-specific)
+		windows_create_window,	///< CreateWindow function failed (Windows-specific)
+		windows_getmessage,		///< GetMessage function failed (Windows-specific)
+		windows_createthread,	///< CreateThread function failed (Windows-specific)
 
 		//openmap sector
-		ec_openmap,					///< @c ir::openmap function failed
+		openmap,				///< @c ir::openmap function failed
 
 		//databases and registers sector
-		ec_key_not_exists,			///< Identifier is not found in container (logical error)
-		ec_key_already_exists,		///< Identifier is found in container (logical error)
+		key_not_exists,			///< Identifier is not found in container (logical error)
+		key_already_exists,		///< Identifier is found in container (logical error)
 	};
 	
 	
 ///@}
-};
+}
 
 #endif //ifndef IR_ERRORCODE
 

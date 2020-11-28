@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -27,7 +27,7 @@ unsigned int ir::Parallel::_increment(volatile unsigned int *i)
 	#else
 		return std::atomic<unsigned int>::fetch_and(i, 1);
 	#endif
-};
+}
 
 #ifdef _WIN32
 	DWORD WINAPI ir::Parallel::_internal_function(LPVOID paralle)
@@ -59,7 +59,7 @@ unsigned int ir::Parallel::_increment(volatile unsigned int *i)
 			task++;
 		}
 	}
-};
+}
 
 ir::Parallel::Parallel(unsigned int n, unsigned int timeout)
 {
@@ -85,12 +85,12 @@ ir::Parallel::Parallel(unsigned int n, unsigned int timeout)
 	#endif
 	while (_finished != (_n - 1)) {}
 	if (_n == n) _ok = true;
-};
+}
 
 bool ir::Parallel::ok() const
 {
 	return _ok;
-};
+}
 
 bool ir::Parallel::parallel(const void *user, Function *function)
 {
@@ -103,7 +103,7 @@ bool ir::Parallel::parallel(const void *user, Function *function)
 	function(user, 0);
 	while (_finished != (_n - 1)) {}
 	return true;
-};
+}
 
 ir::Parallel::~Parallel()
 {
@@ -113,6 +113,6 @@ ir::Parallel::~Parallel()
 	_task++;
 	while (_finished != (_n - 1)) {}
 	_ok = false;
-};
+}
 
 #endif //#ifndef IR_PARALLEL_IMPLEMENTATION

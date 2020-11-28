@@ -36,7 +36,7 @@ namespace ir
 	};
 	
 ///@}
-};
+}
 
 #if (defined(IR_IMPLEMENT) || defined(IR_RESOURCE_IMPLEMENT)) && !defined(IR_RESOURCE_NOT_IMPLEMENT)
 	#include <implementation/ir_resource/ir_resource_implementation.h>

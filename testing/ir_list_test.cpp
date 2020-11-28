@@ -9,13 +9,13 @@ int print(const ir::List<unsigned int> list)
 {
 	for (unsigned int i = 0; i < list.size(); i++) printf("%u ", list[i]);
 	return 0;
-};
+}
 
 int nullate(ir::List<unsigned int> list)
 {
 	for (unsigned int i = 0; i < list.size(); i++) list[i] = 0;
 	return 0;
-};
+}
 
 int _main()
 {
@@ -27,9 +27,9 @@ int _main()
 	print(list);
 	nullate(list);
 	return 0;
-};
+}
 
 int main()
 {
 	return _main();
-};
+}

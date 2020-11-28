@@ -11,10 +11,10 @@ int _main()
 	});
 	printf("Finished\n");
 	return 0;
-};
+}
 
 int main()
 {
 	_main();
 	getchar();
-};
+}

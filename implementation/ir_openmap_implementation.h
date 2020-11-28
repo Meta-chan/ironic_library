@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -22,11 +22,11 @@
 namespace ir
 {
 	unsigned int _internal_openmap_pagesize = 0;
-};
+}
 
 #ifdef _WIN32
 
-void *ir::openmap(OpenmapCache *cache, HANDLE hfile, unsigned int offset, unsigned int size, openmapmode mode)
+void *ir::openmap(OpenmapCache *cache, HANDLE hfile, unsigned int offset, unsigned int size, openmap_mode mode)
 {
 	//If we need to recreate hmapping -> recreate hmapping (end delete mapstart, it will be also recreated)
 	if (cache->hfile != hfile || cache->maxmapsize < offset + size || cache->hmapping == NULL)
@@ -75,17 +75,17 @@ void *ir::openmap(OpenmapCache *cache, HANDLE hfile, unsigned int offset, unsign
 		if (ReadFile(cache->hfile, cache->emulatemem, size, &read, nullptr) == FALSE || read < size) return nullptr;
 		return cache->emulatemem;
 	}
-};
+}
 
-void *ir::openmap(OpenmapCache *cache, int filedes, unsigned int offset, unsigned int size, openmapmode mode)
+void *ir::openmap(OpenmapCache *cache, int filedes, unsigned int offset, unsigned int size, openmap_mode mode)
 {
 	return openmap(cache, (HANDLE)_get_osfhandle(filedes), offset, size, mode);
-};
+}
 
-void *ir::openmap(OpenmapCache *cache, FILE *file, unsigned int offset, unsigned int size, openmapmode mode)
+void *ir::openmap(OpenmapCache *cache, FILE *file, unsigned int offset, unsigned int size, openmap_mode mode)
 {
 	return openmap(cache, (HANDLE)_get_osfhandle(_fileno(file)), offset, size, mode);
-};
+}
 
 void ir::closemap(OpenmapCache *cache)
 {
@@ -106,11 +106,11 @@ void ir::closemap(OpenmapCache *cache)
 		free(cache->emulatemem);
 		cache->emulatemem = nullptr;
 	}
-};
+}
 
 #else
 
-void *ir::openmap(OpenmapCache *cache, int filedes, unsigned int offset, unsigned int size, openmapmode mode)
+void *ir::openmap(OpenmapCache *cache, int filedes, unsigned int offset, unsigned int size, openmap_mode mode)
 {
 	//If we need to recreate address -> recreate address
 	if (cache->filedes != filedes || cache->mapstart == MAP_FAILED || offset <= cache->lowlimit || offset + size > cache->highlimit)
@@ -143,12 +143,12 @@ void *ir::openmap(OpenmapCache *cache, int filedes, unsigned int offset, unsigne
 		if (read(cache->filedes, cache->emulatemem, size) < size) return nullptr;
 		return cache->emulatemem;
 	}
-};
+}
 
-void *ir::openmap(OpenmapCache *cache, FILE *file, unsigned int offset, unsigned int size, openmapmode mode)
+void *ir::openmap(OpenmapCache *cache, FILE *file, unsigned int offset, unsigned int size, openmap_mode mode)
 {
 	return openmap(cache, fileno(file), offset, size, mode);
-};
+}
 
 void ir::closemap(OpenmapCache *cache)
 {
@@ -163,7 +163,7 @@ void ir::closemap(OpenmapCache *cache)
 		free(cache->emulatemem);
 		cache->emulatemem = nullptr;
 	}
-};
+}
 
 #endif
 

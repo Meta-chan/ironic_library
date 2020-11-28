@@ -11,13 +11,13 @@ int print(const ir::Vector<unsigned int> vector)
 {
 	for (unsigned int i = 0; i < vector.size(); i++) printf("%u ", vector[i]);
 	return 0;
-};
+}
 
 int nullate(ir::Vector<unsigned int> vector)
 {
 	for (unsigned int i = 0; i < vector.size(); i++) vector[i] = 0;
 	return 0;
-};
+}
 
 int _main()
 {
@@ -30,9 +30,9 @@ int _main()
 	print(vector);
 	nullate(vector);
 	return 0;
-};
+}
 
 int main()
 {
 	return _main();
-};
+}

@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -16,6 +16,6 @@ HINTERNET ir::HInternetIniterFreer::initvalue = NULL;
 void ir::HInternetIniterFreer::free(HINTERNET hinternet)
 {
 	if (hinternet != NULL && hinternet != INVALID_HANDLE_VALUE) WinHttpCloseHandle(hinternet);
-};
+}
 
 #endif	//#ifndef IR_HINTERNET_RESOURCE_IMPLEMENTATION

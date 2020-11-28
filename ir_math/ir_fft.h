@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -34,7 +34,7 @@ namespace ir
 	template<class T>bool ifft_nodivide(std::complex<T> *data, size_t size);
 	
 ///@}
-};
+}
 
 #if (defined(IR_IMPLEMENT) || defined(IR_FFT_IMPLEMENT)) && !defined(IR_FFT_NOT_IMPLEMENT)
 	#include <implementation/ir_math/ir_fft_implementation.h>

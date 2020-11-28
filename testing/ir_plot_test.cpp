@@ -11,4 +11,4 @@ int main()
 	p.n = 1000;
 	p.color = 0x0000FF;
 	ir::plot(1, p);
-};
+}

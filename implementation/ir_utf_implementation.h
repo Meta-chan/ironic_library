@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -36,7 +36,7 @@ struct
 unsigned int _ir_internal_utf_c_charsize(void)
 {
 	return 1;
-};
+}
 
 unsigned int _ir_internal_utf_c_encode(unsigned int code, void *symbols, unsigned int errcode)
 {
@@ -47,7 +47,7 @@ unsigned int _ir_internal_utf_c_encode(unsigned int code, void *symbols, unsigne
 		return 1;
 	}
 	else return _ir_internal_utf_c_encode(errcode, symbols, ' ');
-};
+}
 
 unsigned int _ir_internal_utf_c_decode(const void *string, unsigned int *nsymbols)
 {
@@ -62,11 +62,11 @@ unsigned int _ir_internal_utf_c_decode(const void *string, unsigned int *nsymbol
 		*nsymbols = 0;
 		return 0;
 	}
-};
+}
 
 void _ir_internal_utf_c_free(void)
 {
-};
+}
 
 unsigned char _ir_internal_utf_c_init(void)
 {
@@ -75,7 +75,7 @@ unsigned char _ir_internal_utf_c_init(void)
 	ir_utf_c.decode = _ir_internal_utf_c_decode;
 	ir_utf_c.free = _ir_internal_utf_c_free;
 	return 1;
-};
+}
 
 #ifdef _WIN32
 	#pragma endregion
@@ -85,7 +85,7 @@ unsigned char _ir_internal_utf_c_init(void)
 unsigned int _ir_internal_utf_utf8_charsize(void)
 {
 	return 1;
-};
+}
 
 unsigned int _ir_internal_utf_utf8_encode(unsigned int code, void *symbols, unsigned int errcode)
 {
@@ -126,7 +126,7 @@ unsigned int _ir_internal_utf_utf8_encode(unsigned int code, void *symbols, unsi
 		return 4;
 	}
 	else return _ir_internal_utf_utf8_encode(errcode, symbols, ' ');
-};
+}
 
 unsigned int _ir_internal_utf_utf8_decode(const void *string, unsigned int *nsymbols)
 {
@@ -156,11 +156,11 @@ unsigned int _ir_internal_utf_utf8_decode(const void *string, unsigned int *nsym
 		*nsymbols = 0;
 		return 0;
 	}
-};
+}
 
 void _ir_internal_utf_utf8_free(void)
 {
-};
+}
 
 unsigned char _ir_internal_utf_utf8_init(void)
 {
@@ -169,7 +169,7 @@ unsigned char _ir_internal_utf_utf8_init(void)
 	ir_utf_utf8.decode = _ir_internal_utf_utf8_decode;
 	ir_utf_utf8.free = _ir_internal_utf_utf8_free;
 	return 1;
-};
+}
 
 #ifdef _WIN32
 	#pragma endregion
@@ -179,7 +179,7 @@ unsigned char _ir_internal_utf_utf8_init(void)
 unsigned int _ir_internal_utf_utf16_charsize(void)
 {
 	return 2;
-};
+}
 
 unsigned int _ir_internal_utf_utf16_encode(unsigned int code, void *symbols, unsigned int errcode)
 {
@@ -199,7 +199,7 @@ unsigned int _ir_internal_utf_utf16_encode(unsigned int code, void *symbols, uns
 		return 2;
 	}
 	else return _ir_internal_utf_c_encode(errcode, symbols, ' ');
-};
+}
 
 unsigned int _ir_internal_utf_utf16_decode(const void *string, unsigned int *nsymbols)
 {
@@ -219,11 +219,11 @@ unsigned int _ir_internal_utf_utf16_decode(const void *string, unsigned int *nsy
 		*nsymbols = 0;
 		return 0;
 	}
-};
+}
 
 void _ir_internal_utf_utf16_free(void)
 {
-};
+}
 
 unsigned char _ir_internal_utf_utf16_init(void)
 {
@@ -232,7 +232,7 @@ unsigned char _ir_internal_utf_utf16_init(void)
 	ir_utf_utf16.decode = _ir_internal_utf_utf16_decode;
 	ir_utf_utf16.free = _ir_internal_utf_utf16_free;
 	return 1;
-};
+}
 
 #ifdef _WIN32
 	#pragma endregion
@@ -242,23 +242,23 @@ unsigned char _ir_internal_utf_utf16_init(void)
 unsigned int _ir_internal_utf_utf32_charsize(void)
 {
 	return 4;
-};
+}
 
 unsigned int _ir_internal_utf_utf32_encode(unsigned int code, void *symbols, unsigned int errcode)
 {
 	if (symbols != NULL) *((unsigned int*)symbols) = code;
 	return 1;
-};
+}
 
 unsigned int _ir_internal_utf_utf32_decode(const void *string, unsigned int *nsymbols)
 {
 	if (nsymbols != NULL) *nsymbols = 1;
 	return *((unsigned int*) nsymbols);
-};
+}
 
 void _ir_internal_utf_utf32_free(void)
 {
-};
+}
 
 unsigned char _ir_internal_utf_utf32_init(void)
 {
@@ -267,7 +267,7 @@ unsigned char _ir_internal_utf_utf32_init(void)
 	ir_utf_utf32.decode = _ir_internal_utf_utf32_decode;
 	ir_utf_utf32.free = _ir_internal_utf_utf32_free;
 	return 1;
-};
+}
 
 #ifdef _WIN32
 	#pragma endregion
@@ -285,7 +285,7 @@ const unsigned short int _ir_internal_utf_1251_symbols[0x40] =
 unsigned int _ir_internal_utf_1251_charsize(void)
 {
 	return 1;
-};
+}
 
 unsigned int _ir_internal_utf_1251_encode(unsigned int code, void *symbols, unsigned int errcode)
 {
@@ -315,7 +315,7 @@ unsigned int _ir_internal_utf_1251_encode(unsigned int code, void *symbols, unsi
 		return _ir_internal_utf_1251_encode(errcode, symbols, ' ');
 	}
 	else return _ir_internal_utf_1251_encode(errcode, symbols, ' ');
-};
+}
 
 unsigned int _ir_internal_utf_1251_decode(const void *string, unsigned int *nsymbols)
 {
@@ -340,11 +340,11 @@ unsigned int _ir_internal_utf_1251_decode(const void *string, unsigned int *nsym
 		*nsymbols = 0;
 		return 0;
 	}
-};
+}
 
 void _ir_internal_utf_1251_free(void)
 {
-};
+}
 
 unsigned char _ir_internal_utf_1251_init(void)
 {
@@ -353,7 +353,7 @@ unsigned char _ir_internal_utf_1251_init(void)
 	ir_utf_1251.decode = _ir_internal_utf_1251_decode;
 	ir_utf_1251.free = _ir_internal_utf_1251_free;
 	return 1;
-};
+}
 
 #ifdef _WIN32
 	#pragma endregion
@@ -375,7 +375,7 @@ const unsigned short int _ir_internal_utf_866_symbols2[0x10] =
 unsigned int _ir_internal_utf_866_charsize(void)
 {
 	return 1;
-};
+}
 
 unsigned int _ir_internal_utf_866_encode(unsigned int code, void *symbols, unsigned int errcode)
 {
@@ -420,7 +420,7 @@ unsigned int _ir_internal_utf_866_encode(unsigned int code, void *symbols, unsig
 		return _ir_internal_utf_866_encode(errcode, symbols, ' ');
 	}
 	else return _ir_internal_utf_866_encode(errcode, symbols, ' ');
-};
+}
 
 unsigned int _ir_internal_utf_866_decode(const void *string, unsigned int *nsymbols)
 {
@@ -446,11 +446,11 @@ unsigned int _ir_internal_utf_866_decode(const void *string, unsigned int *nsymb
 	{
 		return _ir_internal_utf_866_symbols2[c - 0xF0];
 	}
-};
+}
 
 void _ir_internal_utf_866_free(void)
 {
-};
+}
 
 unsigned char _ir_internal_utf_866_init(void)
 {
@@ -459,7 +459,7 @@ unsigned char _ir_internal_utf_866_init(void)
 	ir_utf_866.decode = _ir_internal_utf_866_decode;
 	ir_utf_866.free = _ir_internal_utf_866_free;
 	return 1;
-};
+}
 
 #ifdef _WIN32
 	#pragma endregion
@@ -485,7 +485,7 @@ unsigned int ir_utf_recode(struct ir_UTF_Codec *codec1, const void *string1, uns
 		i1 += n1;
 		i2 += n2;
 	}
-};
+}
 
 void *ir_utf_alloc_recode(struct ir_UTF_Codec *codec1, const void *string1, unsigned int errcode, struct ir_UTF_Codec *codec2)
 {
@@ -494,7 +494,7 @@ void *ir_utf_alloc_recode(struct ir_UTF_Codec *codec1, const void *string1, unsi
 	if (result == NULL) return NULL;
 	ir_utf_recode(codec1, string1, errcode, codec2, result);
 	return result;
-};
+}
 
 void *ir_utf_buffer_recode(struct ir_UTF_Codec *codec1, const void *string1, unsigned int errcode, struct ir_UTF_Codec *codec2)
 {
@@ -505,7 +505,7 @@ void *ir_utf_buffer_recode(struct ir_UTF_Codec *codec1, const void *string1, uns
 		return _ir_internal_utf_buffer.data;
 	}
 	else return NULL;
-};
+}
 
 //INIT AND FREE
 void ir_utf_init(void)
@@ -516,7 +516,7 @@ void ir_utf_init(void)
 	ir_utf_utf32.init = _ir_internal_utf_utf32_init;
 	ir_utf_1251.init = _ir_internal_utf_1251_init;
 	ir_utf_866.init = _ir_internal_utf_866_init;
-};
+}
 
 void ir_utf_free(void)
 {
@@ -532,6 +532,6 @@ void ir_utf_free(void)
 		_ir_internal_utf_buffer.data = NULL;
 		_ir_internal_utf_buffer.reserved = 0;
 	}
-};
+}
 
 #endif	//#ifndef IR_UTF_IMPLEMENTATION

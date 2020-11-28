@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -77,6 +77,6 @@ template<class T> bool ir::gauss(size_t size, T **matrix, T *vector, T *result)
 	}
 
 	return true;
-};
+}
 
 #endif	//#ifndef IR_GAUSS_IMPLEMENTATION

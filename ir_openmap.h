@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -24,9 +24,9 @@ namespace ir
 ///@{
 
 	///ir::openmap operation mode
-	enum openmapmode
+	enum class openmap_mode
 	{
-		openmap_read
+		read
 	};
 
 	///Cache structure needed by ir::openmap
@@ -56,21 +56,21 @@ namespace ir
 	///@param size		Size of block you are interested on
 	///@param mode		Operation mode
 	///@return			Pointer to memory block of size @c size, where you car read/write dependent on @c mode
-	void *openmap(OpenmapCache *cache, FILE *file, unsigned int offset, unsigned int size, openmapmode mode);
+	void *openmap(OpenmapCache *cache, FILE *file, unsigned int offset, unsigned int size, openmap_mode mode);
 	///Same as above, but with *nix file handle
 	///@param filedes Native *nix file handle
-	void *openmap(OpenmapCache *cache, int filedes, unsigned int offset, unsigned int size, openmapmode mode);
+	void *openmap(OpenmapCache *cache, int filedes, unsigned int offset, unsigned int size, openmap_mode mode);
 	#ifdef _WIN32
 		///Same as above, but with Windows file handle
 		///@param hfile Native Windows file handle
-		void *openmap(OpenmapCache *cache, HANDLE hfile, unsigned int offset, unsigned int size, openmapmode mode);
+		void *openmap(OpenmapCache *cache, HANDLE hfile, unsigned int offset, unsigned int size, openmap_mode mode);
 	#endif
 	///Close file mapping
 	///@param cache Cache used by ir::openmap
 	void closemap(OpenmapCache *cache);
 
 ///@}
-};
+}
 
 #if (defined(IR_IMPLEMENT) || defined(IR_OPENMAP_IMPLEMENT)) && !defined(IR_OPENMAP_NOT_IMPLEMENT)
 	#include <implementation/ir_openmap_implementation.h>

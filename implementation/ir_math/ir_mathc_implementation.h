@@ -4,7 +4,7 @@
 		- Please keep this notice and include the license file to your project
 		- I provide no warranty
 	To get help with installation, visit README
-	Created by @meta-chan, k.sovailo@gmail.com
+	Created by github.com/Meta-chan, k.sovailo@gmail.com
 	Reinventing bicycles since 2020
 */
 
@@ -27,37 +27,37 @@ inline T ir::BlockC<T, A>::sum() const noexcept
 	T s = 0.0;
 	for (unsigned int a = 0; a < A; a++) s += r[a];
 	return s;
-};
+}
 
 template<class T, unsigned int A>
 inline void ir::BlockC<T, A>::assign_zero() noexcept
 {
 	for (unsigned int a = 0; a < A; a++) r[a] = 0.0;
-};
+}
 
 template<class T, unsigned int A>
 inline void ir::BlockC<T, A>::operator+=(const BlockC<T, A> & restrict another) noexcept
 {
 	for (unsigned int a = 0; a < A; a++) r[a] += another.r[a];
-};
+}
 
 template<class T, unsigned int A>
 inline void ir::BlockC<T, A>::operator-=(const BlockC<T, A> & restrict another) noexcept
 {
 	for (unsigned int a = 0; a < A; a++) r[a] -= another.r[a];
-};
+}
 
 template<class T, unsigned int A>
 inline void ir::BlockC<T, A>::operator*=(const BlockC<T, A> & restrict another) noexcept
 {
 	for (unsigned int a = 0; a < A; a++) r[a] *= another.r[a];
-};
+}
 
 template<class T, unsigned int A>
 inline void ir::BlockC<T, A>::operator/=(const BlockC<T, A> & restrict another) noexcept
 {
 	for (unsigned int a = 0; a < A; a++) r[a] /= another.r[a];
-};
+}
 
 template<class T, unsigned int A>
 inline ir::BlockC<T, A> ir::BlockC<T, A>::operator+(const BlockC<T, A> & restrict another) const noexcept
@@ -65,7 +65,7 @@ inline ir::BlockC<T, A> ir::BlockC<T, A>::operator+(const BlockC<T, A> & restric
 	BlockC<T, A> b;
 	for (unsigned int a = 0; a < A; a++) b.r[a] = r[a] + another.r[a];
 	return b;
-};
+}
 
 template<class T, unsigned int A>
 inline ir::BlockC<T, A> ir::BlockC<T, A>::operator-(const BlockC<T, A> & restrict another) const noexcept
@@ -73,7 +73,7 @@ inline ir::BlockC<T, A> ir::BlockC<T, A>::operator-(const BlockC<T, A> & restric
 	BlockC<T, A> b;
 	for (unsigned int a = 0; a < A; a++) b.r[a] = r[a] - another.r[a];
 	return b;
-};
+}
 
 template<class T, unsigned int A>
 inline ir::BlockC<T, A> ir::BlockC<T, A>::operator*(const BlockC<T, A> & restrict another) const noexcept
@@ -81,7 +81,7 @@ inline ir::BlockC<T, A> ir::BlockC<T, A>::operator*(const BlockC<T, A> & restric
 	BlockC<T, A> b;
 	for (unsigned int a = 0; a < A; a++) b.r[a] = r[a] * another.r[a];
 	return b;
-};
+}
 
 template<class T, unsigned int A>
 inline ir::BlockC<T, A> ir::BlockC<T, A>::operator/(const BlockC<T, A> & restrict another) const noexcept
@@ -89,7 +89,7 @@ inline ir::BlockC<T, A> ir::BlockC<T, A>::operator/(const BlockC<T, A> & restric
 	BlockC<T, A> b;
 	for (unsigned int a = 0; a < A; a++) b.r[a] = r[a] / another.r[a];
 	return b;
-};
+}
 
 template <class T, unsigned int A>
 ir::VectorC<T, A>::VectorC(unsigned int height, bool *ok) noexcept
@@ -102,28 +102,28 @@ ir::VectorC<T, A>::VectorC(unsigned int height, bool *ok) noexcept
 		_height = height;
 	}
 	if (ok != nullptr) *ok = (_data != nullptr);
-};
+}
 
 template <class T, unsigned int A>
 unsigned int ir::VectorC<T, A>::height() const noexcept
 {
 	assert(_data != nullptr);
 	return _height;
-};
+}
 
 template <class T, unsigned int A>
 T * restrict ir::VectorC<T, A>::data() noexcept
 {
 	assert(_data != nullptr);
 	return (T*)(((size_t)_data + A * sizeof(T) - 1) & (~(A * sizeof(T) - 1)));
-};
+}
 
 template <class T, unsigned int A>
 const T * restrict ir::VectorC<T, A>::data() const noexcept
 {
 	assert(_data != nullptr);
 	return (T*)(((size_t)_data + A * sizeof(T) - 1) & (~(A * sizeof(T) - 1)));
-};
+}
 
 template <class T, unsigned int A>
 inline T & restrict ir::VectorC<T, A>::at(unsigned int row) noexcept
@@ -131,7 +131,7 @@ inline T & restrict ir::VectorC<T, A>::at(unsigned int row) noexcept
 	assert(_data != nullptr);
 	assert(row < _height);
 	return data()[row];
-};
+}
 
 template <class T, unsigned int A>
 inline const T & restrict ir::VectorC<T, A>::at(unsigned int row) const noexcept
@@ -139,26 +139,26 @@ inline const T & restrict ir::VectorC<T, A>::at(unsigned int row) const noexcept
 	assert(_data != nullptr);
 	assert(row < _height);
 	return data()[row];
-};
+}
 
 template <class T, unsigned int A>
 unsigned int ir::VectorC<T, A>::block_height() const noexcept
 {
 	assert(_data != nullptr);
 	return (_height + A - 1) / A;
-};
+}
 
 template <class T, unsigned int A>
 ir::BlockC<T, A> * restrict ir::VectorC<T, A>::block_data() noexcept
 {
 	return (BlockC<T, A>*)data();
-};
+}
 
 template <class T, unsigned int A>
 const ir::BlockC<T, A> * restrict ir::VectorC<T, A>::block_data() const noexcept
 {
 	return (BlockC<T, A>*)data();
-};
+}
 
 template <class T, unsigned int A>
 inline ir::BlockC<T, A> & restrict ir::VectorC<T, A>::block(unsigned int rowblock) noexcept
@@ -166,7 +166,7 @@ inline ir::BlockC<T, A> & restrict ir::VectorC<T, A>::block(unsigned int rowbloc
 	assert(_data != nullptr);
 	assert(rowblock < block_height());
 	return block_data()[rowblock];
-};
+}
 
 template <class T, unsigned int A>
 inline const ir::BlockC<T, A> & restrict ir::VectorC<T, A>::block(unsigned int rowblock) const noexcept
@@ -174,7 +174,7 @@ inline const ir::BlockC<T, A> & restrict ir::VectorC<T, A>::block(unsigned int r
 	assert(_data != nullptr);
 	assert(rowblock < block_height());
 	return block_data()[rowblock];
-};
+}
 
 template<class T, unsigned int A>
 void ir::VectorC<T, A>::assign_zero()
@@ -183,7 +183,7 @@ void ir::VectorC<T, A>::assign_zero()
 	{
 		at(i) = 0;
 	}
-};
+}
 
 template<class T, unsigned int A>
 void ir::VectorC<T, A>::assign_random(T low, T high)
@@ -194,7 +194,7 @@ void ir::VectorC<T, A>::assign_random(T low, T high)
 	{
 		at(i) = distribution(engine);
 	}
-};
+}
 
 template<class T, unsigned int A>
 void ir::VectorC<T, A>::assign_add(const VectorC<T, A> * restrict a, const VectorC<T, A> * restrict b) noexcept
@@ -211,7 +211,7 @@ void ir::VectorC<T, A>::assign_add(const VectorC<T, A> * restrict a, const Vecto
 	{
 		block(lineblock) = a->block(lineblock) + b->block(lineblock);
 	}
-};
+}
 
 template<class T, unsigned int A>
 void ir::VectorC<T, A>::assign_sub(const VectorC<T, A> * restrict a, const VectorC<T, A> * restrict b) noexcept
@@ -228,7 +228,7 @@ void ir::VectorC<T, A>::assign_sub(const VectorC<T, A> * restrict a, const Vecto
 	{
 		block(lineblock) = a->block(lineblock) - b->block(lineblock);
 	}
-};
+}
 
 template<class T, unsigned int A>
 void ir::VectorC<T, A>::assign_mul(const MatrixC<T, A> * restrict a, const VectorC<T, A> * restrict b) noexcept
@@ -251,14 +251,14 @@ void ir::VectorC<T, A>::assign_mul(const MatrixC<T, A> * restrict a, const Vecto
 		}
 		at(row) = sum.sum();
 	}
-};
+}
 
 template <class T, unsigned int A>
 ir::VectorC<T, A>::~VectorC() noexcept
 {
 	if (_data != nullptr) free(_data);
 	_data = nullptr;
-};
+}
 
 template <class T, unsigned int A>
 ir::MatrixC<T, A>::MatrixC(unsigned int width, unsigned int height, bool *ok) noexcept
@@ -272,19 +272,19 @@ ir::MatrixC<T, A>::MatrixC(unsigned int width, unsigned int height, bool *ok) no
 		_width = width;
 	}
 	if (ok != nullptr) *ok = (_data != nullptr);
-};
+}
 
 template <class T, unsigned int A>
 unsigned int ir::MatrixC<T, A>::width() const noexcept
 {
 	return _width;
-};
+}
 
 template <class T, unsigned int A>
 unsigned int ir::MatrixC<T, A>::height() const noexcept
 {
 	return _height;
-};
+}
 
 template <class T, unsigned int A>
 T * restrict ir::MatrixC<T, A>::data(unsigned int row) noexcept
@@ -292,7 +292,7 @@ T * restrict ir::MatrixC<T, A>::data(unsigned int row) noexcept
 	assert(_data != nullptr);
 	T *aligneddata = (T*)(((size_t)_data + A * sizeof(T) - 1) & (~(A * sizeof(T) - 1)));
 	return aligneddata + row * block_width() * A;
-};
+}
 
 template <class T, unsigned int A>
 const T * restrict ir::MatrixC<T, A>::data(unsigned int row) const noexcept
@@ -301,7 +301,7 @@ const T * restrict ir::MatrixC<T, A>::data(unsigned int row) const noexcept
 	assert(row < _height);
 	T *aligneddata = (T*)(((size_t)_data + A * sizeof(T) - 1) & (~(A * sizeof(T) - 1)));
 	return aligneddata + row * block_width() * A;
-};
+}
 
 template <class T, unsigned int A>
 inline T & restrict ir::MatrixC<T, A>::at(unsigned int row, unsigned int column) noexcept
@@ -310,7 +310,7 @@ inline T & restrict ir::MatrixC<T, A>::at(unsigned int row, unsigned int column)
 	assert(row < _height);
 	assert(column < _width);
 	return data(row)[column];
-};
+}
 
 template <class T, unsigned int A>
 inline const T & restrict ir::MatrixC<T, A>::at(unsigned int row, unsigned int column) const noexcept
@@ -319,28 +319,28 @@ inline const T & restrict ir::MatrixC<T, A>::at(unsigned int row, unsigned int c
 	assert(row < _height);
 	assert(column < _width);
 	return data(row)[column];
-};
+}
 
 template <class T, unsigned int A>
 unsigned int ir::MatrixC<T, A>::block_width() const noexcept
 {
 	assert(_data != nullptr);
 	return (_width + A - 1) / A;
-};
+}
 
 template <class T, unsigned int A>
 ir::BlockC<T, A> * restrict ir::MatrixC<T, A>::block_data(unsigned int row) noexcept
 {
 	assert(_data != nullptr);
 	return (BlockC<T, A>*)data(row);
-};
+}
 
 template <class T, unsigned int A>
 const ir::BlockC<T, A> * restrict ir::MatrixC<T, A>::block_data(unsigned int row) const noexcept
 {
 	assert(_data != nullptr);
 	return (const BlockC<T, A>*)data(row);
-};
+}
 
 template <class T, unsigned int A>
 inline ir::BlockC<T, A> & restrict ir::MatrixC<T, A>::block(unsigned int row, unsigned int columnblock) noexcept
@@ -349,7 +349,7 @@ inline ir::BlockC<T, A> & restrict ir::MatrixC<T, A>::block(unsigned int row, un
 	assert(row < _height);
 	assert(columnblock < block_width());
 	return block_data(row)[columnblock];
-};
+}
 
 template <class T, unsigned int A>
 inline const ir::BlockC<T, A> & restrict ir::MatrixC<T, A>::block(unsigned int row, unsigned int columnblock) const noexcept
@@ -358,14 +358,14 @@ inline const ir::BlockC<T, A> & restrict ir::MatrixC<T, A>::block(unsigned int r
 	assert(row < _height);
 	assert(columnblock < block_width());
 	return block_data(row)[columnblock];
-};
+}
 
 template <class T, unsigned int A>
 inline unsigned int ir::MatrixC<T, A>::complete_column_block_height() const noexcept
 {
 	assert(_data != nullptr);
 	return _height / A;
-};
+}
 
 template <class T, unsigned int A>
 inline ir::BlockC<T, A> ir::MatrixC<T, A>::complete_column_block(unsigned int rowblock, unsigned int column) const noexcept
@@ -376,7 +376,7 @@ inline ir::BlockC<T, A> ir::MatrixC<T, A>::complete_column_block(unsigned int ro
 	ir::BlockC<T, A> b;
 	for (unsigned int a = 0; a < A; a++) b.r[a] = at(A * rowblock + a, column);
 	return b;
-};
+}
 
 template <class T, unsigned int A>
 inline ir::BlockC<T, A> ir::MatrixC<T, A>::column_block(unsigned int rowblock, unsigned int column) const noexcept
@@ -396,7 +396,7 @@ inline ir::BlockC<T, A> ir::MatrixC<T, A>::column_block(unsigned int rowblock, u
 		for (unsigned int a = 0; a < _height - A * rowblock; a++) b.r[a] = at(A * rowblock + a, column);
 		return b;
 	}
-};
+}
 
 template <class T, unsigned int A>
 void ir::MatrixC<T, A>::assign_zero() noexcept
@@ -409,7 +409,7 @@ void ir::MatrixC<T, A>::assign_zero() noexcept
 			at(i, j) = 0;
 		}
 	}
-};
+}
 
 template <class T, unsigned int A>
 void ir::MatrixC<T, A>::assign_random(T low, T high) noexcept
@@ -424,14 +424,14 @@ void ir::MatrixC<T, A>::assign_random(T low, T high) noexcept
 			at(i, j) = distribution(engine);
 		}
 	}
-};
+}
 
 template <class T, unsigned int A>
 ir::MatrixC<T, A>::~MatrixC() noexcept
 {
 	if (_data != nullptr) free(_data);
 	_data = nullptr;
-};
+}
 
 #ifdef restrict
 	#undef restrict
