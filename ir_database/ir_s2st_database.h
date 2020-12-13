@@ -16,6 +16,7 @@
 #include <ir_errorcode.h>
 #include <ir_syschar.h>
 #include <ir_container/ir_block.h>
+#include <ir_container/ir_quiet_vector.h>
 #include <stdio.h>
 
 namespace ir
@@ -56,21 +57,21 @@ namespace ir
 		struct FileMetaCommon
 		{
 			bool hold				= false;	//defines if program holds file in RAM
-			unsigned int pointer	= 0;		//dublicates ftell
-			unsigned int size		= 0;		//dublicates fseek & ftell if !hold, otherwise shows size in RAM
-			FILE *file				= nullptr;
-			bool changed			= false;	//defines if file was changed, valid if hold, otherwise false
+			unsigned int pointer	= 0;		//if !hold dublicates ftell, otherwise invalid
+			unsigned int size		= 0;		//if hold dublicates ram.size(), otherwise dublicates file size
+			FILE *file				= nullptr;	//if !hold is file, otherwize invalid
+			bool changed			= false;	//if hold defines if file was changed, otherwise invalid
 		};
 
 		struct : FileMetaCommon
 		{
-			void *ram				= nullptr;	//valid if hold, otherwise nullptr
+			QuietVector<char> ram;				//valid if hold, otherwise empty
 			unsigned int used = 0;
 		} _file;
 
 		struct : FileMetaCommon
 		{
-			MetaCell *ram			= nullptr;	//valid if hold, otherwise nullptr
+			QuietVector<MetaCell> ram;			//valid if hold, otherwise empty
 			unsigned int count		= 0;
 			unsigned int delcount	= 0;
 		} _meta;

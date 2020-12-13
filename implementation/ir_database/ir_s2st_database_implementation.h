@@ -11,13 +11,12 @@
 #ifndef IR_S2ST_DATABASE_IMPLEMENTATION
 #define IR_S2ST_DATABASE_IMPLEMENTATION
 
+#include <ir_resource/ir_memresource.h>
 #include <stdlib.h>
 #include <string.h>
 #ifdef _WIN32
-#include <share.h>
+	#include <share.h>
 #endif
-#include <ir_resource/ir_memresource.h>
-#include <ir_reserve.h>
 
 ir::S2STDatabase::MetaCell::MetaCell() noexcept
 {
@@ -39,7 +38,7 @@ ir::ec ir::S2STDatabase::_read(void *buffer, unsigned int offset, unsigned int s
 
 	if (_file.hold)
 	{
-		memcpy(buffer, (char*)_file.ram + offset, size);
+		memcpy(buffer, &_file.ram[offset], size);
 	}
 	else
 	{
@@ -61,9 +60,10 @@ ir::ec ir::S2STDatabase::_write(const void *buffer, unsigned int offset, unsigne
 	{
 		if (offset + size > _file.size)
 		{
-			if (!reserve(&_file.ram, &_file.size, offset + size)) return ec::alloc;
+			if (!_file.ram.resize(offset + size)) return ec::alloc;
+			_file.size = offset + size;
 		}
-		memcpy((char*)_file.ram + offset, buffer, size);
+		memcpy(&_file.ram[offset], buffer, size);
 		if (size > 0) _file.changed = true;
 	}
 	else
@@ -87,7 +87,7 @@ ir::ec ir::S2STDatabase::_readpointer(void **p, unsigned int offset, unsigned in
 
 	if (_file.hold)
 	{
-		void *pointer = (char*)_file.ram + offset;
+		void *pointer = &_file.ram[offset];
 		memcpy(p, &pointer, sizeof(void*));
 	}
 	else
@@ -201,7 +201,7 @@ ir::ec ir::S2STDatabase::_find(ConstBlock key, unsigned int *index, MetaCell *ce
 			}
 		}
 
-		(searchindex)++;
+		searchindex++;
 		if (searchindex == _meta.size) searchindex = 0;
 	}
 	return ec::ok;
@@ -210,10 +210,10 @@ ir::ec ir::S2STDatabase::_find(ConstBlock key, unsigned int *index, MetaCell *ce
 //simmilar to N2ST, can be templated
 ir::ec ir::S2STDatabase::_rehash(unsigned int newtablesize) noexcept
 {
-	MemResource<MetaCell> table = (MetaCell*)malloc(newtablesize * sizeof(MetaCell));
-	if (table == nullptr) return ec::alloc;
-	memset(table, 0, newtablesize * sizeof(MetaCell));
-	
+	QuietVector<MetaCell> new_meta;
+	if (!new_meta.resize(newtablesize)) return ec::alloc;
+
+	//Rehashing
 	for (unsigned int i = 0; i < _meta.size; i++)
 	{
 		//Reading meta
@@ -233,26 +233,23 @@ ir::ec ir::S2STDatabase::_rehash(unsigned int newtablesize) noexcept
 			//Inserting meta to new table
 			while (true)
 			{
-				if (table[searchindex].offset == 0) { table[searchindex] = cell; break; }
+				if (new_meta[searchindex].offset == 0) { new_meta[searchindex] = cell; break; }
 				else { searchindex++; if (searchindex == newtablesize) searchindex = 0; }
 			}
 		}
 	}
 
-	//Write directly because I am tired
+	//Swapping
 	if (_meta.hold)
 	{
-		free(_meta.ram);
-		_meta.ram = table;
-		table = nullptr;
+		_meta.ram.assign(new_meta);
 	}
 	else
 	{
 		if (fseek(_meta.file, sizeof(MetaHeader), SEEK_SET) != 0) return ec::seek_file;
-		if (fwrite(table, sizeof(MetaCell), newtablesize, _meta.file) < newtablesize) return ec::write_file;
+		if (fwrite(&new_meta[0], sizeof(MetaCell), newtablesize, _meta.file) < newtablesize) return ec::write_file;
 		_meta.pointer = newtablesize;
 	}
-	
 	_meta.size = newtablesize;
 	_meta.delcount = 0;
 	return ec::ok;
@@ -269,11 +266,10 @@ ir::ec ir::S2STDatabase::_check(const syschar *filepath, const syschar *metapath
 	#endif
 
 	if (_file.file == nullptr) return ec::open_file;
-	FileHeader header;
+	FileHeader header, sample;
 	if (fseek(_file.file, 0, SEEK_SET) != 0) return ec::seek_file;
-	if (fread(&header, sizeof(FileHeader), 1, _file.file) == 0 ||
-		memcmp(header.signature, "IS2STDF", 7) != 0 ||
-		header.version != 1) return ec::invalid_signature;
+	if (fread(&header, sizeof(FileHeader), 1, _file.file) == 0
+	|| memcmp(&header, &sample, sizeof(FileHeader)) != 0) return ec::invalid_signature;
 
 	if (fseek(_file.file, 0, SEEK_END) != 0) return ec::seek_file;
 	_file.size = ftell(_file.file);
@@ -287,11 +283,11 @@ ir::ec ir::S2STDatabase::_check(const syschar *filepath, const syschar *metapath
 	#endif
 
 	if (_meta.file == nullptr) return ec::open_file;
-	MetaHeader metaheader;
+	MetaHeader metaheader, metasample;
 	if (fseek(_meta.file, 0, SEEK_SET) != 0) return ec::seek_file;
-	if (fread(&metaheader, sizeof(MetaHeader), 1, _meta.file) == 0	||
-		memcmp(metaheader.signature, "IS2STDM", 7) != 0				||
-		metaheader.version != 1) return ec::invalid_signature;
+	if (fread(&metaheader, sizeof(MetaHeader), 1, _meta.file) == 0
+	|| memcmp(metaheader.signature, metasample.signature, 7) != 0
+	|| metaheader.version != metaheader.version) return ec::invalid_signature;
 
 	_file.used = metaheader.used;
 	if (_file.used > _file.size) return ec::invalid_signature;
@@ -620,10 +616,9 @@ ir::ec ir::S2STDatabase::set_ram_mode(bool holdfile, bool holdmeta) noexcept
 	//Read meta
 	if (holdmeta && !_meta.hold)
 	{
-		_meta.ram = (MetaCell*)malloc(_meta.size * sizeof(MetaCell));
-		if (_meta.ram == nullptr) return ec::alloc;
+		if (!_meta.ram.resize(_meta.size)) return ec::alloc;
 		if (fseek(_meta.file, sizeof(MetaHeader), SEEK_SET) != 0) return ec::seek_file;;
-		if (fread(_meta.ram, sizeof(MetaCell), _meta.size, _meta.file) < _meta.size) return ec::read_file;
+		if (fread(&_meta.ram[0], sizeof(MetaCell), _meta.size, _meta.file) < _meta.size) return ec::read_file;
 		_meta.pointer = _meta.size;
 	}
 	//Write meta
@@ -632,11 +627,10 @@ ir::ec ir::S2STDatabase::set_ram_mode(bool holdfile, bool holdmeta) noexcept
 		if (_writeaccess && _meta.changed)
 		{
 			if (fseek(_meta.file, sizeof(MetaHeader), SEEK_SET) != 0) return ec::seek_file;
-			if (fwrite(_meta.ram, sizeof(MetaCell), _meta.size, _meta.file) < _meta.size) return ec::write_file;
+			if (fwrite(&_meta.ram[0], sizeof(MetaCell), _meta.size, _meta.file) < _meta.size) return ec::write_file;
 			_meta.pointer = _meta.size;
 		}
-		free(_meta.ram);
-		_meta.ram = nullptr;
+		_meta.ram.clear();
 	}
 	_meta.hold = holdmeta;
 	_meta.changed = false;
@@ -644,10 +638,9 @@ ir::ec ir::S2STDatabase::set_ram_mode(bool holdfile, bool holdmeta) noexcept
 	//Read data
 	if (holdfile && !_file.hold)
 	{
-		_file.ram = malloc(_file.size);
-		if (_file.ram == nullptr) return ec::alloc;
-		if (fseek(_file.file, 0, SEEK_SET) != 0) return ec::seek_file;;
-		if (fread(_file.ram, 1, _file.size, _file.file) < _file.size) return ec::read_file;;
+		if (!_file.ram.resize(_file.size)) return ec::alloc;
+		if (fseek(_file.file, 0, SEEK_SET) != 0) return ec::seek_file;
+		if (fread(&_file.ram[0], 1, _file.size, _file.file) < _file.size) return ec::read_file;
 		_file.pointer = _file.size;
 	}
 	//Write data
@@ -656,11 +649,10 @@ ir::ec ir::S2STDatabase::set_ram_mode(bool holdfile, bool holdmeta) noexcept
 		if (_writeaccess && _file.changed)
 		{
 			if (fseek(_file.file, 0, SEEK_SET) != 0) return ec::seek_file;;
-			if (fwrite(_file.ram, 1, _file.size, _file.file) < _file.size) return ec::write_file;
+			if (fwrite(&_file.ram[0], 1, _file.size, _file.file) < _file.size) return ec::write_file;
 			_file.pointer = _file.size;
 		}
-		free(_file.ram);
-		_file.ram = nullptr;
+		_file.ram.clear();
 	}
 	_file.hold = holdfile;
 	_file.changed = false;

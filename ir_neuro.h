@@ -41,16 +41,16 @@ namespace ir
 	template<class T> class Tanh
 	{
 	public:
-		static inline T function(const T input);	///< Hyperbolic tangens
-		static inline T derivative(const T output);	///< Derivative of hyperbolic tangens calculated from it's result
+		static inline T function(const T input)		noexcept;	///< Hyperbolic tangens
+		static inline T derivative(const T output)	noexcept;	///< Derivative of hyperbolic tangens calculated from it's result
 	};
 	
 	///ReLU function, may be passed as ir::Neuro template parameter
 	template<class T> class ReLU
 	{
 	public:
-		static inline T function(const T input);	///< ReLU fucntion (ReLU(x) = x if x >= 0, ReLU(x) = 0.01 * x if x < 0)
-		static inline T derivative(const T output);	///< Derivative of ReLU calculated from it's result
+		static inline T function(const T input)		noexcept;	///< ReLU fucntion (ReLU(x) = x if x >= 0, ReLU(x) = 0.01 * x if x < 0)
+		static inline T derivative(const T output)	noexcept;	///< Derivative of ReLU calculated from it's result
 	};
 
 	///Ultra-lite neural network with teacher, provides no GPU acceleration

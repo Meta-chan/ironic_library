@@ -14,8 +14,7 @@
 #include <stdexcept>
 #include <stdlib.h>
 #include <string.h>
-
-template<class T> T ir::QuietVector<T>::_dummy;
+#include <assert.h>
 
 template<class T> ir::QuietVector<T>::QuietVector() noexcept
 {
@@ -36,10 +35,30 @@ template<class T> ir::QuietVector<T>::QuietVector(QuietVector &vector) noexcept
 	if (_header != nullptr) _header->refcount++;
 }
 
+template<class T> const ir::QuietVector<T> &ir::QuietVector<T>::assign(const QuietVector<T> &vector) noexcept
+{
+	if (_header != vector._header)
+	{
+		clear();
+		_header = vector._header;
+		#ifdef _DEBUG
+			_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
+		#endif
+		if (_header != nullptr) _header->refcount++;
+	}
+	return *this;
+}
+
+template<class T> const ir::QuietVector<T> &ir::QuietVector<T>::operator=(const QuietVector<T> &vector) noexcept
+{
+	return assign(vector);
+}
+
 template <class T> T *ir::QuietVector<T>::data() noexcept
 {
-	if (_header == nullptr) return nullptr;
-	else return (T*)(_header + 1);
+	if (empty()) return nullptr;
+	assert(detach());
+	return (T*)(_header + 1);
 }
 
 template<class T> T &ir::QuietVector<T>::operator[](size_t i) noexcept
@@ -49,12 +68,8 @@ template<class T> T &ir::QuietVector<T>::operator[](size_t i) noexcept
 
 template<class T> T &ir::QuietVector<T>::at(size_t i) noexcept
 {
-	if (i >= size())
-	{
-		memset(&_dummy, 0, sizeof(T));
-		return _dummy;
-	}
-	else return data()[i];
+	assert(i < size());
+	return data()[i];
 }
 
 template<class T> T &ir::QuietVector<T>::front() noexcept
@@ -67,17 +82,10 @@ template<class T> T &ir::QuietVector<T>::back() noexcept
 	return at(size() - 1);
 }
 
-template<class T> bool ir::QuietVector<T>::set(size_t i, T elem) noexcept
-{
-	if (i >= size()) return false;
-	data()[i] = elem;
-	return true;
-}
-
 template <class T> const T *ir::QuietVector<T>::data() const noexcept
 {
-	if (size() == 0) return nullptr;
-	else return (const T*)(_header + 1);
+	if (empty()) return nullptr;
+	return (const T*)(_header + 1);
 }
 
 template<class T> const T &ir::QuietVector<T>::operator[](size_t i) const noexcept
@@ -87,12 +95,8 @@ template<class T> const T &ir::QuietVector<T>::operator[](size_t i) const noexce
 
 template<class T> const T &ir::QuietVector<T>::at(size_t i) const noexcept
 {
-	if (i >= size())
-	{
-		memset(&_dummy, 0, sizeof(T));
-		return _dummy;
-	}
-	else return data()[i];
+	assert(i < size());
+	return data()[i];
 }
 
 template<class T> const T &ir::QuietVector<T>::front() const noexcept
@@ -103,13 +107,6 @@ template<class T> const T &ir::QuietVector<T>::front() const noexcept
 template<class T> const T &ir::QuietVector<T>::back() const noexcept
 {
 	return at(size() - 1);
-}
-
-template<class T> bool ir::QuietVector<T>::get(size_t i, T *elem) const noexcept
-{
-	if (i >= size()) return false;
-	*elem = data()[i];
-	return true;
 }
 
 template<class T> bool ir::QuietVector<T>::empty() const noexcept
@@ -131,9 +128,21 @@ template<class T> size_t ir::QuietVector<T>::capacity() const noexcept
 
 template<class T> bool ir::QuietVector<T>::resize(size_t newsize) noexcept
 {
-	if (!reserve(newsize)) return false;
-	if (newsize > size()) memset(data() + size(), 0, (newsize - size()) * sizeof(T));
-	_header->size = newsize;
+	if (!detach(newsize)) return false;
+	if (newsize > size())
+	{
+		_header->size = newsize;
+		for (size_t i = size(); i < newsize; i++)
+		{
+			memset(&at(i), 0, sizeof(T));
+			new(&at(i)) T();
+		}
+	}
+	else if (newsize < size())
+	{
+		for (size_t i = newsize; i < size(); i++) at(i).~T();
+		_header->size = newsize;
+	}
 	return true;
 }
 
@@ -152,6 +161,7 @@ template<class T> bool ir::QuietVector<T>::reserve(size_t newcapacity) noexcept
 	}
 	else if (_header->capacity < newcapacity)
 	{
+		if (newcapacity < 2 * _header->size) newcapacity = 2 * _header->size;
 		_header = (Header*)realloc(_header, sizeof(Header) + newcapacity * sizeof(T));
 		#ifdef _DEBUG
 			_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
@@ -164,31 +174,39 @@ template<class T> bool ir::QuietVector<T>::reserve(size_t newcapacity) noexcept
 
 template<class T> bool ir::QuietVector<T>::push_back(T elem) noexcept
 {
-	if (!resize(size() + 1)) return false;
-	back() = elem;
+	if (!detach(size() + 1)) return false;
+	_header->size = size() + 1;
+	new (&back()) T(elem);
 	return true;
 }
 
 template<class T> bool ir::QuietVector<T>::pop_back() noexcept
 {
-	if (size() == 0) return false;
-	else return resize(size() - 1);
+	assert(!empty());
+	if (!detach(size() - 1)) return false;
+	back().~T();
+	_header->size = size() - 1;
+	return true;
 }
 
 template<class T> bool ir::QuietVector<T>::insert(size_t i, T elem) noexcept
 {
-	if (i > size()) return false;
-	if (!resize(size() + 1)) return false;
+	assert(i <= size());
+	if (!detach(size() + 1)) return false;
 	memcpy(data() + i + 1, data() + i, (size() - i) * sizeof(T));
-	data()[i] = elem;
+	_header->size = size() + 1;
+	new (&at(i)) T(elem);
 	return true;
 }
 
 template<class T> bool ir::QuietVector<T>::erase(size_t i) noexcept
 {
-	if (i >= size()) return false;
+	assert(i < size());
+	detach(size() - 1);
+	at(i).~T();
 	memcpy(data() + i, data() + i + 1, (size() - i - 1) * sizeof(T));
-	return resize(size() - 1);
+	_header->size = size() - 1;
+	return true;
 }
 
 template<class T> void ir::QuietVector<T>::clear() noexcept
@@ -206,13 +224,25 @@ template<class T> void ir::QuietVector<T>::clear() noexcept
 
 template<class T> bool ir::QuietVector<T>::detach() noexcept
 {
-	if (_header != nullptr && _header->refcount != 1)
+	return detach(size());
+}
+
+template<class T> bool ir::QuietVector<T>::detach(size_t newcapacity) noexcept
+{
+	if (_header != nullptr && _header->refcount > 1)
 	{
-		size_t oldsize = size();
-		const void *olddata = data();
-		clear();
-		if (!resize(oldsize)) return false;
-		memcpy(data(), olddata, oldsize * sizeof(T));
+		if (size() > 0)
+		{
+			size_t oldsize = size();
+			const T *olddata = (T*)(_header + 1);
+			clear();
+			if (!reserve(newcapacity > oldsize ? newcapacity : oldsize)) return false;
+			T *newdata = (T*)(_header + 1);
+			for (size_t i = 0; i < oldsize; i++) new (&newdata[i]) T(olddata[i]);
+			_header->refcount = 1;
+			_header->size = oldsize;
+		}
+		else clear();
 	}
 	return true;
 }

@@ -14,8 +14,7 @@
 #include <stdexcept>
 #include <stdlib.h>
 #include <string.h>
-
-template<class T> char const * const ir::Vector<T>::_out_of_range_message = "ir::Vector out of range";
+#include <assert.h>
 
 template<class T> ir::Vector<T>::Vector() noexcept
 {
@@ -36,10 +35,29 @@ template<class T> ir::Vector<T>::Vector(const Vector &vector) noexcept
 	if (_header != nullptr) _header->refcount++;
 }
 
-template <class T> T *ir::Vector<T>::data() noexcept
+template<class T> const ir::Vector<T> &ir::Vector<T>::assign(const Vector<T> &vector) noexcept
 {
-	if (_header == nullptr) return nullptr;
-	if (_header->refcount > 1) detach();
+	if (_header != vector._header)
+	{
+		clear();
+		_header = vector._header;
+		#ifdef _DEBUG
+			_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
+		#endif
+		if (_header != nullptr) _header->refcount++;
+	}
+	return *this;
+}
+
+template<class T> const ir::Vector<T> &ir::Vector<T>::operator=(const Vector<T> &vector) noexcept
+{
+	return assign(vector);
+}
+
+template <class T> T *ir::Vector<T>::data()
+{
+	if (empty()) return nullptr;
+	detach();
 	return (T*)(_header + 1);
 }
 
@@ -50,9 +68,8 @@ template<class T> T &ir::Vector<T>::operator[](size_t i)
 
 template<class T> T &ir::Vector<T>::at(size_t i)
 {
-	if (_header == nullptr || i >= _header->size) throw std::out_of_range(_out_of_range_message);
-	if (_header->refcount > 1) detach();
-	return ((T*)(_header + 1))[i];
+	assert(i < size());
+	return data()[i];
 }
 
 template<class T> T &ir::Vector<T>::front()
@@ -67,39 +84,39 @@ template<class T> T &ir::Vector<T>::back()
 
 template <class T> const T *ir::Vector<T>::data() const noexcept
 {
-	if (_header == nullptr) return nullptr;
+	if (empty()) return nullptr;
 	return (T*)(_header + 1);
 }
 
-template<class T> const T &ir::Vector<T>::operator[](size_t i) const
+template<class T> const T &ir::Vector<T>::operator[](size_t i) const noexcept
 {
 	return at(i);
 }
 
-template<class T> const T &ir::Vector<T>::at(size_t i) const
+template<class T> const T &ir::Vector<T>::at(size_t i) const noexcept
 {
-	if (_header == nullptr || i >= _header->size) throw std::out_of_range(_out_of_range_message);
-	return ((T*)(_header + 1))[i];
+	assert(i < size());
+	return data()[i];
 }
 
-template<class T> const T &ir::Vector<T>::front() const
+template<class T> const T &ir::Vector<T>::front() const noexcept
 {
 	return at(0);
 }
 
-template<class T> const T &ir::Vector<T>::back() const
+template<class T> const T &ir::Vector<T>::back() const noexcept
 {
 	return at(size() - 1);
-}
-
-template<class T> bool ir::Vector<T>::empty() const noexcept
-{
-	return (_header == nullptr || _header->size == 0);
 }
 
 template<class T> size_t ir::Vector<T>::size() const noexcept
 {
 	return (_header == nullptr ? 0 : _header->size);
+}
+
+template<class T> bool ir::Vector<T>::empty() const noexcept
+{
+	return size() == 0;
 }
 
 template<class T> size_t ir::Vector<T>::capacity() const noexcept
@@ -109,21 +126,26 @@ template<class T> size_t ir::Vector<T>::capacity() const noexcept
 
 template<class T> void ir::Vector<T>::resize(size_t newsize)
 {
-	reserve(newsize);
+	detach(newsize);
 	if (newsize > size())
 	{
 		_header->size = newsize;
-		for (size_t i = size(); i < newsize; i++)	new(&at(i)) T();
+		for (size_t i = size(); i < newsize; i++)
+		{
+			memset(&at(i), 0, sizeof(T));
+			new(&at(i)) T();
+		}
 	}
 	else if (newsize < size())
 	{
-		for (size_t i = newsize; i < size(); i++)	at(i).~T();
+		for (size_t i = newsize; i < size(); i++) at(i).~T();
 		_header->size = newsize;
 	}
 }
 
 template<class T> void ir::Vector<T>::reserve(size_t newcapacity)
 {
+	//reserve is a light verson of detach(size_t), that does not care about refcount
 	if (_header == nullptr)
 	{
 		_header = (Header*) malloc(sizeof(Header) + newcapacity * sizeof(T));
@@ -137,7 +159,7 @@ template<class T> void ir::Vector<T>::reserve(size_t newcapacity)
 	}
 	else if (_header->capacity < newcapacity)
 	{
-		if (!(newcapacity > 2 * _header->size)) newcapacity = 2 * _header->size;//If changes are small
+		if (newcapacity < 2 * _header->size) newcapacity = 2 * _header->size;
 		_header = (Header*)realloc(_header, sizeof(Header) + newcapacity * sizeof(T));
 		#ifdef _DEBUG
 			_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
@@ -149,25 +171,23 @@ template<class T> void ir::Vector<T>::reserve(size_t newcapacity)
 
 template<class T> void ir::Vector<T>::push_back(const T &elem)
 {
-	if (_header != nullptr && _header->refcount > 1) detach();
-	reserve(size() + 1);
+	detach(size() + 1);
 	_header->size = size() + 1;
-	new (&back()) T(elem);	
+	new (&back()) T(elem);
 }
 
 template<class T> void ir::Vector<T>::pop_back()
 {
-	if (size() == 0) throw std::out_of_range(_out_of_range_message);
-	if (_header->refcount > 1) detach();
+	assert(!empty());
+	detach(size() - 1);
 	back().~T();
 	_header->size = size() - 1;
 }
 	
 template<class T> void ir::Vector<T>::insert(size_t i, const T &elem)
 {
-	if (i > size()) throw std::out_of_range(_out_of_range_message);
-	if (_header != nullptr && _header->refcount > 1) detach(size() + 1);
-	else reserve(size() + 1);
+	assert(i <= size());
+	detach(size() + 1);
 	memcpy(data() + i + 1, data() + i, (size() - i) * sizeof(T));
 	_header->size = size() + 1;
 	new (&at(i)) T(elem);
@@ -175,22 +195,11 @@ template<class T> void ir::Vector<T>::insert(size_t i, const T &elem)
 
 template<class T> void ir::Vector<T>::erase(size_t i)
 {
-	if (i >= size()) throw std::out_of_range(_out_of_range_message);
-	if (_header->refcount > 1) detach();
+	assert(i < size());
+	detach(size() - 1);
 	at(i).~T();
 	memcpy(data() + i, data() + i + 1, (size() - i - 1) * sizeof(T));
 	_header->size = size() - 1;
-}
-
-template<class T> const ir::Vector<T> &ir::Vector<T>::operator=(const Vector<T> &vector) noexcept
-{
-	clear();
-	_header = vector._header;
-	#ifdef _DEBUG
-		_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
-	#endif
-	if (_header != nullptr) _header->refcount++;
-	return *this;
 }
 
 template<class T> void ir::Vector<T>::clear() noexcept
