@@ -104,7 +104,8 @@ ir::Neuro<T, A, F>::Neuro(const syschar *filepath, ec *code) noexcept
 	#else
 		FileResource file = fopen(filepath, "rb");
 	#endif
-
+	
+	if (file == nullptr)													{ if (code != nullptr) *code = ec::open_file; return; }
 	FileHeader header, sample;
 	if (fread(&header, sizeof(FileHeader), 1, file) == 0)					{ if (code != nullptr) *code = ec::read_file; return; }
 	if (memcmp(&header, &sample, sizeof(FileHeader)) != 0)					{ if (code != nullptr) *code = ec::invalid_signature; return; }

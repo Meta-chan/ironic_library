@@ -226,20 +226,24 @@ template<class T> void ir::Vector<T>::detach()
 
 template<class T> void ir::Vector<T>::detach(size_t newcapacity)
 {
-	if (_header != nullptr && _header->refcount > 1)
+	if (_header == nullptr)
 	{
-		if (size() > 0)
-		{
-			size_t oldsize = size();
-			const T *olddata = (T*)(_header + 1);
-			clear();
-			reserve(newcapacity > oldsize ? newcapacity : oldsize);
-			T *newdata = (T*)(_header + 1);
-			for (size_t i = 0; i < oldsize; i++) new (&newdata[i]) T(olddata[i]);
-			_header->refcount = 1;
-			_header->size = oldsize;
-		}
-		else clear();
+		reserve(newcapacity);
+	}
+	else if (_header->refcount == 1)
+	{
+		reserve(newcapacity);
+	}
+	else
+	{
+		size_t oldsize = size();
+		const T *olddata = (T*)(_header + 1);
+		clear();
+		reserve(newcapacity > oldsize ? newcapacity : oldsize);
+		T *newdata = (T*)(_header + 1);
+		for (size_t i = 0; i < oldsize; i++) new (&newdata[i]) T(olddata[i]);
+		_header->refcount = 1;
+		_header->size = oldsize;
 	}
 }
 

@@ -229,20 +229,24 @@ template<class T> bool ir::QuietVector<T>::detach() noexcept
 
 template<class T> bool ir::QuietVector<T>::detach(size_t newcapacity) noexcept
 {
-	if (_header != nullptr && _header->refcount > 1)
+	if (_header == nullptr)
 	{
-		if (size() > 0)
-		{
-			size_t oldsize = size();
-			const T *olddata = (T*)(_header + 1);
-			clear();
-			if (!reserve(newcapacity > oldsize ? newcapacity : oldsize)) return false;
-			T *newdata = (T*)(_header + 1);
-			for (size_t i = 0; i < oldsize; i++) new (&newdata[i]) T(olddata[i]);
-			_header->refcount = 1;
-			_header->size = oldsize;
-		}
-		else clear();
+		return reserve(newcapacity);
+	}
+	else if (_header->refcount == 1)
+	{
+		return reserve(newcapacity);
+	}
+	else
+	{
+		size_t oldsize = size();
+		const T *olddata = (T*)(_header + 1);
+		clear();
+		if (!reserve(newcapacity > oldsize ? newcapacity : oldsize)) return false;
+		T *newdata = (T*)(_header + 1);
+		for (size_t i = 0; i < oldsize; i++) new (&newdata[i]) T(olddata[i]);
+		_header->refcount = 1;
+		_header->size = oldsize;
 	}
 	return true;
 }
