@@ -92,7 +92,24 @@ inline ir::BlockC<T, A> ir::BlockC<T, A>::operator/(const BlockC<T, A> & restric
 }
 
 template <class T, unsigned int A>
-ir::VectorC<T, A>::VectorC(unsigned int height, bool *ok) noexcept
+ir::VectorC<T, A>::VectorC() noexcept
+{}
+
+template <class T, unsigned int A>
+ir::VectorC<T, A>::VectorC(const VectorC<T, A> &other) noexcept
+{
+	assert(other._data != nullptr);
+	unsigned int size = (((other._height + A - 1) / A) * A + A - 1) * sizeof(T);
+	_data = malloc(size);
+	if (_data != nullptr)
+	{
+		memcpy(_data, other._data, size);
+		_height = other._height;
+	}
+}
+
+template <class T, unsigned int A>
+ir::VectorC<T, A>::VectorC(unsigned int height) noexcept
 {
 	unsigned int size = (((height + A - 1) / A) * A + A - 1) * sizeof(T);
 	_data = malloc(size);
@@ -101,7 +118,26 @@ ir::VectorC<T, A>::VectorC(unsigned int height, bool *ok) noexcept
 		memset(_data, 0, size);
 		_height = height;
 	}
-	if (ok != nullptr) *ok = (_data != nullptr);
+}
+
+template <class T, unsigned int A>
+bool ir::VectorC<T, A>::init(unsigned int height) noexcept
+{
+	assert(_data == nullptr);
+	unsigned int size = (((height + A - 1) / A) * A + A - 1) * sizeof(T);
+	_data = malloc(size);
+	if (_data != nullptr)
+	{
+		memset(_data, 0, size);
+		_height = height;
+	}
+	return _data != nullptr;
+}
+
+template <class T, unsigned int A>
+bool ir::VectorC<T, A>::ok() const noexcept
+{
+	return _data != nullptr;
 }
 
 template <class T, unsigned int A>
@@ -177,8 +213,9 @@ inline const ir::BlockC<T, A> & restrict ir::VectorC<T, A>::block(unsigned int r
 }
 
 template<class T, unsigned int A>
-void ir::VectorC<T, A>::assign_zero()
+void ir::VectorC<T, A>::assign_zero() noexcept
 {
+	assert(_data != nullptr);
 	for (unsigned int i = 0; i < _height; i++)
 	{
 		at(i) = 0;
@@ -186,8 +223,9 @@ void ir::VectorC<T, A>::assign_zero()
 }
 
 template<class T, unsigned int A>
-void ir::VectorC<T, A>::assign_random(T low, T high)
+void ir::VectorC<T, A>::assign_random(T low, T high) noexcept
 {
+	assert(_data != nullptr);
 	std::default_random_engine engine;
 	std::uniform_real_distribution<T> distribution(low, high);
 	for (unsigned int i = 0; i < _height; i++)
@@ -260,8 +298,28 @@ ir::VectorC<T, A>::~VectorC() noexcept
 	_data = nullptr;
 }
 
+
 template <class T, unsigned int A>
-ir::MatrixC<T, A>::MatrixC(unsigned int width, unsigned int height, bool *ok) noexcept
+ir::MatrixC<T, A>::MatrixC() noexcept
+{
+}
+
+template <class T, unsigned int A>
+ir::MatrixC<T, A>::MatrixC(const MatrixC<T, A> &other) noexcept
+{
+	assert(other._data != nullptr);
+	unsigned int size = (other._height * ((other._width + A - 1) / A) * A + A - 1) * sizeof(T);
+	_data = malloc(size);
+	if (_data != nullptr)
+	{
+		memcpy(_data, other._data, size);
+		_height = other._height;
+		_width = other._width;
+	}
+}
+
+template <class T, unsigned int A>
+ir::MatrixC<T, A>::MatrixC(unsigned int width, unsigned int height) noexcept
 {
 	unsigned int size = (height * ((width + A - 1) / A) * A + A - 1) * sizeof(T);
 	_data = malloc(size);
@@ -271,7 +329,27 @@ ir::MatrixC<T, A>::MatrixC(unsigned int width, unsigned int height, bool *ok) no
 		_height = height;
 		_width = width;
 	}
-	if (ok != nullptr) *ok = (_data != nullptr);
+}
+
+template <class T, unsigned int A>
+bool ir::MatrixC<T, A>::init(unsigned int width, unsigned int height) noexcept
+{
+	assert(_data == nullptr);
+	unsigned int size = (height * ((width + A - 1) / A) * A + A - 1) * sizeof(T);
+	_data = malloc(size);
+	if (_data != nullptr)
+	{
+		memset(_data, 0, size);
+		_height = height;
+		_width = width;
+	}
+	return _data != nullptr;
+}
+
+template <class T, unsigned int A>
+bool ir::MatrixC<T, A>::ok() const noexcept
+{
+	return _data != nullptr;
 }
 
 template <class T, unsigned int A>

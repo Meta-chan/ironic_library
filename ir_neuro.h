@@ -19,6 +19,7 @@
 #define IR_NEURO
 
 #include <ir_math/ir_mathc.h>
+#include <ir_container/ir_quiet_vector.h>
 #include <ir_errorcode.h>
 #include <ir_syschar.h>
 #include <stdio.h>
@@ -68,14 +69,13 @@ namespace ir
 			unsigned char version	= 3;
 		};
 
-		bool _ok				= false;
-		unsigned int _nlayers	= 0;
-		unsigned int *_layers	= nullptr;
-		VectorC<T, A> *_vectors	= nullptr;
-		VectorC<T, A> *_errors	= nullptr;
-		VectorC<T, A> *_goal	= nullptr;
-		MatrixC<T, A> *_weights	= nullptr; 
-		T _coefficient			= 0.0;
+		bool _ok = false;
+		QuietVector<unsigned int> _layers;
+		QuietVector<VectorC<T, A>> _vectors;
+		QuietVector<VectorC<T, A>> _errors;
+		VectorC<T, A> _goal;
+		QuietVector<MatrixC<T, A>> _weights; 
+		T _coefficient = 0.0;
 		
 		static void _forward(const MatrixC<T, A> *w, const VectorC<T, A> *pv, VectorC<T, A> *nv) noexcept;
 		static void _lastbackward(const VectorC<T, A> *g, const VectorC<T, A> *l, VectorC<T, A> *e) noexcept;

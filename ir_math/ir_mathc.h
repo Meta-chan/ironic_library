@@ -48,14 +48,22 @@ namespace ir
 	private:
 		void * restrict _data = nullptr;
 		unsigned int _height = 0;
-		VectorC(VectorC &vector);
 		
 	public:
+		///Creates empty (invalid) vector
+		VectorC() noexcept;
+		///Copies vector
+		VectorC(const VectorC &other) noexcept;
 		///Creates vector and allocates memory for it
 		///@param height Dimension (height) of the vector
 		///@param ok If not @c nullptr, receives @c true or @c false dependent on success or fail
-		VectorC(unsigned int height, bool *ok) noexcept;
-		
+		VectorC(unsigned int height) noexcept;
+		///Initializes empty vector
+		///@param height Dimension (height) of the vector
+		bool init(unsigned int height) noexcept;
+		///Checks if vector is successfully allocated
+		bool ok() const noexcept;
+
 		//Element access:
 		///Returns dimension (height) of vector
 		inline unsigned int height() const noexcept;
@@ -82,16 +90,15 @@ namespace ir
 
 		//Operations:
 		///Assigns vector to zero values
-		void assign_zero();
+		void assign_zero() noexcept;
 		///Assigns vector to random values
-		void assign_random(T low, T high);
+		void assign_random(T low, T high) noexcept;
 		///Assigns vector to vector sum
 		void assign_add(const VectorC * restrict a, const VectorC * restrict b) noexcept;
 		///Assigns vector to vector difference
 		void assign_sub(const VectorC * restrict a, const VectorC * restrict b) noexcept;
 		///Assigns vector to matix-vector product
 		void assign_mul(const MatrixC<T, A> * restrict a, const VectorC * restrict b) noexcept;
-
 		///Destroys vector
 		~VectorC() noexcept;
 	};
@@ -105,14 +112,21 @@ namespace ir
 		void *_data				= nullptr;
 		unsigned int _width		= 0;
 		unsigned int _height	= 0;
-		MatrixC(MatrixC &matrix);
 
 	public:
+		///Creates empty matrix
+		MatrixC() noexcept;
+		///Copies matrix
+		MatrixC(const MatrixC &other) noexcept;
 		///Creates matrix and allocates memory for it
 		///@param width Width of the matrix
 		///@param height Height of the matrix
 		///@param ok If not @c nullptr, receives @c true or @c false dependent on success or fail
-		MatrixC(unsigned int width, unsigned int height, bool *ok) noexcept;
+		MatrixC(unsigned int width, unsigned int height) noexcept;
+		///Initializes empty matrix
+		bool init(unsigned int width, unsigned int height) noexcept;
+		///Checks if matrix is successfully allocated
+		bool ok() const noexcept;
 
 		//Element access:
 		///Returns width of matrix
