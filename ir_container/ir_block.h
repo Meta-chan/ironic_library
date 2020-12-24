@@ -16,37 +16,46 @@ namespace ir
 ///@defgroup ir_container Containers
 ///@{
 	
-	///Data block. Encapsulates raw pointer to data and it's size
+	///Data block is an interface to resiable block of data
 	class Block
 	{
 	public:
-		unsigned int size;	///< Size of data block
-		void *data;			///< Raw pointer to the data
-		
-		///Creates a data block
-		Block();
-		///Creates a data block from pointer and size
-		///@param size Size of data block
-		///@param data Raw pointer to the data
-		Block(unsigned int size, void *data);
+		///Returns raw data
+		virtual void *data()						noexcept = 0;
+		///Returns size of raw data
+		virtual size_t size()						const noexcept = 0;
+		///Returns size of currently allocated memory
+		virtual size_t capacity()					const noexcept = 0;
+		///Resizes data block
+		///@param newsize New size of data block
+		virtual bool resize(size_t newsize)			noexcept = 0;
+		///Allocates memory
+		///@param newcapacity New capacity of data block
+		virtual bool reserve(size_t newcapacity)	noexcept = 0;
+		///Destroys data block
+		virtual ~Block()							noexcept = 0;
 	};
 
-	///Constant data block. Encapsulates constant raw pointer to data and it's size
+	///Constant data block is a non-resizable and constant block of data
 	class ConstBlock
 	{
+	private:
+		size_t _size;		///< Size of data block
+		const void *_data;	///< Constant raw pointer to the data
+
 	public:
-		unsigned int size;	///< Size of data block
-		const void *data;	///< Constant raw pointer to the data
-		
-		///Creates a data block
-		ConstBlock();
+		///Creates empty data block
+		ConstBlock()								noexcept;
 		///Creates a data block from pointer and size
 		///@param size Size of data block
 		///@param data Constant raw pointer to the data
-		ConstBlock(unsigned int size, const void *data);
-		///Creates a constant data block from data block
-		///@param block Non-constant data block
-		ConstBlock(Block block);
+		ConstBlock(const void *data, size_t size)	noexcept;
+		///Returns raw data
+		const void *data()							noexcept;
+		///Returns size of raw data
+		size_t size()								const noexcept;
+		///Destroys data block
+		~ConstBlock()								noexcept;
 	};
 
 ///@}

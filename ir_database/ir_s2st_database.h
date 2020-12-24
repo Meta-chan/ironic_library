@@ -12,7 +12,7 @@
 #define IR_S2ST_DATABASE
 
 #include <ir_database/ir_database.h>
-#include <ir_openmap.h>
+#include <ir_mapping.h>
 #include <ir_errorcode.h>
 #include <ir_syschar.h>
 #include <ir_container/ir_block.h>
@@ -78,7 +78,7 @@ namespace ir
 
 		bool _ok					= false;
 		bool _writeaccess			= false;
-		ir::OpenmapCache _mapcache;
+		ir::Mapping _mapping;
 		
 		//Primitive read & write section
 		static unsigned int _align(unsigned int i)											noexcept;

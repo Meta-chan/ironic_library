@@ -11,13 +11,12 @@
 #ifndef IR_N2ST_DATABASE_IMPLEMENTATION
 #define IR_N2ST_DATABASE_IMPLEMENTATION
 
+#include <ir_resource/ir_memresource.h>
 #include <stdlib.h>
 #include <string.h>
 #ifdef _WIN32
 	#include <share.h>
 #endif
-#include <ir_resource/ir_memresource.h>
-#include <ir_reserve.h>
 
 ir::N2STDatabase::MetaCell::MetaCell() noexcept
 {
@@ -56,8 +55,11 @@ ir::ec ir::N2STDatabase::_write(const void *buffer, unsigned int offset, unsigne
 			if (!_file.ram.resize(offset + size)) return ec::alloc;
 			_file.size = offset + size;
 		}
-		memcpy(&_file.ram[offset], buffer, size);
-		if (size > 0) _file.changed = true;
+		if (size > 0)
+		{
+			memcpy(&_file.ram[offset], buffer, size);
+			_file.changed = true;
+		}
 	}
 	else
 	{
@@ -87,8 +89,8 @@ ir::ec ir::N2STDatabase::_readpointer(void **p, unsigned int offset, unsigned in
 		//Actually openmap might change file pointer. It never causes a problem though
 		fflush(_file.file);	//Openmap is native, database is not.
 		//I DONT KNOW IF IT INCREASES SPEED! Test it!
-		void *pointer = openmap(&_mapcache, _file.file, offset, size, openmap_mode::read);
-		if (pointer == nullptr) return ec::openmap;
+		void *pointer = _mapping.map(_file.file, offset, size, Mapping::map_mode::read);
+		if (pointer == nullptr) return ec::mapping;
 		memcpy(p, &pointer, sizeof(void*));
 	}
 	return ec::ok;
@@ -312,9 +314,7 @@ ir::ec ir::N2STDatabase::read(unsigned int index, ConstBlock *data) noexcept
 	code = _readpointer(&readdata, cell.offset, cell.size);
 	if (code != ec::ok) return code;
 	
-	data->data = readdata;
-	data->size = cell.size;
-
+	*data = ConstBlock(readdata, cell.size);
 	return ec::ok;
 }
 
@@ -333,12 +333,12 @@ ir::ec ir::N2STDatabase::insert(unsigned int index, ConstBlock data, insert_mode
 
 	//If exists or deleted and size is sufficient
 	unsigned int oldsize = cell.size;
-	if (code == ec::ok && cell.offset != 0 && cell.size >= data.size)
+	if (code == ec::ok && cell.offset != 0 && cell.size >= data.size())
 	{
 		//If something need to be changed
-		if (cell.size != data.size || cell.deleted > 0)
+		if (cell.size != data.size() || cell.deleted > 0)
 		{
-			cell.size = data.size;
+			cell.size = data.size();
 			cell.deleted = 0;
 			code = _metawrite(cell, index);
 			if (code != ec::ok) return code;
@@ -346,22 +346,22 @@ ir::ec ir::N2STDatabase::insert(unsigned int index, ConstBlock data, insert_mode
 	}
 	else
 	{
-		cell.size = data.size;
+		cell.size = data.size();
 		cell.deleted = 0;
 		cell.offset = (_file.size + sizeof(unsigned int) - 1) & ~(sizeof(unsigned int) - 1);
 		code = _metawrite(cell, index);
 		if (code != ec::ok) return code;
 	}
-	code = _write(data.data, cell.offset, data.size);
+	code = _write(data.data(), cell.offset, (unsigned int)data.size());
 	if (code != ec::ok) return code;
 
 	if (found)
 	{
-		_file.used += _file.used + data.size - oldsize;
+		_file.used += _file.used + (unsigned int)data.size() - oldsize;
 	}
 	else
 	{
-		_file.used += data.size;
+		_file.used += (unsigned int)data.size();
 		_meta.count++;
 	}
 	return ec::ok;
@@ -491,7 +491,7 @@ ir::ec ir::N2STDatabase::optimize() noexcept
 
 ir::N2STDatabase::~N2STDatabase() noexcept
 {
-	closemap(&_mapcache);
+	_mapping.close();
 	set_ram_mode(false, false);
 	if (_file.file != nullptr) fclose(_file.file);
 	if (_meta.file != nullptr)

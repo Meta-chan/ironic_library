@@ -11,11 +11,10 @@
 #ifndef IR_BLOCK_IMPLEMENTATION
 #define IR_BLOCK_IMPLEMENTATION
 
-ir::Block::Block() : size(0), data(nullptr) {}
-ir::Block::Block(unsigned int size, void *data) : size(size), data(data) {}
-
-ir::ConstBlock::ConstBlock() : size(0), data(nullptr) {}
-ir::ConstBlock::ConstBlock(unsigned int size, const void *data) : size(size), data(data) {}
-ir::ConstBlock::ConstBlock(Block block) : size(block.size), data(block.data) {}
+ir::ConstBlock::ConstBlock() noexcept : _data(nullptr), _size(0) {}
+ir::ConstBlock::ConstBlock(const void *data, size_t size) noexcept : _data(data), _size(size) {}
+const void *ir::ConstBlock::data() noexcept { return _data; }
+size_t ir::ConstBlock::size() const noexcept { return _size; }
+ir::ConstBlock::~ConstBlock() noexcept {}
 
 #endif	//#ifndef IR_BLOCK_IMPLEMENTATION

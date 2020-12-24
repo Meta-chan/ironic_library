@@ -21,17 +21,16 @@
 
 void test()
 {
-	bool ok;
-	ir::MatrixC<TYPE, ALIGN> ac(SIZE, SIZE, &ok);
-	if (!ok) return;
+	ir::MatrixC<TYPE, ALIGN> ac(SIZE, SIZE);
+	if (!ac.ok()) return;
 	ac.assign_random(-1.0, 1.0);
 
-	ir::VectorC<TYPE, ALIGN> bc(SIZE, &ok);
-	if (!ok) return;
+	ir::VectorC<TYPE, ALIGN> bc(SIZE);
+	if (!bc.ok()) return;
 	bc.assign_random(-1.0, 1.0);
 
-	ir::VectorC<TYPE, ALIGN> cc(SIZE, &ok);
-	if (!ok) return;
+	ir::VectorC<TYPE, ALIGN> cc(SIZE);
+	if (!cc.ok()) return;
 	cc.assign_random(-1.0, 1.0);
 
 	cc.assign_mul(&ac, &bc);

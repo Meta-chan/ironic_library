@@ -44,8 +44,8 @@ namespace ir
 		windows_getmessage,		///< GetMessage function failed (Windows-specific)
 		windows_createthread,	///< CreateThread function failed (Windows-specific)
 
-		//openmap sector
-		openmap,				///< @c ir::openmap function failed
+		//Mapping sector
+		mapping,				///< @c ir::Mapping::map failed
 
 		//databases and registers sector
 		key_not_exists,			///< Identifier is not found in container (logical error)
@@ -67,7 +67,7 @@ namespace ir
 * - ir_container	- library's containers: vectors, blocks, registers, rings, strings
 * - ir_math			- some mathematics algorithms
 * - ir_md5			- MD5 hash algorithm
-* - ir_openmap		- mapping function
+* - ir_mapping		- file mapping
 * - ir_plot			- plotting function
 *
 *### Platforms

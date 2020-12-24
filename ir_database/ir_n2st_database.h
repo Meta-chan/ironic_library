@@ -12,7 +12,7 @@
 #define IR_N2ST_DATABASE
 
 #include <ir_database/ir_database.h>
-#include <ir_openmap.h>
+#include <ir_mapping.h>
 #include <ir_errorcode.h>
 #include <ir_syschar.h>
 #include <ir_container/ir_block.h>
@@ -64,19 +64,19 @@ namespace ir
 		struct : FileMetaCommon
 		{
 			QuietVector<char> ram;				//valid if hold, otherwise nullptr
-			unsigned int used		= 0;
+			unsigned int used				= 0;
 		} _file;
 
 		struct : FileMetaCommon
 		{
 			QuietVector<MetaCell> ram;			//valid if hold, otherwise nullptr
-			unsigned int count		= 0;
-			unsigned int delcount	= 0;
+			unsigned int count			= 0;
+			unsigned int delcount			= 0;
 		} _meta;
 
 		bool _ok					= false;
 		bool _writeaccess			= false;
-		ir::OpenmapCache _mapcache;
+		ir::Mapping _mapping;
 
 		//Primitive read & write section
 		ec _read(void *buffer, unsigned int offset, unsigned int size)					noexcept;
@@ -99,10 +99,10 @@ namespace ir
 		N2STDatabase(const syschar *filepath, create_mode mode, ec *code)						noexcept;
 		///Returns whether database is ok
 		bool ok()																				const noexcept;
-		///Ask if identifier exists and can be read if no supernatural error occurs
+		///Ask if identifier exists and can be read if no supernatural error occurs. Is thread-safe if <tt>set_ram_mode(true, rtue) was done</tt>
 		///@param index Integer identifier
 		ec probe(unsigned int index)															noexcept;
-		///Read value related to identifier
+		///Read value related to identifier. Is thread-safe if <tt>set_ram_mode(true, rtue) was done</tt>
 		///@param index Integer identifier
 		///@param data Pointer to ir::ConstBlock to receive result
 		ec read(unsigned int index, ConstBlock *data)											noexcept;

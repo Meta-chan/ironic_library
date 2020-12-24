@@ -8,7 +8,7 @@ The code presented here is some pieces of my home projects. Here you will find:
  - ir_container		- library's containers: vectors, blocks, registers, rings, strings
  - ir_math			- some mathematics algorithms
  - ir_md5			- MD5 hash algorithm
- - ir_openmap		- mapping function
+ - ir_mapping		- file mapping
  - ir_plot			- plotting function
 
 ### Platforms

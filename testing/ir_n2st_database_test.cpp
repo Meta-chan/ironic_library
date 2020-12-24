@@ -8,7 +8,7 @@ ir::N2STDatabase *database;
 void test_insert(unsigned int key, const char *data, ir::Database::insert_mode mode, ir::ec rightcode)
 {
 	printf("Adding key = '%i', data = '%s'\n", key, data);
-	ir::ConstBlock bdata(strlen(data) + 1, data);
+	ir::ConstBlock bdata(data, strlen(data) + 1);
 	ir::ec code = database->insert(key, bdata, mode);
 	printf("Errorcode : %u\n", code);
 	printf("Test: %s\n\n", code == rightcode ? "ok" : "error");
@@ -28,9 +28,9 @@ void test_read(unsigned int key, const char *rightdata, ir::ec rightcode)
 	ir::ConstBlock result;
 	ir::ec code = database->read(key, &result);
 	printf("Result : %u\n", code);
-	if (code == ir::ec::ok) printf("Data : %s\n", (const char*)result.data);
+	if (code == ir::ec::ok) printf("Data : %s\n", (const char*)result.data());
 	bool testok = (rightcode == ir::ec::ok) ?
-		(code == ir::ec::ok && strcmp((const char*)result.data, rightdata) == 0) :
+		(code == ir::ec::ok && strcmp((const char*)result.data(), rightdata) == 0) :
 		(code == rightcode);
 	printf("Test: %s\n\n", testok ? "ok" : "error");
 }

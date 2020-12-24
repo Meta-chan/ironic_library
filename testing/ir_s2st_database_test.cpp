@@ -7,8 +7,8 @@ ir::S2STDatabase *database;
 void test_insert(const char *key, const char *data, ir::Database::insert_mode mode, ir::ec rightcode)
 {
 	printf("Adding key = '%s', data = '%s'\n", key, data);
-	ir::ConstBlock bkey(strlen(key) + 1, key);
-	ir::ConstBlock bdata(strlen(data) + 1, data);
+	ir::ConstBlock bkey(key, strlen(key) + 1);
+	ir::ConstBlock bdata(data, strlen(data) + 1);
 	ir::ec code = database->insert(bkey, bdata, mode);
 	printf("Errorcode : %u\n", code);
 	printf("Test: %s\n\n", code == rightcode ? "ok" : "error");
@@ -17,7 +17,7 @@ void test_insert(const char *key, const char *data, ir::Database::insert_mode mo
 void test_delete(const char *key, ir::Database::delete_mode mode, ir::ec rightcode)
 {
 	printf("Deleting key = '%s'\n", key);
-	ir::ec code = database->delet(ir::ConstBlock(strlen(key) + 1, key), mode);
+	ir::ec code = database->delet(ir::ConstBlock(key, strlen(key) + 1), mode);
 	printf("Result : %u\n", code);
 	printf("Test: %s\n\n", code == rightcode ? "ok" : "error");
 }
@@ -26,11 +26,11 @@ void test_read(const char *key, const char *rightdata, ir::ec rightcode)
 {
 	printf("Reading key = '%s'\n", key);
 	ir::ConstBlock result;
-	ir::ec code = database->read(ir::ConstBlock(strlen(key) + 1, key), &result);
+	ir::ec code = database->read(ir::ConstBlock(key, strlen(key) + 1), &result);
 	printf("Result : %u\n", code);
-	if (code == ir::ec::ok) printf("Data : %s\n", (const char*)result.data);
+	if (code == ir::ec::ok) printf("Data : %s\n", (const char*)result.data());
 	bool testok = (rightcode == ir::ec::ok) ?
-		(code == ir::ec::ok && strcmp((const char*)result.data, rightdata) == 0) :
+		(code == ir::ec::ok && strcmp((const char*)result.data(), rightdata) == 0) :
 		(code == rightcode);
 	printf("Test: %s\n\n", testok ? "ok" : "error");
 }

@@ -63,8 +63,11 @@ ir::ec ir::S2STDatabase::_write(const void *buffer, unsigned int offset, unsigne
 			if (!_file.ram.resize(offset + size)) return ec::alloc;
 			_file.size = offset + size;
 		}
-		memcpy(&_file.ram[offset], buffer, size);
-		if (size > 0) _file.changed = true;
+		if (size > 0)
+		{
+			memcpy(&_file.ram[offset], buffer, size);
+			_file.changed = true;
+		}
 	}
 	else
 	{
@@ -95,8 +98,8 @@ ir::ec ir::S2STDatabase::_readpointer(void **p, unsigned int offset, unsigned in
 		//Actually openmap might change file pointer. It never causes a problem though
 		fflush(_file.file);	//Openmap is native, database is not.
 		//I DONT KNOW IF IT INCREASES SPEED! Test it!
-		void *pointer = openmap(&_mapcache, _file.file, offset, size, openmap_mode::read);
-		if (pointer == nullptr) return ec::openmap;
+		void *pointer = _mapping.map(_file.file, offset, size, Mapping::map_mode::read);
+		if (pointer == nullptr) return ec::mapping;
 		memcpy(p, &pointer, sizeof(void*));
 	}
 	return ec::ok;
@@ -150,9 +153,11 @@ unsigned int ir::S2STDatabase::_hash(ConstBlock key) noexcept
 {
 	//FNV-1a
 	unsigned int h = 2166136261;
-	for (unsigned int i = 0; i < key.size; i++)
+	const char *keydata = (const char*)key.data();
+	size_t keysize = key.size();
+	for (size_t i = 0; i < keysize; i++)
 	{
-		unsigned int octet = ((char*)key.data)[i];
+		unsigned int octet = keydata[i];
 		h = h ^ octet;
 		h = h * 16777619;
 	}
@@ -187,12 +192,12 @@ ir::ec ir::S2STDatabase::_find(ConstBlock key, unsigned int *index, MetaCell *ce
 		}
 		else
 		{
-			if (searchcell.keysize == key.size)
+			if (searchcell.keysize == key.size())
 			{
 				void *readkey = nullptr;
-				code = _readpointer(&readkey, searchcell.offset, key.size);
+				code = _readpointer(&readkey, searchcell.offset, (unsigned int)key.size());
 				if (code != ec::ok) return code;
-				if (memcmp(key.data, readkey, key.size) == 0)
+				if (memcmp(key.data(), readkey, key.size()) == 0)
 				{
 					*index = searchindex;
 					*cell = searchcell;
@@ -228,7 +233,7 @@ ir::ec ir::S2STDatabase::_rehash(unsigned int newtablesize) noexcept
 			code = _readpointer(&readkey, cell.offset, cell.keysize);
 			if (code != ec::ok) return code;
 
-			unsigned int searchindex = _hash(ConstBlock(cell.keysize, readkey)) & (newtablesize - 1);
+			unsigned int searchindex = _hash(ConstBlock(readkey, cell.keysize)) & (newtablesize - 1);
 
 			//Inserting meta to new table
 			while (true)
@@ -434,9 +439,8 @@ ir::ec ir::S2STDatabase::read(ConstBlock key, ConstBlock *data) noexcept
 	void *readdata = nullptr;
 	unsigned int alignoffset = _align(cell.offset + cell.keysize);
 	code = _readpointer(&readdata, alignoffset, cell.datasize);
-	data->data = readdata;
-	data->size = cell.datasize;
-
+	
+	*data = ConstBlock(readdata, cell.datasize);
 	return ec::ok;
 }
 
@@ -458,8 +462,7 @@ ir::ec ir::S2STDatabase::read_direct(unsigned int index, ConstBlock *key, ConstB
 		void *readkey = nullptr;
 		code = _readpointer(&readkey, cell.offset, cell.keysize);
 		if (code != ec::ok) return code;
-		key->data = readkey;
-		key->size = cell.keysize;
+		*key = ConstBlock(readkey, cell.keysize);
 		return ec::ok;
 	}
 	else if (key == nullptr && data != nullptr)
@@ -469,18 +472,15 @@ ir::ec ir::S2STDatabase::read_direct(unsigned int index, ConstBlock *key, ConstB
 		unsigned int alignoffset = _align(cell.offset + cell.keysize);
 		code = _readpointer(&readdata, alignoffset, cell.datasize);
 		if (code != ec::ok) return code;
-		data->data = readdata;
-		data->size = cell.datasize;
+		*data = ConstBlock(readdata, cell.datasize);
 	}
 	else
 	{
 		void *readkeydata = nullptr;
 		code = _readpointer(&readkeydata, cell.offset, _align(cell.keysize) + cell.datasize);
 		if (code != ec::ok) return code;
-		key->data = readkeydata;
-		key->size = cell.keysize;
-		data->data = (char*)readkeydata + _align(cell.keysize);
-		data->size = cell.datasize;
+		*key = ConstBlock(readkeydata, cell.keysize);
+		*data = ConstBlock((char*)readkeydata + _align(cell.keysize), cell.datasize);
 	}
 
 	return ec::ok;
@@ -504,12 +504,12 @@ ir::ec ir::S2STDatabase::insert(ConstBlock key, ConstBlock data, insert_mode mod
 	
 	//If exists or deleted and size is sufficient
 	unsigned int oldsize = cell.datasize;
-	if (cell.offset != 0 && cell.datasize >= data.size)
+	if (cell.offset != 0 && cell.datasize >= data.size())
 	{
 		//If something need to be changed
-		if (cell.datasize != data.size || cell.deleted > 0)
+		if (cell.datasize != data.size() || cell.deleted > 0)
 		{
-			cell.datasize = data.size;
+			cell.datasize = (unsigned int)data.size();
 			cell.deleted = 0;
 			code = _metawrite(cell, index);
 			if (code != ec::ok) return code;
@@ -517,26 +517,26 @@ ir::ec ir::S2STDatabase::insert(ConstBlock key, ConstBlock data, insert_mode mod
 	}
 	else
 	{
-		cell.datasize = data.size;
-		cell.keysize = key.size;
+		cell.datasize = (unsigned int)data.size();
+		cell.keysize = (unsigned int)key.size();
 		cell.deleted = 0;
 		cell.offset = _align(_file.size);
 		code = _metawrite(cell, index);
 		if (code != ec::ok) return code;
-		code = _write(key.data, cell.offset, key.size);
+		code = _write(key.data(), cell.offset, (unsigned int)key.size());
 		if (code != ec::ok) return code;
 	}
-	code = _write(data.data, _align(cell.offset + cell.keysize), data.size);
+	code = _write(data.data(), _align(cell.offset + cell.keysize), (unsigned int)data.size());
 	if (code != ec::ok) return code;
 
 	if (found)
 	{
-		_file.used = _file.used + data.size - oldsize;
+		_file.used = _file.used + (unsigned int)data.size() - oldsize;
 	}
 	else
 	{
 		if (deleted) _meta.delcount--;
-		_file.used += (data.size + key.size);
+		_file.used += (unsigned int)(data.size() + key.size());
 		_meta.count++;
 	}
 	if (2 * (_meta.count + _meta.delcount) > _meta.size) return _rehash(2 * _meta.size);
@@ -662,7 +662,7 @@ ir::ec ir::S2STDatabase::set_ram_mode(bool holdfile, bool holdmeta) noexcept
 
 ir::S2STDatabase::~S2STDatabase() noexcept
 {
-	closemap(&_mapcache);
+	_mapping.close();
 	set_ram_mode(false, false);
 	if (_file.file != nullptr) fclose(_file.file);
 	if (_meta.file != nullptr)

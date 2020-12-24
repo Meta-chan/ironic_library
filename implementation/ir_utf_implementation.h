@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
-#include <ir_reserve.h>
 
 struct ir_UTF_Codec ir_utf_c;
 struct ir_UTF_Codec ir_utf_utf8;
@@ -499,12 +498,11 @@ void *ir_utf_alloc_recode(struct ir_UTF_Codec *codec1, const void *string1, unsi
 void *ir_utf_buffer_recode(struct ir_UTF_Codec *codec1, const void *string1, unsigned int errcode, struct ir_UTF_Codec *codec2)
 {
 	unsigned int size = codec2->charsize() * (ir_utf_recode(codec1, string1, errcode, codec2, NULL) + codec2->encode(0, NULL, errcode));
-	if (reserve(&_ir_internal_utf_buffer.data, &_ir_internal_utf_buffer.reserved, size))
-	{
-		ir_utf_recode(codec1, string1, errcode, codec2, _ir_internal_utf_buffer.data);
-		return _ir_internal_utf_buffer.data;
-	}
-	else return NULL;
+	if (_ir_internal_utf_buffer.data == NULL) _ir_internal_utf_buffer.data = malloc(size);
+	else _ir_internal_utf_buffer.data = realloc(_ir_internal_utf_buffer.data, size);
+	if (_ir_internal_utf_buffer.data == NULL) return NULL;
+	ir_utf_recode(codec1, string1, errcode, codec2, _ir_internal_utf_buffer.data);
+	return _ir_internal_utf_buffer.data;
 }
 
 //INIT AND FREE

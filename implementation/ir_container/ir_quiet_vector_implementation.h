@@ -116,8 +116,7 @@ template<class T> bool ir::QuietVector<T>::empty() const noexcept
 
 template<class T> size_t ir::QuietVector<T>::size() const noexcept
 {
-	if (_header == nullptr) return 0;
-	else return _header->size;
+	return (_header == nullptr) ? 0 : _header->size;
 }
 
 template<class T> size_t ir::QuietVector<T>::capacity() const noexcept
@@ -133,15 +132,15 @@ template<class T> bool ir::QuietVector<T>::resize(size_t newsize) noexcept
 	{
 		size_t oldsize = size();
 		_header->size = newsize;
-		for (size_t i = oldsize; i < newsize; i++)
-		{
-			memset(&at(i), 0, sizeof(T));
-			new(&at(i)) T();
-		}
+		T *dat = data();
+		memset(dat + oldsize, 0, (newsize - oldsize) * sizeof(T)); 
+		for (size_t i = oldsize; i < newsize; i++) new(dat + i) T();
 	}
 	else if (newsize < size())
 	{
-		for (size_t i = newsize; i < size(); i++) at(i).~T();
+		size_t oldsize = size();
+		T *dat = data();
+		for (size_t i = newsize; i < oldsize; i++) (dat + i)->~T();
 		_header->size = newsize;
 	}
 	return true;
