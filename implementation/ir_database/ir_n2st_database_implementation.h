@@ -144,39 +144,41 @@ ir::ec ir::N2STDatabase::_metawrite(MetaCell cell, unsigned int index) noexcept
 	return ec::ok;
 }
 
-ir::ec ir::N2STDatabase::_check(const syschar *filepath, const syschar *metapath) noexcept
+ir::ec ir::N2STDatabase::_check() noexcept
 {
 	//FILE
+	_path[_path.size() - 2] = _beta ? 'c' : 'a';
 	#ifdef _WIN32
-		_file.file = _wfsopen(filepath, L"rb", _SH_DENYNO);
+		_file.file = _wfsopen(_path.data(), L"rb", _SH_DENYNO);
 	#else
-		_file.file = fopen(filepath, "rb");
+		_file.file = fopen(_path.data(), "rb");
 	#endif
 
 	if (_file.file == nullptr) return ec::open_file;
-	FileHeader header;
+	FileHeader header, sample;
 	if (fseek(_file.file, 0, SEEK_SET) != 0) return ec::seek_file;
 	if (fread(&header, sizeof(FileHeader), 1, _file.file) == 0			||
-		memcmp(header.signature, "IN2STDF", 7) != 0						||
-		header.version != 1) return ec::invalid_signature;
+		memcmp(header.signature, sample.signature, 7) != 0				||
+		header.version != sample.version) return ec::invalid_signature;
 	
 	if (fseek(_file.file, 0, SEEK_END) != 0) return ec::seek_file;
 	_file.size = ftell(_file.file);
 	_file.pointer = _file.size;
 
 	//META
+	_path[_path.size() - 2] = _beta ? 'd' : 'b';
 	#ifdef _WIN32
-		_meta.file = _wfsopen(metapath, L"rb", _SH_DENYNO);
+		_meta.file = _wfsopen(_path.data(), L"rb", _SH_DENYNO);
 	#else
-		_meta.file = fopen(metapath, "rb");
+		_meta.file = fopen(_path.data(), "rb");
 	#endif
 
 	if (_meta.file == nullptr) return ec::open_file;
-	MetaHeader metaheader;
+	MetaHeader metaheader, metasample;
 	if (fseek(_meta.file, 0, SEEK_SET) != 0) return ec::seek_file;
-	if (fread(&metaheader, sizeof(MetaHeader), 1, _meta.file) == 0		||
-		memcmp(metaheader.signature, "IN2STDM", 7) != 0					||
-		metaheader.version != 1) return ec::invalid_signature;
+	if(fread(&metaheader, sizeof(MetaHeader), 1, _meta.file) == 0
+	|| memcmp(metaheader.signature, metasample.signature, 7) != 0
+	|| metaheader.version != metasample.version) return ec::invalid_signature;
 	
 	_file.used = metaheader.used;
 	if (_file.used > _file.size) return ec::invalid_signature;
@@ -193,18 +195,19 @@ ir::ec ir::N2STDatabase::_check(const syschar *filepath, const syschar *metapath
 	return ec::ok;
 }
 
-ir::ec ir::N2STDatabase::_openwrite(const syschar *filepath, const syschar *metapath, bool createnew) noexcept
+ir::ec ir::N2STDatabase::_reopen_write(bool createnew) noexcept
 {
 	//FILE
+	_path[_path.size() - 2] = _beta ? 'c' : 'a';
 	if (_file.file != nullptr && createnew)
 	{
 		fclose(_file.file);
 		_file.file = nullptr;
 	}
 	#ifdef _WIN32
-		_file.file = _wfsopen(filepath, createnew ? L"w+b" : L"r+b", _SH_DENYNO);
+		_file.file = _wfsopen(_path.data(), createnew ? L"w+b" : L"r+b", _SH_DENYNO);
 	#else
-		_file.file = fopen(filepath, createnew ? "w+b" : "r+b");
+		_file.file = fopen(_path.data(), createnew ? "w+b" : "r+b");
 	#endif
 	if (_file.file == nullptr) return ec::create_file;
 	if (createnew)
@@ -216,15 +219,16 @@ ir::ec ir::N2STDatabase::_openwrite(const syschar *filepath, const syschar *meta
 	}
 
 	//META
+	_path[_path.size() - 2] = _beta ? 'd' : 'b';
 	if (_meta.file != nullptr && createnew)
 	{
 		fclose(_meta.file);
 		_meta.file = nullptr;
 	}
 	#ifdef _WIN32
-		_meta.file = _wfsopen(metapath, createnew ? L"w+b" : L"r+b", _SH_DENYNO);
+		_meta.file = _wfsopen(_path.data(), createnew ? L"w+b" : L"r+b", _SH_DENYNO);
 	#else
-		_meta.file = fopen(metapath, createnew ? "w+b" : "r+b");
+		_meta.file = fopen(_path.data(), createnew ? "w+b" : "r+b");
 	#endif
 	if (_meta.file == nullptr) return ec::create_file;
 	if (createnew)
@@ -239,43 +243,55 @@ ir::ec ir::N2STDatabase::_openwrite(const syschar *filepath, const syschar *meta
 	return ec::ok;
 }
 
-ir::ec ir::N2STDatabase::_init(const syschar *filepath, create_mode mode) noexcept
+ir::ec ir::N2STDatabase::_init(const syschar *filepath, create_mode mode, bool opposite) noexcept
 {
 	#ifdef _WIN32
 		size_t pathlen = wcslen(filepath);
 	#else
 		size_t pathlen = strlen(filepath);
 	#endif
-	
-	MemResource<syschar> metafilepath = (syschar*)malloc((pathlen + 2) * sizeof(syschar));
-	if (metafilepath == nullptr) return ec::alloc;
-	memcpy(metafilepath, filepath, pathlen * sizeof(syschar));
-	metafilepath[pathlen] = '~';
-	metafilepath[pathlen + 1] = '\0';
-	
+
+	if (!_path.resize(pathlen + 3)) return ec::alloc;
+	memcpy(&_path[0], filepath, pathlen * sizeof(syschar));
+	_path[pathlen] = '~';
+	_path[pathlen + 1] = 'c';
+	_path[pathlen + 2] = '\0';
+	#ifdef _WIN32
+		_beta = (_waccess(_path.data(), 0) == 0);
+	#else
+		_beta = (access(_path.data(), 0) == 0);
+	#endif
+	if (opposite) _beta = !_beta;
+
 	if (mode == create_mode::neww)
 	{
-		ec code = _openwrite(filepath, metafilepath, true);
+		ec code = _reopen_write(true);
 		if (code != ec::ok) return code;
 	}
 	else
 	{
-		ec code = _check(filepath, metafilepath);
+		ec code = _check();
 		if (code != ec::ok) return code;
 		if (mode == create_mode::edit)
 		{
-			code = _openwrite(filepath, metafilepath, false);
+			code = _reopen_write(false);
 			if (code != ec::ok) return code;
 		}
 	}
-	
+
 	_ok = true;
 	return ec::ok;
 }
 
+ir::N2STDatabase::N2STDatabase(const syschar *filepath, create_mode createmode, ec *code, bool) noexcept
+{
+	ec c = _init(filepath, createmode, true);
+	if (code != nullptr) *code = c;
+}
+
 ir::N2STDatabase::N2STDatabase(const syschar *filepath, create_mode createmode, ec *code) noexcept
 {
-	ec c = _init(filepath, createmode);
+	ec c = _init(filepath, createmode, false);
 	if (code != nullptr) *code = c;
 }
 
@@ -423,12 +439,14 @@ unsigned int ir::N2STDatabase::get_file_used_size() const noexcept
 ir::ec ir::N2STDatabase::set_table_size(unsigned int newtablesize) noexcept
 {
 	if (!_ok) return ec::object_not_inited;
+	if (!_writeaccess) return ec::write_file;
 	else return ec::not_implemented;
 }
 
 ir::ec ir::N2STDatabase::set_file_size(unsigned int newfilesize) noexcept
 {
 	if (!_ok) return ec::object_not_inited;
+	if (!_writeaccess) return ec::write_file;
 	else return ec::not_implemented;
 }
 
@@ -486,7 +504,36 @@ ir::ec ir::N2STDatabase::set_ram_mode(bool holdfile, bool holdmeta) noexcept
 ir::ec ir::N2STDatabase::optimize() noexcept
 {
 	if (!_ok) return ec::object_not_inited;
-	else return ec::not_implemented;
+	if (!_writeaccess) return ec::write_file;
+	{
+		_path[_path.size() - 2] = '\0';
+		ec code;
+		N2STDatabase beta(_path.data(), create_mode::neww, &code, true);
+		for (unsigned int i = 0; i < get_table_size(); i++)
+		{
+			ir::ConstBlock data;
+			code = read(i, &data);
+			if (code != ec::ok) continue;
+			code = beta.insert(i, data);
+			if (code != ec::ok) return code;
+		}
+		char buffer[sizeof(N2STDatabase)];
+		memcpy(buffer, this, sizeof(N2STDatabase));
+		memcpy(this, &beta, sizeof(N2STDatabase));
+		memcpy(&beta, buffer, sizeof(N2STDatabase));
+	}
+	#ifdef _WIN32
+		_path[_path.size() - 2] = _beta ? 'a' : 'c';
+		_wunlink(_path.data());
+		_path[_path.size() - 2] = _beta ? 'b' : 'd';
+		_wunlink(_path.data());
+	#else
+		_path[path.size() - 2] = _beta ? 'a' : 'c';
+		unlink(_path.data());
+		_path[path.size() - 2] = _beta ? 'b' : 'd';
+		unlink(_path.data());
+	#endif
+	return ec::ok;
 }
 
 ir::N2STDatabase::~N2STDatabase() noexcept

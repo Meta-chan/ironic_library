@@ -76,6 +76,8 @@ namespace ir
 
 		bool _ok					= false;
 		bool _writeaccess			= false;
+		bool _beta					= false;
+		QuietVector<syschar> _path;
 		ir::Mapping _mapping;
 
 		//Primitive read & write section
@@ -86,10 +88,10 @@ namespace ir
 		ec _metawrite(MetaCell cell, unsigned int index)								noexcept;
 
 		//Init section
-		ec _check(const syschar *filepath, const syschar *metapath)						noexcept;
-		ec _openwrite(const syschar *filepath, const syschar *metapath, bool createnew)	noexcept;
-		ec _init(const syschar *filepath, create_mode cmode)							noexcept;
-
+		ec _check()																		noexcept;
+		ec _reopen_write(bool createnew)													noexcept;
+		ec _init(const syschar *filepath, create_mode cmode, bool opposite)				noexcept;
+		N2STDatabase(const syschar *filepath, create_mode mode, ec *code, bool)			noexcept;
 	public:
 		
 		///Creates a database

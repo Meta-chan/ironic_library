@@ -76,6 +76,8 @@ namespace ir
 			unsigned int delcount	= 0;
 		} _meta;
 
+		QuietVector<syschar> _path;
+		bool _beta					= false;
 		bool _ok					= false;
 		bool _writeaccess			= false;
 		ir::Mapping _mapping;
@@ -94,11 +96,11 @@ namespace ir
 		ec _rehash(unsigned int newmetasize)												noexcept;
 
 		//Init section
-		ec _check(const syschar *filepath, const syschar *metapath)							noexcept;
-		ec _openwrite(const syschar *filepath, const syschar *metapath, bool createnew)		noexcept;
-		ec _init(const syschar *filepath, create_mode mode)									noexcept;
+		ec _check()																			noexcept;
+		ec _reopen_write(bool createnew)													noexcept;
+		ec _init(const syschar *filepath, create_mode mode, bool opposite)					noexcept;
+		S2STDatabase(const syschar *filepath, create_mode mode, ec *code, bool)				noexcept;
 	public:
-
 		///Creates a database
 		///@param filepath Relative or absolute path to database files
 		///@param mode Creation mode
