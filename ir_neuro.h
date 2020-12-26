@@ -66,7 +66,7 @@ namespace ir
 		struct FileHeader
 		{
 			char signature[3]		= { 'I', 'N', 'R' };
-			unsigned char version	= 3;
+			unsigned char version	= 4;
 		};
 
 		bool _ok = false;

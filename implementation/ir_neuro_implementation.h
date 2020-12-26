@@ -47,20 +47,27 @@ ir::ec ir::Neuro<T, A, F>::_init(T amplitude, FILE *file) noexcept
 	for (unsigned int i = 0; i < _layers.size() - 1; i++)
 	{
 		if (!_weights[i].init(_layers[i] + 1, _layers[i + 1])) return ec::alloc;
-		for (unsigned int j = 0; j < _layers[i] + 1; j++)
+		for (unsigned int j = 0; j < _layers[i + 1]; j++)
 		{
-			for (unsigned int k = 0; k < _layers[i + 1]; k++)
+			T sum = 0.0;
+			for (unsigned int k = 0; k < _layers[i] + 1; k++)
 			{
 				if (file != nullptr)
 				{
 					double d;
 					if (fread(&d, sizeof(double), 1, file) == 0) return ec::read_file;
-					_weights[i].data(k)[j] = d;
+					_weights[i].at(j, k) = d;
 				}
 				else
 				{
-					_weights[i].data(k)[j] = distribution(generator);
+					_weights[i].at(j, k) = distribution(generator);
+					sum += _weights[i].at(j, k);
 				}
+			}
+			sum /= (_layers[i] + 1);
+			if (file == nullptr) for (unsigned int k = 0; k < _layers[i] + 1; k++)
+			{
+				_weights[i].at(j, k) -= sum;
 			}
 		}
 	}
@@ -183,12 +190,12 @@ ir::ec ir::Neuro<T, A, F>::save(const syschar *filepath) const noexcept
 	if (fwrite(_layers.data(), sizeof(unsigned int), _layers.size(), file) < _layers.size()) return ec::write_file;
 	for (unsigned int i = 0; i < _layers.size() - 1; i++)
 	{
-		for (unsigned int j = 0; j < _layers[i] + 1; j++)
+		for (unsigned int j = 0; j < _layers[i + 1]; j++)
 		{
-			for (unsigned int k = 0; k < _layers[i + 1]; k++)
+			for (unsigned int k = 0; k < _layers[i] + 1; k++)
 			{
-				double d = _weights[i].data(k)[j];
-				if (fwrite(&d, sizeof(double), 1, file) == 0) return ec::write_file;
+				double d = _weights[i].at(j, k);
+				if (fwrite(&d, sizeof(double), 1, file) == 0) return ec::read_file;
 			}
 		}
 	}

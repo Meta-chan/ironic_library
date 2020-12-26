@@ -10,7 +10,7 @@ int main()
 	//simple net trying to learn xor operation
 
 	unsigned int lays[3] = { 2, 2, 1 };
-	ir::Neuro<> net(3, lays, 0.5, nullptr);
+	ir::Neuro<double> net(3, lays, 0.5, nullptr);
 	
 	net.set_coefficient(0.01);
 	
@@ -23,7 +23,7 @@ int main()
 		net.get_input()->at(0) = a ? 1 : -1;
 		net.get_input()->at(1) = b ? 1 : -1;
 		net.forward();
-		printf("%i %i -> %f\n", a ? 1 : -1, b ? 1 : -1, net.get_output()->at(0));
+		printf("%i %i -> %lf\n", a ? 1 : -1, b ? 1 : -1, net.get_output()->at(0));
 
 		net.get_goal()->at(0) = r ? 1 : -1;
 		net.backward();
