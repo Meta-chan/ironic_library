@@ -31,6 +31,8 @@ Thumbs.db
 # Ironic Library #
 ##################
 documentation
-*.idt
-*.idt~
+*~a
+*~b
+*~c
+*~d
 *.inr
