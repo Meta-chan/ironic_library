@@ -11,7 +11,7 @@
 #ifndef IR_VECTOR
 #define IR_VECTOR
 
-#include <stddef.h>
+#include "ir_quiet_vector.h"
 
 namespace ir
 {
@@ -20,38 +20,25 @@ namespace ir
 
 	///Ironic library's vector @n
 	///It stores a pointer to memory that may be shared between several equal vectors @n
-	///Indicates allocation failure through @c std::bad_alloc exception @n
+	///`Vector` is a wrapper around `QuietVector`. It is designed to be friendly to programmer, which means:
+	/// - `Vector` indicates leak of memory through `std::bad_alloc` exception.
+	/// - `Vector` checks indexes with `assert` and may cause critical failure.
+	/// - `Vector` makes vector unique on every non-constant operation.
 	///@tparam T Type of objects that the vector contains
-	template <class T> class Vector
+	template <class T> class Vector : protected QuietVector<T>
 	{
-	protected:
-		struct Header
-		{
-			size_t size		= 0;
-			size_t capacity = 0;
-			size_t refcount	= 0;
-		};
-		Header *_header = nullptr;
-		#ifdef _DEBUG
-			T *_debugarray = nullptr;
-		#endif
-
 	public:
 		//Constructors:
 		///Creates a vector
-		Vector()										noexcept;
+		inline Vector()									noexcept;
 		///Creates a vector with given number of elements
 		///@param newsize Number of elements
-		Vector(size_t newsize);
+		inline Vector(size_t newsize);
 		///Copies vector
 		///@param vector vector to be copied
-		Vector(const Vector &vector)					noexcept;
-		///Assigns one vector to another
-		///@param vector vector to be assigned to
-		const Vector &assign(const Vector &vector)		noexcept;
-		///Assigns one vector to another
-		///@param vector vector to be assigned to
-		const Vector &operator=(const Vector &vector)	noexcept;
+		inline Vector(const QuietVector<T> &vector)		noexcept;
+		using QuietVector::assign;
+		using QuietVector::operator=;
 		
 		//Non-constant access:
 		///Returns raw pointer to data
@@ -82,39 +69,33 @@ namespace ir
 		inline const T &back()							const noexcept;
 		
 		//Maintenance:
-		///Returns number of elements in vector
-		inline size_t size()							const noexcept;
-		///Returns whether vector is empty
-		inline bool empty()								const noexcept;
-		///Returns number of currently allocated elements in vector
-		inline size_t capacity()						const noexcept;
+		using QuietVector<T>::size;
+		using QuietVector<T>::empty;
+		using QuietVector<T>::capacity;
 		///Changes size of vector
 		///@param newsize Required size. Does not relieve memory completely, so consider using resize(0) instead of clear
-		void resize(size_t newsize);
+		inline void resize(size_t newsize);
 		///Changes capacity of vector. It may be a good idea to reserve as many elements as you may need
 		///@param newcapacity Required capacity
-		void reserve(size_t newcapacity);
+		inline void reserve(size_t newcapacity);
 		///Puts an element on the end of the vector
 		///@param elem Element to be put on end
-		void push_back(const T &elem);
+		inline void push_back(const T &elem);
 		///Deletes an element from the end of the vector
-		void pop_back();
+		inline void pop_back();
 		///Inserts an element on the given position in the vector. Elements after it are shifted right
 		///@param i Index to place an element at
 		///@param elem Element to insert
-		void insert(size_t i, const T &elem);
+		inline void insert(size_t i, const T &elem);
 		///Deletes an element on the given position in the vector. Elements after it are shifted left
 		///@param i Index of element to delete
-		void erase(size_t i);
-		///Releases the vector completely
-		void clear()									noexcept;
+		inline void erase(size_t i);
+		using QuietVector<T>::clear;
 		///Makes the vector unique, not shared with other vectors
 		void detach();
 		///Makes the vector unique, not shared with other vectors and allocates more memory for it
 		///@param newcapacity Required capacity
 		void detach(size_t newcapacity);
-		///Destroys the vector
-		~Vector()										noexcept;
 	};
 	
 ///@}

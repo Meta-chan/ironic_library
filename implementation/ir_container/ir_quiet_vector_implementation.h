@@ -11,7 +11,7 @@
 #ifndef IR_QUIET_VECTOR_IMPLEMENTATION
 #define IR_QUIET_VECTOR_IMPLEMENTATION
 
-#include <stdexcept>
+#include <new>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -25,7 +25,7 @@ template<class T> ir::QuietVector<T>::QuietVector(size_t newsize) noexcept
 	resize(newsize);
 }
 
-template<class T> ir::QuietVector<T>::QuietVector(QuietVector &vector) noexcept
+template<class T> ir::QuietVector<T>::QuietVector(const QuietVector &vector) noexcept
 {
 	clear();
 	_header = vector._header;

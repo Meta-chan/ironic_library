@@ -20,7 +20,11 @@ namespace ir
 		
 	///Ironic library's quiet vector @n
 	///It stores a pointer to memory that may be shared between several equal vectors @n
-	///Indicates allocation failure through crashes or return values @n
+	///`QuietVector` is designed to be fast and reliable, which means:
+	/// - `QuietVector` throws no exceptions.
+	/// - `QuietVector` indicates leak of memory through return value of `resize`, `reserve` or `detach`.
+	/// - `QuietVector` checks indexes with `assert` and may cause critical failure.
+	/// - `QuietVector` does not check if vector is unique
 	///@tparam T Type of objects that the vector contains
 	template <class T> class QuietVector
 	{
@@ -44,7 +48,7 @@ namespace ir
 		QuietVector(size_t newsize)								noexcept;
 		///Copies vector
 		///@param vector Vector to be copied
-		QuietVector(QuietVector &vector)						noexcept;
+		QuietVector(const QuietVector &vector)					noexcept;
 		///Assigns one vector to another
 		///@param vector vector to be assigned to
 		const QuietVector &assign(const QuietVector &vector)	noexcept;
@@ -53,37 +57,37 @@ namespace ir
 		const QuietVector &operator=(const QuietVector &vector)	noexcept;
 		
 		///Returns raw pointer to data
-		T *data()												noexcept;
+		inline T *data()										noexcept;
 		///Returns reference to element with specified index
 		///@param i Index of required element
-		T &operator[](size_t i)									noexcept;
+		inline T &operator[](size_t i)							noexcept;
 		///Returns reference to element with specified index
 		///@param i Index of required element
-		T &at(size_t i)											noexcept;
+		inline T &at(size_t i)									noexcept;
 		///Returns reference to first element
-		T &front()												noexcept;
+		inline T &front()										noexcept;
 		///Returns reference to last element
-		T &back()												noexcept;
+		inline T &back()										noexcept;
 		
 		///Returns constant raw pointer to the data
-		const T *data()											const noexcept;
+		inline const T *data()									const noexcept;
 		///Returns constant reference to element with specified index
 		///@param i Index of required element
-		const T &operator[](size_t i)							const noexcept;
+		inline const T &operator[](size_t i)					const noexcept;
 		///Returns constant reference to element with specified index
 		///@param i Index of required element
-		const T &at(size_t i)									const noexcept;
+		inline const T &at(size_t i)							const noexcept;
 		///Returns constant reference to first element
-		const T &front()										const noexcept;
+		inline const T &front()									const noexcept;
 		///Returns constant reference to last element
-		const T &back()											const noexcept;
+		inline const T &back()									const noexcept;
 
 		///Returns if vector is empty
-		bool empty()											const noexcept;
+		inline bool empty()										const noexcept;
 		///Returns number of elements in vector
-		size_t size()											const noexcept;
+		inline size_t size()									const noexcept;
 		///Returns number of currently allocated elements in vector
-		size_t capacity()										const noexcept;
+		inline size_t capacity()								const noexcept;
 		///Changes size of vector
 		///@param newsize Required size. Does not relieve memory completely, so consider using resize(0) instead of clear. May detach the vector
 		bool resize(size_t newsize)								noexcept;
