@@ -56,7 +56,7 @@ ir::ec ir::Neuro<T, A, F>::_init(T amplitude, FILE *file) noexcept
 				{
 					double d;
 					if (fread(&d, sizeof(double), 1, file) == 0) return ec::read_file;
-					_weights[i].at(j, k) = d;
+					_weights[i].at(j, k) = (T)d;
 				}
 				else
 				{
@@ -194,7 +194,7 @@ ir::ec ir::Neuro<T, A, F>::save(const syschar *filepath) const noexcept
 		{
 			for (unsigned int k = 0; k < _layers[i] + 1; k++)
 			{
-				double d = _weights[i].at(j, k);
+				double d = (double)_weights[i].at(j, k);
 				if (fwrite(&d, sizeof(double), 1, file) == 0) return ec::read_file;
 			}
 		}
