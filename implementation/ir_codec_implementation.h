@@ -382,8 +382,8 @@ size_t ir::Codec::recode(const typename SourceCodec::Char *source, unsigned int 
 template<class SourceCodec, class DestCodec>
 typename DestCodec::Char *ir::Codec::alloc_recode(const typename SourceCodec::Char *source, unsigned int errcode) noexcept
 {
-	size_t size = (recode<SourceCodec, DestCodec>(source, errcode, nullptr) + 1) * sizeof(DestCodec::Char);
-	DestCodec::Char *result = (DestCodec::Char*)malloc(size);
+	size_t size = (recode<SourceCodec, DestCodec>(source, errcode, nullptr) + 1) * sizeof(typename DestCodec::Char);
+	typename DestCodec::Char *result = (typename DestCodec::Char*)malloc(size);
 	if (result == nullptr) return nullptr;
 	recode<SourceCodec, DestCodec>(source, errcode, result);
 	return result;
@@ -392,10 +392,10 @@ typename DestCodec::Char *ir::Codec::alloc_recode(const typename SourceCodec::Ch
 template<class SourceCodec, class DestCodec>
 typename DestCodec::Char *ir::Codec::buffer_recode(const typename SourceCodec::Char *source, unsigned int errcode) noexcept
 {
-	size_t size = (recode<SourceCodec, DestCodec>(source, errcode, nullptr) + 1) * sizeof(DestCodec::Char);
+	size_t size = (recode<SourceCodec, DestCodec>(source, errcode, nullptr) + 1) * sizeof(typename DestCodec::Char);
 	if (!_buffer.resize(size)) return nullptr;
-	recode<SourceCodec, DestCodec>(source, errcode, (DestCodec::Char*)&_buffer[0]);
-	return (DestCodec::Char*)&_buffer[0];
+	recode<SourceCodec, DestCodec>(source, errcode, (typename DestCodec::Char*)&_buffer[0]);
+	return (typename DestCodec::Char*)&_buffer[0];
 }
 
 void ir::Codec::clear() noexcept
