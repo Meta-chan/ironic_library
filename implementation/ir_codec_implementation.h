@@ -31,7 +31,7 @@ bool ir::Codec::ASCII::encode(unsigned int code, Char *string, size_t *nnative) 
 	else return false;
 }
 
-size_t ir::Codec::ASCII::decode(const Char *string, size_t *nnative) noexcept
+unsigned int ir::Codec::ASCII::decode(const Char *string, size_t *nnative) noexcept
 {
 	unsigned char c = *((unsigned char*)string);
 	if (c < 0x80)
@@ -96,7 +96,7 @@ bool ir::Codec::UTF8::encode(unsigned int code, Char *string, size_t *nnative) n
 	else return false;
 }
 
-size_t ir::Codec::UTF8::decode(const Char *string, size_t *nnative) noexcept
+unsigned int ir::Codec::UTF8::decode(const Char *string, size_t *nnative) noexcept
 {
 	const unsigned char *s = (const unsigned char*)string;
 	if ((s[0] & 0x80) == 0)
@@ -153,7 +153,7 @@ bool ir::Codec::UTF16::encode(unsigned int code, Char *string, size_t *nnative) 
 	else return false;
 }
 
-size_t ir::Codec::UTF16::decode(const Char *string, size_t *nnative) noexcept
+unsigned int ir::Codec::UTF16::decode(const Char *string, size_t *nnative) noexcept
 {
 	const unsigned short int *s = (const unsigned short int*)string;
 	if (!(s[0] >= 0xD800 && s[0] < 0xE000))
@@ -185,7 +185,7 @@ bool ir::Codec::UTF32::encode(unsigned int code, Char *string, size_t *nnative) 
 	return true;
 }
 
-size_t ir::Codec::UTF32::decode(const Char *string, size_t *nnative) noexcept
+unsigned int ir::Codec::UTF32::decode(const Char *string, size_t *nnative) noexcept
 {
 	if (nnative != nullptr) *nnative = 1;
 	return *((unsigned int*) nnative);
@@ -237,7 +237,7 @@ bool ir::Codec::CP1251::encode(unsigned int code, Char *string, size_t *nnative)
 	else return false;
 }
 
-size_t ir::Codec::CP1251::decode(const Char *string, size_t *nnative) noexcept
+unsigned int ir::Codec::CP1251::decode(const Char *string, size_t *nnative) noexcept
 {
 	unsigned char c = *((unsigned char*)string);
 	if (c < 0x80)
@@ -328,7 +328,7 @@ bool ir::Codec::CP866::encode(unsigned int code, Char *string, size_t *nnative) 
 	else return false;
 }
 
-size_t ir::Codec::CP866::decode(const Char *string, size_t *nnative) noexcept
+unsigned int ir::Codec::CP866::decode(const Char *string, size_t *nnative) noexcept
 {
 	unsigned char c = *((unsigned char*)string);
 	if (nnative != nullptr) *nnative = 1;

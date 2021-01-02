@@ -45,7 +45,7 @@ namespace ir
 			///@param[in]	string		String in ASCII encoding
 			///@param[out]	nnative		Pointer to `size_t` that receives number of ASCII characters were read. May be `nullptr`, then nothing is written
 			///@return					Unicode code
-			static size_t decode(const Char *string, size_t *nnative) noexcept;
+			static unsigned int decode(const Char *string, size_t *nnative) noexcept;
 		};
 		
 		///UTF8 codec
@@ -56,7 +56,7 @@ namespace ir
 			typedef signed char SignedChar;
 			typedef unsigned char UnsignedChar;
 			static bool encode(unsigned int code, Char *string, size_t *nnative) noexcept;
-			static size_t decode(const Char *string, size_t *nnative) noexcept;
+			static unsigned int decode(const Char *string, size_t *nnative) noexcept;
 		};
 		
 		///UTF16 codec
@@ -73,7 +73,7 @@ namespace ir
 				typedef unsigned short int UnsignedChar;
 			#endif
 			static bool encode(unsigned int code, Char *string, size_t *nnative) noexcept;
-			static size_t decode(const Char *string, size_t *nnative) noexcept;
+			static unsigned int decode(const Char *string, size_t *nnative) noexcept;
 		};
 		
 		///UTF32 codec
@@ -84,7 +84,7 @@ namespace ir
 			typedef signed int SignedChar;
 			typedef unsigned int UnsignedChar;
 			static bool encode(unsigned int code, Char *string, size_t *nnative) noexcept;
-			static size_t decode(const Char *string, size_t *nnative) noexcept;
+			static unsigned int decode(const Char *string, size_t *nnative) noexcept;
 		};
 		
 		///Windows-1251 (cyrillic) codec
@@ -95,7 +95,7 @@ namespace ir
 			typedef signed char SignedChar;
 			typedef unsigned char UnsignedChar;
 			static bool encode(unsigned int code, Char *string, size_t *nnative) noexcept;
-			static size_t decode(const Char *string, size_t *nnative) noexcept;
+			static unsigned int decode(const Char *string, size_t *nnative) noexcept;
 			
 		private:
 			static const unsigned short int _decode_table[0x40];
@@ -109,7 +109,7 @@ namespace ir
 			typedef signed char SignedChar;
 			typedef unsigned char UnsignedChar;
 			static bool encode(unsigned int code, Char *string, size_t *nnative) noexcept;
-			static size_t decode(const Char *string, size_t *nnative) noexcept;
+			static unsigned int decode(const Char *string, size_t *nnative) noexcept;
 			
 		private:
 			static const unsigned short int _decode_table1[0x30];
