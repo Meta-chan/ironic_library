@@ -149,6 +149,13 @@ void ir::Neuro<T, A, F>::set_coefficient(T coefficient) noexcept
 }
 
 template <class T, unsigned int A, class F>
+double ir::Neuro<T, A, F>::get_coefficient() const noexcept
+{
+	assert(_ok);
+	return _coefficient;
+}
+
+template <class T, unsigned int A, class F>
 void ir::Neuro<T, A, F>::forward() noexcept
 {
 	assert(_ok);

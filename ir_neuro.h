@@ -100,6 +100,8 @@ namespace ir
 		VectorC<T, A> *get_goal() noexcept;
 		///Sets learning coefficient
 		void set_coefficient(T coefficient) noexcept;
+		///Returns learning coefficient
+		double get_coefficient() const noexcept;
 		///Performs forward calculation
 		void forward() noexcept;
 		///Performs backward learning. Needs to be called after forward
