@@ -64,7 +64,7 @@ namespace ir
 * - ir_neuro		- neural network
 * - ir_resource		- helpful class wrappers around non-class things (RAII)
 * - ir_codec		- encoding library
-* - ir_container	- library's containers: vectors, blocks, registers, rings, strings
+* - ir_container	- library's containers: vectors, maps, blocks, rings, strings
 * - ir_math			- some mathematics algorithms
 * - ir_md5			- MD5 hash algorithm
 * - ir_mapping		- file mapping
