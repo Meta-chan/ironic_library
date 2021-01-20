@@ -459,7 +459,8 @@ ir::ec ir::N2STDatabase::set_ram_mode(bool holdfile, bool holdmeta) noexcept
 	{
 		if (!_meta.ram.resize(_meta.size)) return ec::alloc;
 		if (fseek(_meta.file, sizeof(MetaHeader), SEEK_SET) != 0) return ec::seek_file;;
-		if (fread(&_meta.ram[0], sizeof(MetaCell), _meta.size, _meta.file) < _meta.size) return ec::read_file;
+		if (_meta.size != 0 && fread(&_meta.ram[0], sizeof(MetaCell), _meta.size, _meta.file) < _meta.size)
+			return ec::read_file;
 		_meta.pointer = _meta.size;
 	}
 	//Write meta
@@ -468,7 +469,8 @@ ir::ec ir::N2STDatabase::set_ram_mode(bool holdfile, bool holdmeta) noexcept
 		if (_writeaccess && _meta.changed)
 		{
 			if (fseek(_meta.file, sizeof(MetaHeader), SEEK_SET) != 0) return ec::seek_file;
-			if (fwrite(&_meta.ram[0], sizeof(MetaCell), _meta.size, _meta.file) < _meta.size) return ec::write_file;
+			if (_meta.size != 0 && fwrite(&_meta.ram[0], sizeof(MetaCell), _meta.size, _meta.file) < _meta.size)
+				return ec::write_file;
 			_meta.pointer = _meta.size;
 		}
 		_meta.ram.clear();
@@ -481,7 +483,8 @@ ir::ec ir::N2STDatabase::set_ram_mode(bool holdfile, bool holdmeta) noexcept
 	{
 		if (!_file.ram.resize(_file.size)) return ec::alloc;
 		if (fseek(_file.file, 0, SEEK_SET) != 0) return ec::seek_file;
-		if (fread(&_file.ram[0], 1, _file.size, _file.file) < _file.size) return ec::read_file;
+		if (_file.size != 0 && fread(&_file.ram[0], 1, _file.size, _file.file) < _file.size)
+			return ec::read_file;
 		_file.pointer = _file.size;
 	}
 	//Write data
@@ -490,7 +493,8 @@ ir::ec ir::N2STDatabase::set_ram_mode(bool holdfile, bool holdmeta) noexcept
 		if (_writeaccess && _file.changed)
 		{
 			if (fseek(_file.file, 0, SEEK_SET) != 0) return ec::seek_file;;
-			if (fwrite(&_file.ram[0], 1, _file.size, _file.file) < _file.size) return ec::write_file;
+			if (_file.size != 0 && fwrite(&_file.ram[0], 1, _file.size, _file.file) < _file.size)
+				return ec::write_file;
 			_file.pointer = _file.size;
 		}
 		_file.ram.clear();

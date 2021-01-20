@@ -30,7 +30,7 @@ template<class T> ir::QuietVector<T>::QuietVector(const QuietVector &vector) noe
 	clear();
 	_header = vector._header;
 	#ifdef _DEBUG
-		_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
+		_debugarray = _header == nullptr ? nullptr : (T*)(_header + 1);
 	#endif
 	if (_header != nullptr) _header->refcount++;
 }
@@ -42,7 +42,7 @@ template<class T> const ir::QuietVector<T> &ir::QuietVector<T>::assign(const Qui
 		clear();
 		_header = vector._header;
 		#ifdef _DEBUG
-			_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
+			_debugarray = _header == nullptr ? nullptr : (T*)(_header + 1);
 		#endif
 		if (_header != nullptr) _header->refcount++;
 	}
@@ -57,7 +57,7 @@ template<class T> const ir::QuietVector<T> &ir::QuietVector<T>::operator=(const 
 template <class T> T *ir::QuietVector<T>::data() noexcept
 {
 	if (empty()) return nullptr;
-	assert(detach());
+	if (!detach()) return nullptr;
 	return (T*)(_header + 1);
 }
 
@@ -152,7 +152,7 @@ template<class T> bool ir::QuietVector<T>::reserve(size_t newcapacity) noexcept
 	{
 		_header = (Header*)malloc(sizeof(Header) + newcapacity * sizeof(T));
 		#ifdef _DEBUG
-			_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
+			_debugarray = _header == nullptr ? nullptr : (T*)(_header + 1);
 		#endif
 		if (_header == nullptr) return false;
 		_header->refcount = 1;
@@ -164,7 +164,7 @@ template<class T> bool ir::QuietVector<T>::reserve(size_t newcapacity) noexcept
 		if (newcapacity < 2 * _header->size) newcapacity = 2 * _header->size;
 		_header = (Header*)realloc(_header, sizeof(Header) + newcapacity * sizeof(T));
 		#ifdef _DEBUG
-			_debugarray = _header != nullptr ? (T*)(_header + 1) : nullptr;
+			_debugarray = _header == nullptr ? nullptr : (T*)(_header + 1);
 		#endif
 		if (_header == nullptr) return false;
 		_header->capacity = newcapacity;
@@ -213,8 +213,14 @@ template<class T> void ir::QuietVector<T>::clear() noexcept
 {
 	if (_header != nullptr)
 	{
-		_header->refcount--;
-		if (_header->refcount == 0) free(_header);
+		if (_header->refcount == 1)
+		{
+			size_t s = size();
+			T *d = data();
+			for (size_t i = 0; i < s; i++) d[i].~T();
+			free(_header);
+		}
+		else _header->refcount--;
 		_header = nullptr;
 		#ifdef _DEBUG
 			_debugarray = nullptr;
