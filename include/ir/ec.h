@@ -15,7 +15,7 @@
 
 namespace ir
 {
-///@addtogroup ec Error codes
+///@addtogroup definitions Definitions
 ///@{
 	
 	///Ironic library's standard return code
@@ -58,49 +58,51 @@ namespace ir
 #endif //ifndef IR_EC
 
 /**@mainpage Welcome to Ironic Library!
-*The code presented here is some pieces of my home projects. Here you will find:
-* - ir_database		- ultra-light databases
-* - ir_neuro		- neural network
-* - ir_resource		- helpful class wrappers around non-class things (RAII)
-* - ir_codec		- encoding library
-* - ir_container	- library's containers: vectors, maps, blocks, rings, strings
-* - ir_math			- some mathematics algorithms
-* - ir_md5			- MD5 hash algorithm
-* - ir_mapping		- file mapping
-*
-*### Platforms
-*The code is tested for Windows x86 and x64, Linux x86 and x64 and Linux ARM 32-bit.
-* 
-*### Installation
-*I wanted to make the installation really simple. The simplest way to install the library is to choose one of `.cpp` files, define `IR_IMPLEMENT` and include all libraries you are interested in. After doing so you can use headers in every file like header-only libraries.
-*@code{.cpp}
-#define IR_IMPLEMENT
-#include <ir_EXAMPLE.h>
-*@endcode
-*
-*Include principles can be more flexible, but you need to understand how they work. `IR_IMPLEMENT` makes the compiler to include all implementations, `IR_EXAMPLE_IMPLEMENT` makes it include specific implementation, `IR_EXAMPLE_NOT_IMPLEMENT` makes it exclude one. With this mechanism you can control compiler options which you compile Ironic code with and solve linker errors. For clarity, typical Ironic header looks like this:
-*@code{.cpp}
-//ir_example.h
-int example();
-#if (defined(IR_IMPLEMENT) || defined(IR_EXAMPLE_IMPLEMENT)) && !defined(IR_EXAMPLE_NOT_IMPLEMENT)
-	#include <implementation/ir_example_implementation.h>
-#endif
-*@endcode
-*
-*Templates are quite non-ironic-way thing, and there are difficulties. The Ironic way of using templates is (on example of `ir::Vector`):
-*@code{.cpp}
-#define IR_IMPLEMENT
-#include <ir_vector.h>
-template class ir::Vector<float>;
-*@endcode
-*
-*After doing so you can use your `ir::Vector<float>` in every file. But actually you can define `IR_VECTOR_IMPELMENT` and include `ir_vector.h` in every file, and use `ir::Vector` with any template parameters (almost like you do with STL). The compiler is smart enough and does not complain about multiple implementations. But doing so will increase the compile time.
-*
-*### Help
-*The code is pretty self-documented. But more importantly, I provide [Doxygen](https://www.doxygen.nl/manual/starting.html) documentation! It does not look too pretty since I am not an expert, but it is still quite informative. I would recommend to start with **Modules** page. And of course, feel free to contact me!
-*
-*### Natvis
-*For some classes I provide [Natvis](https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects) files! Include these files to your Visual Studio project and enjoy debugging.
-*
-*###### P.S. My code is not dirty, it is alternatively clean.
+
+@tableofcontents
+
+@section Overview
+Here is a brief but full overview of features of the library:
+ - Containers: `block.h`, `map.h`, `quiet_hash_map.h`, `quiet_list.h`, `quiet_map.h`, `quiet_ring.h`, `quiet_vector.h`, `string.h`, `vector.h`
+ - Definitions: `constants.h`, `types.h`
+ - Encoding library: `encoding.h`
+ - Mathematics: `fft.h`, `gauss.h`
+ - File utilities: `file.h`, `mapping.h`
+ - Hash algorithms: `fnv1a.h`, `md5.h`
+ - Networking: `ip.h`, `tcp.h`, `udp.h`
+ - Databases: `n2st_database.h`, `s2st_database.h`
+ - Neuronal networks: `neuro.h`
+ - High-performance computing: `parallel.h`, `matrix.h`
+ - RAII wrapper: `resource.h`
+ - Source and sink abstractions: `sink.h`, `source.h`
+ - Cross-platform versions of standard C functions: `str.h`, `print.h`
+ 
+@section Installation
+Installation was designed to be super-easy and super-flexible at the same time.
+
+Easy way: templates and inlines will work right out of the box. To use non-template and non-inline methods, include `ironic.cpp` to your project.
+
+Flexible way: there is a way to reduce compile time and compile parts Ironic library with different options, but for this a little theory is needed. The code is divided into three groups:
+ - Inline \- it's implementation shall always be present in each `.cpp` file.
+ - Template \- it's implementation shall always be present **and used** in one or more `.cpp` files. Note that `template class ir::EXAMPLE<int>` is also an "usage" and will force the compiler to compile all methods of `EXAMPLE<int>` class.
+ - Non-inline and non-template \- it's implementation shell always be present in one `.cpp` file.
+
+So the modes of compilation and correspondent macros are:
+ - <tt> #define IR_INCLUDE 'n' </tt> will include no implementations. The compiler might complain about `inline function is not implemented` or equivalent warning.
+ - <tt> #define IR_INCLUDE 'i' </tt> will include only implementation of inline functions.
+ - <tt> #define IR_INCLUDE 't' </tt> will include implementation of inline and template functions (default behavior).
+ - <tt> #define IR_INCLUDE 'a' </tt> will include include all implementations.
+
+Also if you define `IR_EXCLUDE_%EXAMPLE%` the `%EXAMPLE%` implementation will be not included. But if you define `IR_EXCLUDE`, the compiler will include **only** implementations marked with `IR_INLCUDE_%EXAMPLE%`.
+
+@section Platforms
+The code is tested for Windows x86 and x64, Linux x64 and Linux ARMv7.
+
+@section Natvis
+For some classes [Natvis](https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects) files are provided. Include these files to your Visual Studio project and enjoy debugging.
+
+@section Documentation
+[Doxygen](https://www.doxygen.nl/manual/starting.html) documentation is provided. I would recommend to start with **Modules** page.
+
+###### P.S. My code is not dirty, it is alternatively clean.
 */

@@ -8,8 +8,10 @@
 	Reinventing bicycles since 2020
 */
 
-template<class K, class V, class C> ir::Map<K, V, C>::Map() noexcept
+template<class K, class V, class C>
+ir::Map<K, V, C>::Map() noexcept
 {}
 
-template<class K, class V, class C> ir::Map<K, V, C>::Map(const QuietMap<K, V, C> &map) noexcept : QuietMap<K, V, C>::QuietMap(map)
+template<class K, class V, class C>
+ir::Map<K, V, C>::Map(const QuietMap<K, V, C> &map) noexcept : QuietMap<K, V, C>::QuietMap(map)
 {}

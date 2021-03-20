@@ -10,7 +10,7 @@ void test_insert(ir::uint32 key, const char *data, ir::Database::insert_mode mod
 	printf("Adding key = '%i', data = '%s'\n", key, data);
 	ir::Block bdata(data, strlen(data) + 1);
 	ir::ec code = database->insert(key, bdata, mode);
-	printf("Errorcode : %u\n", code);
+	printf("Errorcode : %u\n", (unsigned int)code);
 	printf("Test: %s\n\n", code == rightcode ? "ok" : "error");
 }
 
@@ -18,7 +18,7 @@ void test_delete(ir::uint32 key, ir::Database::delete_mode mode, ir::ec rightcod
 {
 	printf("Deleting key = '%i'\n", key);
 	ir::ec code = database->delet(key, mode);
-	printf("Result : %u\n", code);
+	printf("Result : %u\n", (unsigned int)code);
 	printf("Test: %s\n\n", code == rightcode ? "ok" : "error");
 }
 
@@ -27,7 +27,7 @@ void test_read(ir::uint32 key, const char *rightdata, ir::ec rightcode)
 	printf("Reading key = '%i'\n", key);
 	ir::Block result;
 	ir::ec code = database->read(key, &result);
-	printf("Result : %u\n", code);
+	printf("Result : %u\n", (unsigned int)code);
 	if (code == ir::ec::ok) printf("Data : %s\n", (const char*)result.data());
 	bool testok = (rightcode == ir::ec::ok) ?
 		(code == ir::ec::ok && strcmp((const char*)result.data(), rightdata) == 0) :

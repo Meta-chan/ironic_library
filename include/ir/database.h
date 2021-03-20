@@ -13,7 +13,7 @@
 
 namespace ir
 {
-///@addgroup database Databases
+///@addtogroup database Databases
 ///@{
 
 	///Class containing modes for databases

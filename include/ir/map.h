@@ -38,7 +38,7 @@ namespace ir
 		Map()											noexcept;
 		///Copies map
 		///@param map Map to be copied
-		Map(const QuietMap &map)						noexcept;
+		Map(const QuietMap<K, V, C> &map)				noexcept;
 
 		//Non-constant element access:
 		///Returns reference to element with specified identifier

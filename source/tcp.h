@@ -8,6 +8,11 @@
 	Reinventing bicycles since 2020
 */
 
+#ifndef _WIN32
+	#include <unistd.h>
+	#include <fcntl.h>
+#endif
+
 ir::TCPClient::TCPClient() noexcept
 {
 	IP::init();
@@ -39,7 +44,7 @@ bool ir::TCPClient::init(bool v6) noexcept
 		if (ioctlsocket(_socket, FIONBIO, &nonblocking) == SOCKET_ERROR) { finalize(); return false; }
 	#else
 		int options = fcntl(_socket, F_GETFL, NULL);
-		if (options < 0) { finalize() return false; }
+		if (options < 0) { finalize(); return false; }
 		if (fcntl(_socket, F_SETFL, options | O_NONBLOCK) < 0) { finalize(); return false; }
 	#endif
 
@@ -82,7 +87,7 @@ ir::IP ir::TCPClient::ip() const noexcept
 	assert(ok());
 	if (_ip.ok()) return _ip;
 	sockaddr_in6 address;
-	int address_size = sizeof(sockaddr_in6);
+	socklen_t address_size = sizeof(sockaddr_in6);
 	if (getsockname(_socket, (sockaddr*)&address, &address_size) == SOCKET_ERROR) return IP();
 	else
 	{
@@ -180,8 +185,13 @@ void ir::TCPClient::finalize() noexcept
 {
 	if (_socket != INVALID_SOCKET)
 	{
-		shutdown(_socket, SD_BOTH);
-		closesocket(_socket);
+		#ifdef _WIN32
+			shutdown(_socket, SD_BOTH);
+			closesocket(_socket);
+		#else
+			shutdown(_socket, SHUT_RDWR);
+			close(_socket);
+		#endif
 		_socket = INVALID_SOCKET;
 	}
 }
@@ -252,7 +262,7 @@ bool ir::TCPServer::accept(size_t mstimeout) noexcept
 	if (select((int)(_socket + 1), &read_set, nullptr, nullptr, (mstimeout == (size_t)-1) ? nullptr : &timeout) != 1) return false;
 
 	//Accept
-	int new_address_size = sizeof(sockaddr_in6);
+	socklen_t new_address_size = sizeof(sockaddr_in6);
 	sockaddr_in6 new_address;
 	SOCKET new_socket = ::accept(_socket, (sockaddr*)&new_address, &new_address_size);
 	if (new_socket == INVALID_SOCKET) return false;
@@ -263,7 +273,7 @@ bool ir::TCPServer::accept(size_t mstimeout) noexcept
 		if (ioctlsocket(new_socket, FIONBIO, &nonblocking) == SOCKET_ERROR) return false;
 	#else
 		int options = fcntl(new_socket, F_GETFL, NULL);
-		if (options < 0) return;
+		if (options < 0) return false;
 		if (fcntl(new_socket, F_SETFL, options | O_NONBLOCK) < 0) return false;
 	#endif
 
@@ -300,8 +310,13 @@ bool ir::TCPServer::send(size_t i, const void *data, size_t size, size_t mstimeo
 	//Receive data
 	if (::send(_clients[i].socket, (const char*)data, (int)size, 0) < size)
 	{
-		shutdown(_clients[i].socket, MSG_PEEK);
-		closesocket(_clients[i].socket);
+		#ifdef _WIN32
+			shutdown(_clients[i].socket, SD_BOTH);
+			closesocket(_clients[i].socket);
+		#else
+			shutdown(_clients[i].socket, SHUT_RDWR);
+			close(_clients[i].socket);
+		#endif
 		_clients.erase(i);
 		return false;
 	}
@@ -351,14 +366,24 @@ void ir::TCPServer::finalize() noexcept
 {
 	for (size_t i = 0; i < _clients.size(); i++)
 	{
-		shutdown(_clients[i].socket, SD_BOTH);
-		closesocket(_clients[i].socket);
+		#ifdef _WIN32
+			shutdown(_clients[i].socket, SD_BOTH);
+			closesocket(_clients[i].socket);
+		#else
+			shutdown(_clients[i].socket, SHUT_RDWR);
+			close(_clients[i].socket);
+		#endif
 	}
 	_clients.clear();
 	if (_socket != INVALID_SOCKET)
 	{
-		shutdown(_socket, SD_BOTH);
-		closesocket(_socket);
+		#ifdef _WIN32
+			shutdown(_socket, SD_BOTH);
+			closesocket(_socket);
+		#else
+			shutdown(_socket, SHUT_RDWR);
+			close(_socket);
+		#endif
 		_socket = INVALID_SOCKET;
 	}
 }

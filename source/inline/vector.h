@@ -15,11 +15,11 @@ template <class T>
 inline T *ir::Vector<T>::data()
 {
 	if (empty()) return nullptr;
-	if (_header->refcount > 1)
+	if (QuietVector<T>::_header->refcount > 1)
 	{
-		if (!_detach()) throw std::bad_alloc();
+		if (!QuietVector<T>::_detach()) throw std::bad_alloc();
 	}
-	return (T*)(_header + 1);
+	return (T*)(QuietVector<T>::_header + 1);
 }
 
 template<class T>
@@ -32,9 +32,9 @@ template<class T>
 inline T &ir::Vector<T>::at(size_t i)
 {
 	assert(i < size());
-	if (_header->refcount > 1)
+	if (QuietVector<T>::_header->refcount > 1)
 	{
-		if (!_detach()) throw std::bad_alloc();
+		if (!QuietVector<T>::_detach()) throw std::bad_alloc();
 	}
 	return data()[i];
 }

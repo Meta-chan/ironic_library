@@ -157,7 +157,7 @@ inline ir::uint32 ir::Encoding::UTF16::decode(const Char *string, size_t *nnativ
 	else if ((s[0] >= 0xD800 && s[0] < 0xDC00) && (s[1] >= 0xDC00 && s[1] < 0xE000))
 	{
 		if (nnative != nullptr) *nnative = 2;
-		return 0;
+		return (((s[0] - 0xD800) << 10) | (s[1] - 0xDC00)) + 0x10000;
 	}
 	else
 	{
@@ -181,7 +181,7 @@ inline bool ir::Encoding::UTF32::encode(uint32 code, Char *string, size_t *nnati
 inline ir::uint32 ir::Encoding::UTF32::decode(const Char *string, size_t *nnative) noexcept
 {
 	if (nnative != nullptr) *nnative = 1;
-	return *((uint32*) nnative);
+	return *((uint32*) string);
 }
 
 #ifdef _WIN32

@@ -14,42 +14,46 @@
 #include "types.h"
 #include "file.h"
 #include <stdarg.h>
+#include <stddef.h>
 
 namespace ir
 {
-	///Print to stdout
+///@addtogroup utils Utilities
+///@{
+	
+	///Prints to `stdout`
 	inline size_t print(const char8 *format, ...)																noexcept;
-	///Print to stdout with `va_list`
+	///Prints to `stdout` with `va_list`
 	inline size_t print(const char8 *format, va_list args)														noexcept;
-	///Print to file
+	///Prints to file
 	inline size_t print(File file, const char8 *format, ...)													noexcept;
-	///Print to file with `va_list`
+	///Prints to file with `va_list`
 	inline size_t print(File file, const char8 *format, va_list args)											noexcept;
-	///Print to memory
+	///Prints to memory
 	inline size_t print(size_t offset, char8 *buffer, size_t size, const char8 *format, ...)					noexcept;
-	///Print to memory with `va_list`
+	///Prints to memory with `va_list`
 	inline size_t print(size_t offset, char8 *buffer, size_t size, const char8 *format, va_list args)			noexcept;
-	///Print to memory with buffer size autodetection
+	///Prints to memory with buffer size autodetection
 	template<size_t A> inline size_t print(size_t offset, char8 buffer[A], const char8 *format, ...)			noexcept;
-	///Print to memory with buffer size autodetection with `va_list`
+	///Prints to memory with buffer size autodetection with `va_list`
 	template<size_t A> inline size_t print(size_t offset, char8 buffer[A], const char8 *format, va_list args)	noexcept;
 	
 	#ifdef _WIN32
-		///Print to stdout
+		///Prints to `stdout`
 		inline size_t print(const char16 *format, ...)																noexcept;
-		///Print to stdout with `va_list`
+		///Prints to `stdout` with `va_list`
 		inline size_t print(const char16 *format, va_list args)														noexcept;
-		///Print to file
+		///Prints to file
 		inline size_t print(File file, const char16 *format, ...)													noexcept;
-		///Print to file with `va_list`
+		///Prints to file with `va_list`
 		inline size_t print(File file, const char16 *format, va_list args)											noexcept;
-		///Print to memory
+		///Prints to memory
 		inline size_t print(size_t offset, char16 *buffer, size_t size, const char16 *format, ...)					noexcept;
-		///Print to memory with `va_list`
+		///Prints to memory with `va_list`
 		inline size_t print(size_t offset, char16 *buffer, size_t size, const char16 *format, va_list args)			noexcept;
-		///Print to memory with buffer size autodetection
+		///Prints to memory with buffer size autodetection
 		template<size_t A> inline size_t print(size_t offset, char16 buffer[A], const char16 *format, ...)			noexcept;
-		///Print to memory with buffer size autodetection with `va_list`
+		///Prints to memory with buffer size autodetection with `va_list`
 		template<size_t A> inline size_t print(size_t offset, char16 buffer[A], const char16 *format, va_list args)	noexcept;
 	#endif
 }

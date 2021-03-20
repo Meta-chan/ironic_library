@@ -8,16 +8,26 @@
 	Reinventing bicycles since 2020
 */
 
-#include "ip.h"
-
 #ifndef IR_UDP
 #define IR_UDP
 
+#include "ip.h"
+#include <stddef.h>
+
 namespace ir
-{	
+{
+///@addtogroup net Networking
+///@{
+	
 	class UDP
 	{
 	private:
+		#ifndef _WIN32
+			typedef int SOCKET;
+			static const int INVALID_SOCKET = -1;
+			static const int SOCKET_ERROR = 1;
+		#endif
+
 		mutable IP _ip;
 		SOCKET _socket = INVALID_SOCKET;
 
@@ -52,17 +62,31 @@ namespace ir
 		///@param size Buffer to store buffer size and receive data size
 		///@param mstimeout Timeout in milliseconds
 		bool receive(IP *ip, void *data, size_t *size, size_t mstimeout = (size_t)-1)	noexcept;
+		///Receives data
+		///@param ip Buffer to receive IP address
+		///@param data Buffer to receive data
+		///@param size Size of buffer
+		///@param mstimeout Timeout in milliseconds
+		bool receive(IP *ip, void *data, size_t size, size_t mstimeout = (size_t)-1)	noexcept;
 		///Receives data from UDP socket without removing it from queue
 		///@param ip Buffer to receive IP address
 		///@param data Buffer to receive data
 		///@param size Buffer to store buffer size and receive data size
 		///@param mstimeout Timeout in milliseconds
 		bool pick(IP *ip, void *data, size_t *size, size_t mstimeout = (size_t)-1)		noexcept;
+		///Receives data from UDP socket without removing it from queue
+		///@param ip Buffer to receive IP address
+		///@param data Buffer to receive data
+		///@param size Size of buffer
+		///@param mstimeout Timeout in milliseconds
+		bool pick(IP *ip, void *data, size_t size, size_t mstimeout = (size_t)-1)		noexcept;
 		///Finalizes UDP socket and frees data
 		void finalize()		noexcept;
 		///Destroys UDP socket
 		~UDP()				noexcept;
 	};
+	
+///@}
 }
 
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_UDP) : !defined(IR_EXCLUDE_UDP)

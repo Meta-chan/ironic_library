@@ -60,7 +60,7 @@ bool ir::File::open(const schar *filename, const schar *mode) noexcept
 	#ifdef _WIN32
 		_wfopen_s(&_header->file, filename, mode);
 	#else
-		FILE *_header->file = fopen(filename, mode);
+		_header->file = fopen(filename, mode);
 	#endif
 
 	if (_header->file == nullptr) return false;

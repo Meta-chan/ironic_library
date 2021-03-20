@@ -103,7 +103,7 @@ ir::Mapping::Mapping() noexcept
 	if (_pagesize == 0) _pagesize = sysconf(_SC_PAGESIZE);
 }
 
-void *ir::Mapping::map(int filedes, size_t offset, size_t size, map_mode mode)
+void *ir::Mapping::map(int filedes, size_t offset, size_t size, map_mode mode) noexcept
 {
 	//If we need to recreate address -> recreate address
 	if (_filedes != filedes || _mapstart == MAP_FAILED || offset <= _lowlimit || offset + size > _highlimit)
@@ -132,7 +132,7 @@ void *ir::Mapping::map(int filedes, size_t offset, size_t size, map_mode mode)
 
 void *ir::Mapping::map(FILE *file, size_t offset, size_t size, map_mode mode) noexcept
 {
-	return openmap(fileno(file), offset, size, mode);
+	return map(fileno(file), offset, size, mode);
 }
 
 void ir::Mapping::close() noexcept

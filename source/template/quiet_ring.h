@@ -28,7 +28,7 @@ inline void ir::QuietRing<T>::write(const T &data) noexcept
 template<class T>
 inline void ir::QuietRing<T>::read(size_t count, T *data) const noexcept
 {
-	Block b = dirct_read(count);
+	Block b = direct_read(count);
 	for (size_t i = 0; i < b.size[0]; i++) data[i] = b.data[0][i];
 	for (size_t i = 0; i < b.size[1]; i++) data[b.size[0] + i] = b.data[1][i];
 }

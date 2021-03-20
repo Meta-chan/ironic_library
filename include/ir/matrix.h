@@ -11,6 +11,8 @@
 #ifndef IR_MATRIX
 #define IR_MATRIX
 
+#include <stddef.h>
+
 #ifndef IR_RESTRICT
 	#define IR_RESTRICT __restrict
 #endif

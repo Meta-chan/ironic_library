@@ -11,8 +11,7 @@ int main()
 		printf("Following server scenario\n");
 		ir::UDP server(ir::IP(false, false, 5000));
 		char buffer[256];
-		size_t size = 256;
-		server.receive(nullptr, buffer, &size);
+		server.receive(nullptr, buffer, 256);
 		server.send(ir::IP(false, false, 5001), "Hello!", strlen("Hello!"));
 	}
 	else
@@ -21,9 +20,8 @@ int main()
 		printf("Following client scenario\n");
 		ir::UDP client(ir::IP(false, false, 5001));
 		char buffer[256];
-		size_t size = 256;
 		client.send(ir::IP(false, false, 5000), "Hello!", strlen("Hello!"));
-		client.receive(nullptr, buffer, &size);
+		client.receive(nullptr, buffer, 256);
 	}
 	printf("Communication done!\n");
 	return 0;

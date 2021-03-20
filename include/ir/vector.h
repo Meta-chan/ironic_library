@@ -37,8 +37,8 @@ namespace ir
 		///Copies vector
 		///@param vector vector to be copied
 		Vector(const QuietVector<T> &vector)			noexcept;
-		using QuietVector::assign;
-		using QuietVector::operator=;
+		using QuietVector<T>::assign;
+		using QuietVector<T>::operator=;
 		
 		//Non-constant access:
 		///Returns raw pointer to data

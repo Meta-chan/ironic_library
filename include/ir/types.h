@@ -15,6 +15,9 @@
 
 namespace ir
 {
+///@addtogroup definitions Definitions
+///@{
+	
 	typedef int8_t int8;
 	typedef int16_t int16;
 	typedef int32_t int32;
@@ -25,25 +28,29 @@ namespace ir
 	typedef uint32_t uint32;
 	typedef uint64_t uint64;
 	
-	typedef char char8;
 	#ifdef _WIN32
+		typedef char char8;
 		typedef wchar_t char16;
+		#if ('\xFF' > 0)
+			typedef uint32 char32;
+		#else
+			typedef int32 char32;
+		#endif
 		typedef wchar_t schar;
 		#define SS(_TEXT) L ## _TEXT
 	#else
+		typedef char char8;
 		#if ('\xFF' > 0)
-			typedef uint16 char16;				
+			typedef uint16 char16;
 		#else
 			typedef int16 char16;
 		#endif
+		typedef wchar_t char32;
 		typedef char schar;
 		#define SS(_TEXT) _TEXT
 	#endif
-	#if ('\xFF' > 0)
-		typedef uint32 char32;
-	#else
-		typedef int32 char32;
-	#endif
+	
+///@}
 }
 
 #endif	//#ifndef IR_TYPES

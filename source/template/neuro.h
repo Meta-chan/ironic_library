@@ -8,7 +8,7 @@
 	Reinventing bicycles since 2020
 */
 
-#include "../include/ir/file.h"
+#include "../../include/ir/file.h"
 #include <stdlib.h>
 #include <random>
 #include <time.h>

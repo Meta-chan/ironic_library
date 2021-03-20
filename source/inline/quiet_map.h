@@ -26,7 +26,7 @@ template<class K, class V, class C>
 inline bool ir::QuietMap<K, V, C>::set(const K &key, const V &elem) noexcept
 {		
 	size_t position;
-	if (_header != nullptr && _header->refcount > 1)
+	if (QuietVector<MapElement<K, V>>::_header != nullptr && QuietVector<MapElement<K, V>>::_header->refcount > 1)
 	{
 		if (!super::_detach()) return false;
 	}

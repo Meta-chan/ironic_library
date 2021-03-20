@@ -13,7 +13,7 @@
 	
 namespace ir
 {
-///@addtogroup resource Resource (RAII)
+///@addtogroup resource RAII
 ///@{
 
 	///Class wrapper around non-class things, ironic library's implementation of RAII idea. Used to avoid writing lots of freeing functions.

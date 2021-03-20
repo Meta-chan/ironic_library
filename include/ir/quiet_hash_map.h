@@ -11,6 +11,8 @@
 #ifndef IR_QUIET_HASH_MAP
 #define IR_QUIET_HASH_MAP
 
+#include <stddef.h>
+
 namespace ir
 {
 ///@addtogroup container Containers

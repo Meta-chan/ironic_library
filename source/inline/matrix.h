@@ -189,7 +189,7 @@ inline ir::Chunk<T, A> ir::Matrix<T, A>::vertical_chunk_at_edge(size_t row, size
 	}
 	else
 	{
-		memset(b.r, 0, A * sizeof(T));
+		for (size_t a = 0; a < A; a++) b.r[a] = (T)0;
 		for (size_t a = 0; a < _height - row; a++) b.r[a] = at(row + a, column);
 		return b;
 	}

@@ -13,11 +13,13 @@
 
 #include "types.h"
 #include "quiet_vector.h"
+#include <stddef.h>
 
 namespace ir
 {
 ///@addtogroup encoding Text encoding functions
 ///@{
+
 	class Encoding
 	{
 	private:

@@ -21,7 +21,7 @@
 
 namespace ir
 {
-///@addtogroup ir_database
+///@addtogroup database Databases
 ///@{
 
 	///Number to String Table Database

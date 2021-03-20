@@ -1,29 +1,27 @@
 #!/bin/sh
-test()
+compile()
 {
 	
-	if g++ $1 -I .. -Wall -Wextra -march=native -std=c++11 -o $1.exe
+	if g++ $1 -Wall -Wextra -pedantic -std=c++11 -lgomp -o $1.exe
 	then
 		GREEN='\033[0;32m'
 		WHITE='\033[0m'
-		printf "I ${GREEN}Success${WHITE}\n"
+		printf "${GREEN}Success${WHITE}\n"
 		return 0
 	else
 		RED='\033[0;31m'
 		WHITE='\033[0m'
-		printf "I ${RED}Fail${WHITE}\n"
+		printf "${RED}Fail${WHITE}\n"
 		return 1
 	fi
 }
 
-for f in ./*
+for f in ./*.cpp
 do
-	if [ $f!=rgb.c && $f!=ir_plot_test.cpp ]
+	compile $f
+	if [ $? != 0 ]
 	then
-		if [ !test $f ]
-		then
-			break
-		fi
+		break
 	fi
 done
 

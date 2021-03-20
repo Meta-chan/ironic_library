@@ -15,7 +15,13 @@
 
 namespace ir
 {
+///@addtogroup utils Utilities
+///@{
+	
+	///Compares two strings
 	template<class T> inline int32 strcmp(const T *s1, const T *s2) noexcept;
+	
+///@}
 }
 
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_STR) : !defined(IR_EXCLUDE_STR)

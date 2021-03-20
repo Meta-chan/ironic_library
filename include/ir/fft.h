@@ -11,12 +11,12 @@
 #ifndef IR_FFT
 #define IR_FFT
 
-#include <complex>
 #include <stddef.h>
+#include <complex>
 
 namespace ir
 {
-///@addtogroup math Math functions
+///@addtogroup math Mathematics
 ///@{
 	
 	///Fast Fourier Transformation

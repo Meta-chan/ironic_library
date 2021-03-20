@@ -20,7 +20,7 @@
 
 namespace ir
 {	
-///@defgroup neuro Neuronal network
+///@addtogroup neuro Neuronal networks
 ///@{
 
 	///Hyperbolic tangens function, may be passed as ir::Neuro template parameter

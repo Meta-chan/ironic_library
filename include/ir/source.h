@@ -12,6 +12,7 @@
 #define IR_SOURCE
 
 #include "types.h"
+#include <stddef.h>
 
 namespace ir
 {

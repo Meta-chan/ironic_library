@@ -21,7 +21,7 @@ inline V &ir::Map<K, V, C>::at(const K &key)
 {
 	size_t position;
 	assert(super::_find(key, &position));
-	if (_header->refcount > 1)
+	if (super::super::_header->refcount > 1)
 	{
 		if (!super::super::_detach()) throw std::bad_alloc();
 	}
@@ -43,7 +43,7 @@ inline void ir::Map<K, V, C>::erase(const K &key)
 template<class K, class V, class C>
 inline V &ir::Map<K, V, C>::direct_value(size_t index)
 {
-	if (_header != nullptr && _header->refcount > 1)
+	if (super::super::_header != nullptr && super::super::_header->refcount > 1)
 	{
 		if (super::super::_detach()) throw std::bad_alloc();
 	}

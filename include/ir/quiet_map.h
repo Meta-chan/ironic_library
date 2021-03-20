@@ -12,6 +12,7 @@
 #define IR_QUIET_MAP
 
 #include "quiet_vector.h"
+#include <stddef.h>
 
 namespace ir
 {

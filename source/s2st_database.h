@@ -688,9 +688,9 @@ ir::ec ir::S2STDatabase::optimize() noexcept
 		_path[_path.size() - 2] = _beta ? 'b' : 'd';
 		_wunlink(_path.data());
 	#else
-		_path[path.size() - 2] = _beta ? 'a' : 'c';
+		_path[_path.size() - 2] = _beta ? 'a' : 'c';
 		unlink(_path.data());
-		_path[path.size() - 2] = _beta ? 'b' : 'd';
+		_path[_path.size() - 2] = _beta ? 'b' : 'd';
 		unlink(_path.data());
 	#endif
 	return ec::ok;

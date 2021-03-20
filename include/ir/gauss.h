@@ -15,7 +15,7 @@
 
 namespace ir
 {
-///@addtogroup math Math functions
+///@addtogroup math Mathematics
 ///@{
 
 	///Gauss algorithm of solving linear equations system

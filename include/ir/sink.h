@@ -12,6 +12,7 @@
 #define IR_SINK
 
 #include "types.h"
+#include <stddef.h>
 
 namespace ir
 {

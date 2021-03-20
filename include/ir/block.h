@@ -11,10 +11,12 @@
 #ifndef IR_BLOCK
 #define IR_BLOCK
 
+#include <stddef.h>
+
 namespace ir
 {
-	///@defgroup container Containers
-	///@{
+///@addtogroup container Containers
+///@{
 
 	///Block of data, encapsulates raw data and it's size
 	class Block
@@ -38,7 +40,7 @@ namespace ir
 		~Block()							noexcept;
 	};
 
-	///@}
+///@}
 }
 
 #ifndef IR_BLOCK_SOURCE

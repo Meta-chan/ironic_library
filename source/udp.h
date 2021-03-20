@@ -8,6 +8,11 @@
 	Reinventing bicycles since 2020
 */
 
+#ifndef _WIN32
+	#include <unistd.h>
+	#include <fcntl.h>
+#endif
+
 ir::UDP::UDP() noexcept
 {
 	IP::init();
@@ -39,7 +44,7 @@ bool ir::UDP::init(bool v6) noexcept
 		if (ioctlsocket(_socket, FIONBIO, &nonblocking) == SOCKET_ERROR) { finalize(); return false; }
 	#else
 		int options = fcntl(_socket, F_GETFL, NULL);
-		if (options < 0) { finalize() return false; }
+		if (options < 0) { finalize(); return false; }
 		if (fcntl(_socket, F_SETFL, options | O_NONBLOCK) < 0) { finalize(); return false; }
 	#endif
 
@@ -82,7 +87,7 @@ ir::IP ir::UDP::ip() const noexcept
 	assert(ok());
 	if (_ip.ok()) return _ip;
 	sockaddr_in6 address;
-	int address_size = sizeof(sockaddr_in6);
+	socklen_t address_size = sizeof(sockaddr_in6);
 	if (getsockname(_socket, (sockaddr*)&address, &address_size) == SOCKET_ERROR) return IP();
 	else
 	{
@@ -125,13 +130,18 @@ bool ir::UDP::receive(IP *ip, void *data, size_t *size, size_t mstimeout) noexce
 
 	//Receive data
 	sockaddr_in6 address;
-	int address_length = sizeof(sockaddr_in6);
-	int received = recvfrom(_socket, (char*)data, (int)*size, 0, (sockaddr*)&address, &address_length);
+	socklen_t address_size = sizeof(sockaddr_in6);
+	int received = recvfrom(_socket, (char*)data, (int)*size, 0, (sockaddr*)&address, &address_size);
 	if (received == SOCKET_ERROR) return false;
 	if (ip != nullptr) *ip = IP((sockaddr*)&address);
 	*size = received;
 
 	return true;
+}
+
+bool ir::UDP::receive(IP *ip, void *data, size_t size, size_t mstimeout) noexcept
+{
+	return receive(ip, data, &size, mstimeout);
 }
 
 bool ir::UDP::pick(IP *ip, void *data, size_t *size, size_t mstimeout) noexcept
@@ -149,8 +159,8 @@ bool ir::UDP::pick(IP *ip, void *data, size_t *size, size_t mstimeout) noexcept
 
 	//Receive data
 	sockaddr_in6 address;
-	int address_length = sizeof(sockaddr_in6);
-	int received = recvfrom(_socket, (char*)data, (int)*size, MSG_PEEK, (sockaddr*)&address, &address_length);
+	socklen_t address_size = sizeof(sockaddr_in6);
+	int received = recvfrom(_socket, (char*)data, (int)*size, MSG_PEEK, (sockaddr*)&address, &address_size);
 	if (received == SOCKET_ERROR) return false;
 	if (ip != nullptr) *ip = IP((sockaddr*)&address);
 	*size = received;
@@ -158,12 +168,22 @@ bool ir::UDP::pick(IP *ip, void *data, size_t *size, size_t mstimeout) noexcept
 	return true;
 }
 
+bool ir::UDP::pick(IP *ip, void *data, size_t size, size_t mstimeout) noexcept
+{
+	return pick(ip, data, &size, mstimeout);
+}
+
 void ir::UDP::finalize() noexcept
 {
 	if (_socket != INVALID_SOCKET)
 	{
-		shutdown(_socket, SD_BOTH);
-		closesocket(_socket);
+		#ifdef _WIN32
+			shutdown(_socket, SD_BOTH);
+			closesocket(_socket);
+		#else
+			shutdown(_socket, SHUT_RDWR);
+			close(_socket);
+		#endif
 		_socket = INVALID_SOCKET;
 	}
 }

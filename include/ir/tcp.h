@@ -13,12 +13,22 @@
 
 #include "ip.h"
 #include "quiet_vector.h"
+#include <stddef.h>
 
 namespace ir
-{	
+{
+///@addtogroup net Networking
+///@{
+	
 	class TCPClient
 	{
 	private:
+		#ifndef _WIN32
+			typedef int SOCKET;
+			static const int INVALID_SOCKET = -1;
+			static const int SOCKET_ERROR = 1;
+		#endif
+
 		mutable IP _ip;
 		IP _server_ip;
 		SOCKET _socket = INVALID_SOCKET;
@@ -71,6 +81,12 @@ namespace ir
 	class TCPServer
 	{
 	private:
+		#ifndef _WIN32
+			typedef int SOCKET;
+			static const int INVALID_SOCKET = -1;
+			static const int SOCKET_ERROR = -1;
+		#endif
+
 		struct Client
 		{
 			IP ip;
@@ -122,6 +138,8 @@ namespace ir
 		///Destroys TCP server
 		~TCPServer()	noexcept;
 	};
+	
+///@}
 }
 
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_TCP) : !defined(IR_EXCLUDE_TCP)

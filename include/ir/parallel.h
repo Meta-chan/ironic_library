@@ -30,7 +30,7 @@
 
 namespace ir
 {
-///@defgroup hiperf Hight performance computing
+///@addtogroup hiperf Hight performance computing
 ///@{
 	
 	///Object to perform parallel operations

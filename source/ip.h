@@ -8,28 +8,54 @@
 	Reinventing bicycles since 2020
 */
 
-#include <ws2tcpip.h>
-#include <iphlpapi.h>
+#ifdef _WIN32
+	#include <ws2tcpip.h>
+	#include <iphlpapi.h>
+	#pragma comment(lib, "ws2_32.lib")
+	#pragma comment(lib, "iphlpapi.lib")
+#else
+	#include <sys/types.h>
+	#include <sys/socket.h>
+	#include <sys/ioctl.h>
+	#include <net/if.h>
+	#include <arpa/inet.h>
+	#include <netdb.h>
+	#include <ifaddrs.h>
+#endif
 #include <assert.h>
-#include "../include/ir/md5.h"
+#include <string.h>
 
-bool ir::IP::_initialized = false;
+#ifdef _WIN32
+	bool ir::IP::_initialized = false;
+#endif
+ir::uint32 ir::IP::_flow_info = 0;
+
+//If you are reading this, you shall know...
+//I have no idea what interface does Windows or Linux uses to connect to Internet
+//I have no idea what is default interface
+//I have no idea what you may want
+//I could have got Internet interface through accessing to 8.8.8.8
+//I could have made a possibility to specify interface
+//But come on, it is Ironic!
+//And I have never seen IPv6 in my life.
+//IPv6 fucntions might work, but they are not tested. It is all I can do to speed up IPv6 era.
+//Good luck!
 
 bool ir::IP::init() noexcept
 {
-	if (_initialized) return true;
 	#ifdef _WIN32
+		if (_initialized) return true;
 		WSADATA wsadata;
 		if (WSAStartup(MAKEWORD(2, 2), &wsadata) != 0) return false;
+		_initialized = true;
 	#endif
-	_initialized = true;
 	return true;
 }
 
 void ir::IP::finalize() noexcept
 {
-	_initialized = false;
 	#ifdef _WIN32
+		_initialized = false;
 		WSACleanup();
 	#endif
 }
@@ -49,61 +75,79 @@ ir::IP::IP(bool global, bool ip6, unsigned short port) noexcept
 		if (!ip6)
 		{
 			_ip4.sin_family = AF_INET;
-			_ip4.sin_port = port;
+			_ip4.sin_port = htons(port);
 			inet_pton(AF_INET, "127.0.0.1", &_ip4.sin_addr);
 			_ok = true;
 		}
 		else
 		{
 			_ip6.sin6_family = AF_INET6;
-			_ip6.sin6_port = port;
+			_ip6.sin6_port = htons(port);
+			_ip6.sin6_flowinfo = _flow_info++;
 			inet_pton(AF_INET, "::1", &_ip6.sin6_addr);
-			uint32 hash[4];
-			md5(&_ip6.sin6_addr, sizeof(IN6_ADDR) * 8, hash);	//No collision check yet. Should use map
-			_ip6.sin6_flowinfo = hash[0];
-			_ip6.sin6_scope_struct.Zone = 0;
-			_ip6.sin6_scope_struct.Level = SCOPE_LEVEL::ScopeLevelGlobal;
+			#ifdef _WIN32
+				_ip6.sin6_scope_struct.Zone = 0;
+				_ip6.sin6_scope_struct.Level = SCOPE_LEVEL::ScopeLevelGlobal;
+			#else
+				//?
+			#endif
 			_ok = true;
 		}
 	}
 	else
 	{
-		char buffer[16 * 1024];
-		IP_ADAPTER_ADDRESSES *addresses = (IP_ADAPTER_ADDRESSES*)buffer;
-		unsigned long buffer_size = 16 * 1024;
-		if (GetAdaptersAddresses(AF_INET, 0, nullptr, addresses, &buffer_size) != NO_ERROR) return;
-		for (IP_ADAPTER_ADDRESSES *address = addresses; !_ok && address != nullptr; address = address->Next)
-		{
-			//If you are reading this, you shall know...
-			//I have no idea what interface does windows use to connect to Internet
-			//I have no idea what is default interface
-			//I have no idea what you may want
-			//I could have got Internet interface through accessing to 8.8.8.8...
-			//But I don't like if thing requires Internet but doesn't really need it
-			//I could have made a possibility to specify interface
-			//But come on, it is Ironic!
-			//And I have never seen IPv6 in my life.
-			//The code could probably function with IPv6, but it is not tested.
-			//Good luck.
-			if (address->OperStatus != IF_OPER_STATUS::IfOperStatusUp) continue;
-			for (IP_ADAPTER_UNICAST_ADDRESS_LH *unicast = address->FirstUnicastAddress; unicast != nullptr; unicast = unicast->Next)
+		#ifdef _WIN32
+			char buffer[16 * 1024];
+			IP_ADAPTER_ADDRESSES *addresses = (IP_ADAPTER_ADDRESSES*)buffer;
+			unsigned long buffer_size = 16 * 1024;
+			if (GetAdaptersAddresses(ip6 ? AF_INET6 : AF_INET, 0, nullptr, addresses, &buffer_size) != NO_ERROR) return;
+			for (IP_ADAPTER_ADDRESSES *address = addresses; !_ok && address != nullptr; address = address->Next)
 			{
-				if (!ip6 && unicast->Address.lpSockaddr->sa_family == AF_INET)
+				if (address->OperStatus != IF_OPER_STATUS::IfOperStatusUp) continue;
+				for (IP_ADAPTER_UNICAST_ADDRESS_LH *unicast = address->FirstUnicastAddress; unicast != nullptr; unicast = unicast->Next)
 				{
-					_ip4 = *((sockaddr_in*)unicast->Address.lpSockaddr);
-					_ip4.sin_port = port;
-					_ok = true;
-					return;
-				}
-				else if (ip6 && unicast->Address.lpSockaddr->sa_family == AF_INET6)
-				{
-					_ip6 = *((sockaddr_in6*)unicast->Address.lpSockaddr);
-					_ip6.sin6_port = port;
-					_ok = true;
-					return;
+					if (!ip6 && unicast->Address.lpSockaddr->sa_family == AF_INET)
+					{
+						_ip4 = *((sockaddr_in*)unicast->Address.lpSockaddr);
+						_ip4.sin_port = htons(port);
+						_ok = true;
+						break;
+					}
+					else if (ip6 && unicast->Address.lpSockaddr->sa_family == AF_INET6)
+					{
+						_ip6 = *((sockaddr_in6*)unicast->Address.lpSockaddr);
+						_ip6.sin6_port = htons(port);
+						_ip6.sin6_scope_struct.Zone = 0;
+						_ip6.sin6_scope_struct.Level = SCOPE_LEVEL::ScopeLevelGlobal;
+						_ok = true;
+						break;
+					}
 				}
 			}
-		}
+		#else
+			ifaddrs *addresses;
+			if (getifaddrs(&addresses) < 0) return;
+			for (ifaddrs *address = addresses; !_ok && address != nullptr; address = address->ifa_next)
+			{
+				if ((address->ifa_flags & IFF_UP) == 0) continue;
+				if ((address->ifa_flags & IFF_LOOPBACK) != 0) continue;
+				if (!ip6 && address->ifa_addr->sa_family == AF_INET)
+				{
+					_ip4 = *((sockaddr_in*)address->ifa_addr);
+					_ip4.sin_port = htons(port);
+					_ok = true;
+					break;
+				}
+				else if (ip6 && address->ifa_addr->sa_family == AF_INET6)
+				{
+					_ip6 = *((sockaddr_in6*)address->ifa_addr);
+					_ip6.sin6_port = htons(port);
+					_ok = true;
+					break;
+				}
+			}
+			freeifaddrs(addresses);
+		#endif
 	}
 }
 
@@ -143,14 +187,14 @@ ir::IP::IP(const char *address, bool lookup, bool ip6, unsigned short port) noex
 		{
 			_ip4.sin_family = AF_INET;
 			if (inet_pton(AF_INET, address, &_ip4.sin_addr) != 1) return;
-			_ip4.sin_port = port;
+			_ip4.sin_port = htons(port);
 			_ok = true;
 		}
 		else
 		{
 			_ip4.sin_family = AF_INET6;
 			if (inet_pton(AF_INET6, address, &_ip6.sin6_addr) != 1) return;
-			_ip6.sin6_port = port;
+			_ip6.sin6_port = htons(port);
 			_ok = true;
 		}
 	}
@@ -168,7 +212,7 @@ ir::IP::IP(const char *address, bool lookup, bool ip6, unsigned short port) noex
 				if (a->ai_addr->sa_family != AF_INET)
 				{
 					_ip4 = *((sockaddr_in*)a->ai_addr);
-					_ip4.sin_port = port;
+					_ip4.sin_port = htons(port);
 					_ok = true;
 					break;
 				}
@@ -187,7 +231,7 @@ ir::IP::IP(const char *address, bool lookup, bool ip6, unsigned short port) noex
 				if (a->ai_addr->sa_family != AF_INET6)
 				{
 					_ip6 = *((sockaddr_in6*)a->ai_addr);
-					_ip6.sin6_port = port;
+					_ip6.sin6_port = htons(port);
 					_ok = true;
 					break;
 				}

@@ -8,4 +8,4 @@ int main()
 	for (ir::uint32 i = 1; i < 16; i++) buffer[i] = std::complex<double>(0.0, 0.0);
 	ir::fft(buffer, 16);
 	return 0;
-};
+}

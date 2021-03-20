@@ -85,9 +85,9 @@ inline size_t ir::print(size_t offset, char8 buffer[A], const char8 *format, ...
 	va_list args;
 	va_start(args, format);
 	#ifdef _WIN32
-		return vsprintf_s(buffer + offset, A - offset, format, args);
+		size_t printed = vsprintf_s(buffer + offset, A - offset, format, args);
 	#else
-		return vsprintf(buffer + offset, format, args);
+		size_t printed = vsprintf(buffer + offset, format, args);
 	#endif
 	va_end(args);
 	return printed;

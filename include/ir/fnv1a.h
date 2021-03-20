@@ -16,7 +16,12 @@
 
 namespace ir
 {
+///@addtogroup crypt Cryptography
+///@{
+	
 	uint32 fnv1a(Block key) noexcept;
+	
+///@}
 }
 
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_FNV1A) : !defined(IR_EXCLUDE_FNV1A)

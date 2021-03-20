@@ -12,17 +12,17 @@
 #define IR_MAPPING
 
 #include "quiet_vector.h"
-
 #ifdef _WIN32
 	#include <Windows.h>
 #else
 	#include <sys/mman.h>
 #endif
 #include <stdio.h>
+#include <stddef.h>
 
 namespace ir
 {
-///@addtogroup openmap File mapping
+///@addtogroup file File utilities
 ///@{
 
 	///Cache structure needed by ir::openmap

@@ -11,12 +11,15 @@
 #ifndef IR_FILE
 #define IR_FILE
 
+#include "types.h"
 #include <stddef.h>
 #include <stdio.h>
-#include "types.h"
 
 namespace ir
 {
+///@addtogroup file File utilities
+///@{
+	
 	class File
 	{
 	private:
@@ -46,6 +49,8 @@ namespace ir
 		size_t write(const void *data, size_t size)			noexcept;
 		~File()												noexcept;
 	};
+	
+///@}
 }
 
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_FILE) : !defined(IR_EXCLUDE_FILE)

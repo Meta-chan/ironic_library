@@ -15,13 +15,13 @@
 
 namespace ir
 {
-///@addtogroup crypto Cryptographics
+///@addtogroup crypt Cryptography
 ///@{
 
 	///MD5 hash algorithm
 	///@param[in]	data		Data to hash
 	///@param[in]	bitlength	Length of data in bits
-	///@param[out]	hash		Pointer to 16-bytes memory block to recieve the hash.
+	///@param[out]	hash		Pointer to 16-bytes memory block to receive the hash.
 	void md5(const void *data, size_t bitlength, void *hash) noexcept;
 
 ///@}

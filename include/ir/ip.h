@@ -11,16 +11,14 @@
 #ifndef IR_IP
 #define IR_IP
 
+#include "types.h"
 #ifdef _WIN32
 	#include <winsock2.h>
 	#include <ws2ipdef.h>
-	#pragma comment(lib, "ws2_32.lib")
-	#pragma comment(lib, "iphlpapi.lib")
 #else
 	#include <sys/socket.h>
 	#include <netinet/in.h>
 #endif
-#include "types.h"
 
 namespace ir
 {
@@ -34,7 +32,8 @@ namespace ir
 		#ifdef _WIN32
 			static bool _initialized;
 		#endif
-		
+		static uint32 _flow_info;
+
 		union
 		{
 			sockaddr_in _ip4;

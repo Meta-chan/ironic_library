@@ -10,7 +10,8 @@
 
 //Copied from somewhere on the Internet and stylized
 
-#include "../include/ir/constants.h"
+#include "../../include/ir/constants.h"
+#include "../../include/ir/types.h"
 
 template <class T> bool ir::fft(std::complex<T> *data, const size_t size) noexcept
 {

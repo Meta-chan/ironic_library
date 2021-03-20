@@ -8,10 +8,10 @@ if not exist rgb.exe (
 	)
 )
 
-for %%f in (*.c *.cpp) do (
-	if not %%f==rgb.c (
-		call :test %%f
-		if "%RESULT%"=="1" ( goto end )
+for %%f in (*.cpp) do (
+	call :compile %%f
+	if ERRORLEVEL 1 (
+		goto end
 	)
 )
 
@@ -21,23 +21,16 @@ del *.obj
 pause
 exit /b
 
-:test
-	if %*==ir_plot_test.cpp (
-		set LIBS=user32.lib gdi32.lib
-	) else (
-		set LIBS=
-	)
-	
-	cl %* %LIBS% /I .. /W4 /sdl /EHsc
+:compile
+	cl %* /W4 /sdl /EHsc
 	if ERRORLEVEL 1 (
 		rgb r
 		echo Fail
 		rgb rgb
-		SET RESULT=1
+		exit /b 1
 	) else (
 		rgb g
 		echo Success
 		rgb rgb
-		SET RESULT=0
+		exit /b 0
 	)
-	exit /b

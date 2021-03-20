@@ -20,7 +20,7 @@ void ir::String<T>::_detach()
 	{
 		if (_h.data->refcount > 1)
 		{
-			Heap::Header *new_data = (Heap::Header*)malloc(sizeof(Heap::Header) + (size() + 1) * sizeof(T));
+			typename Heap::Header *new_data = (typename Heap::Header*)malloc(sizeof(typename Heap::Header) + (size() + 1) * sizeof(T));
 			if (new_data == nullptr) throw std::bad_alloc();
 			new_data->reserved = size();
 			new_data->refcount = 1;
@@ -44,7 +44,7 @@ void ir::String<T>::_detach()
 		}
 		else
 		{
-			Heap::Header *new_data = (Heap::Header*)malloc(sizeof(Heap::Header) + (size() + 1) * sizeof(T));
+			typename Heap::Header *new_data = (typename Heap::Header*)malloc(sizeof(typename Heap::Header) + (size() + 1) * sizeof(T));
 			if (new_data == nullptr) throw std::bad_alloc();
 			new_data->reserved = size();
 			new_data->refcount = 1;
@@ -68,15 +68,15 @@ template <class T>
 ir::String<T>::String(size_t size, T c)
 {
 	memset(this, 0, sizeof(String<T>));
-	_h.data = (T*)malloc(sizeof(Heap::Header) + (size + 1) * sizeof(T));
+	_h.data = (T*)malloc(sizeof(typename Heap::Header) + (size + 1) * sizeof(T));
 	if (_h.data == nullptr) throw std::bad_alloc();
 	#ifdef _DEBUG
 		_debug_string = (T*)(_h.data + 1);
 	#endif
 	_h.mode = Mode::heap;
 	_h.size = size;
-	new_data->reserved = size;
-	new_data->refcount = 1;
+	_h.data->reserved = size;
+	_h.data->refcount = 1;
 	T *dat = (T*)(_h.data + 1);
 	for (size_t i = 0; i < size; i++) dat[i] = c;
 	dat[size] = '\0';
@@ -125,7 +125,7 @@ void ir::String<T>::reserve(size_t newcapacity)
 		if (newcapacity > Stack::max_size)
 		{
 			//alloc & copy
-			Heap::Header *new_data = (Heap::Header*)malloc(sizeof(Heap::Header) + newcapacity + 1);
+			typename Heap::Header *new_data = (typename Heap::Header*)malloc(sizeof(typename Heap::Header) + newcapacity + 1);
 			if (new_data == nullptr) throw std::bad_alloc();
 			new_data->refcount = 1;
 			new_data->reserved = newcapacity;
@@ -144,7 +144,7 @@ void ir::String<T>::reserve(size_t newcapacity)
 		{
 			//alloc & copy
 			_h.data->refcount--;
-			Heap::Header *new_data = (Heap::Header*)malloc(sizeof(Heap::Header) + (newcapacity + 1) * sizeof(T));
+			typename Heap::Header *new_data = (typename Heap::Header*)malloc(sizeof(typename Heap::Header) + (newcapacity + 1) * sizeof(T));
 			if (new_data == nullptr) throw std::bad_alloc();
 			new_data->refcount = 1;
 			new_data->reserved = newcapacity;
@@ -157,7 +157,7 @@ void ir::String<T>::reserve(size_t newcapacity)
 		else if (newcapacity > _h.data->reserved)
 		{
 			//realloc
-			_h.data = (Heap::Header*)realloc(_h.data, sizeof(Heap::Header) + (newcapacity + 1) * sizeof(T));
+			_h.data = (typename Heap::Header*)realloc(_h.data, sizeof(typename Heap::Header) + (newcapacity + 1) * sizeof(T));
 			if (_h.data == nullptr) throw std::bad_alloc();
 			_h.data->reserved = newcapacity;
 			#ifdef _DEBUG
@@ -179,7 +179,7 @@ void ir::String<T>::reserve(size_t newcapacity)
 		else
 		{
 			//alloc & copy
-			Heap::Header *new_data = (Heap::Header*)malloc(sizeof(Heap::Header) + (newcapacity + 1) * sizeof(T));
+			typename Heap::Header *new_data = (typename Heap::Header*)malloc(sizeof(typename Heap::Header) + (newcapacity + 1) * sizeof(T));
 			if (new_data == nullptr) throw std::bad_alloc();
 			new_data->refcount = 1;
 			new_data->reserved = newcapacity;
