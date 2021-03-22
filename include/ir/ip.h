@@ -29,9 +29,9 @@ namespace ir
 	class IP
 	{
 	private:
-		#ifdef _WIN32
-			static bool _initialized;
-		#endif
+#ifdef _WIN32
+		static bool _initialized;
+#endif
 		static uint32 _flow_info;
 
 		union
@@ -40,11 +40,11 @@ namespace ir
 			sockaddr_in6 _ip6;
 		};
 		bool _ok = false;
-		
+
 	public:
 		static bool init()		noexcept;
 		static void finalize()	noexcept;
-		
+
 		///Creates default (invalid) IP address
 		IP()														noexcept;
 		///Creates IP address of device
@@ -76,7 +76,12 @@ namespace ir
 		const sockaddr *ip()										const noexcept;
 		///Returns size of UNIX `sockaddr`
 		int size()													const noexcept;
+		///Compares address with another address
+		int32 compare(IP ip)										const noexcept;
 	};
+
+	///Compares two IP addresses
+	bool operator==(IP ip1, IP ip2)									noexcept;
 	
 ///@}
 }

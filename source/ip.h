@@ -277,3 +277,25 @@ int ir::IP::size() const noexcept
 	assert(_ok);
 	return _ip6.sin6_family == AF_INET6 ? sizeof(sockaddr_in6) : sizeof(sockaddr_in);
 }
+
+ir::int32 ir::IP::compare(IP ip) const noexcept
+{
+	if (!ok() && !ip.ok()) return 0;
+	else if (ok() && !ip.ok()) return 1;
+	else if (!ok() && ip.ok()) return -1;
+	else if (!v6() && !ip.v6())
+	{
+		return memcmp(&_ip4, &ip._ip4, sizeof(sockaddr_in));
+	}
+	else if (v6() && !ip.v6()) return 1;
+	else if (!v6() && ip.v6()) return -1;
+	else
+	{
+		return memcmp(&_ip6, &ip._ip6, sizeof(sockaddr_in6));
+	}
+}
+
+bool ir::operator==(IP ip1, IP ip2) noexcept
+{
+	return ip1.compare(ip2) == 0;
+}

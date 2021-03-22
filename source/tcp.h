@@ -203,6 +203,10 @@ ir::TCPClient::~TCPClient() noexcept
 
 //================================================================================================================
 
+ir::TCPServer::TCPServer() noexcept
+{
+}
+
 ir::TCPServer::TCPServer(IP ip) noexcept
 {
 	assert(ip.ok());

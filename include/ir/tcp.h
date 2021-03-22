@@ -98,6 +98,8 @@ namespace ir
 		SOCKET _socket = INVALID_SOCKET;
 
 	public:
+		///Creates empty TCP server
+		TCPServer()									noexcept;
 		///Creates TCP server
 		///@param ip IP address of server
 		TCPServer(IP ip)							noexcept;
