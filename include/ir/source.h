@@ -31,31 +31,14 @@ namespace ir
 ///@}
 }
 
+#endif	//#ifndef IR_SOURCE
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_SOURCE) : !defined(IR_EXCLUDE_SOURCE)
 	#ifndef IR_INCLUDE
-		#ifndef IR_SOURCE_INLINE_SOURCE
-			#define IR_SOURCE_INLINE_SOURCE
-			#include "../../source/inline/source.h"
-		#endif
-		#ifndef IR_SOURCE_TEMPLATE_SOURCE
-			#define IR_SOURCE_TEMPLATE_SOURCE
-			#include "../../source/template/source.h"
-		#endif
-	#elif IR_INCLUDE == 'i'
-		#ifndef IR_SOURCE_INLINE_SOURCE
-			#define IR_SOURCE_INLINE_SOURCE
-			#include "../../source/inline/source.h"
-		#endif
-	#elif IR_INCLUDE == 't' || IR_INCLUDE == 'a'
-		#ifndef IR_SOURCE_INLINE_SOURCE
-			#define IR_SOURCE_INLINE_SOURCE
-			#include "../../source/inline/source.h"
-		#endif
-		#ifndef IR_SOURCE_TEMPLATE_SOURCE
-			#define IR_SOURCE_TEMPLATE_SOURCE
-			#include "../../source/template/source.h"
+	#elif IR_INCLUDE == 'a'
+		#ifndef IR_SOURCE_SOURCE
+			#define IR_SOURCE_SOURCE
+			#include "../../source/source.h"
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_SOURCE

@@ -124,6 +124,8 @@ namespace ir
 ///@}
 }
 
+#endif //#ifndef IR_QUIET_HASH_MAP
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_QUIET_HASH_MAP) : !defined(IR_EXCLUDE_QUIET_HASH_MAP)
 	#ifndef IR_INCLUDE
 		#ifndef IR_QUIET_HASH_MAP_INLINE_SOURCE
@@ -150,5 +152,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif //#ifndef IR_QUIET_HASH_MAP

@@ -46,6 +46,8 @@ namespace ir
 ///@}
 }
 
+#endif	//#ifndef IR_SINK
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_SINK) : !defined(IR_EXCLUDE_SINK)
 	#ifndef IR_INCLUDE
 	#elif IR_INCLUDE == 'a'
@@ -55,5 +57,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_SINK

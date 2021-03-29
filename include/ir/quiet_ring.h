@@ -88,6 +88,8 @@ namespace ir
 ///@}
 }
 
+#endif //#ifndef IR_QUIET_RING
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_QUIET_RING) : !defined(IR_EXCLUDE_QUIET_RING)
 	#ifndef IR_INCLUDE
 		#ifndef IR_QUIET_RING_INLINE_SOURCE
@@ -114,5 +116,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif //#ifndef IR_QUIET_RING

@@ -29,9 +29,9 @@ namespace ir
 	class IP
 	{
 	private:
-#ifdef _WIN32
-		static bool _initialized;
-#endif
+		#ifdef _WIN32
+			static bool _initialized;
+		#endif
 		static uint32 _flow_info;
 
 		union
@@ -86,6 +86,8 @@ namespace ir
 ///@}
 }
 
+#endif	///#ifndef IR_IP
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_IP) : !defined(IR_EXCLUDE_IP)
 	#ifndef IR_INCLUDE
 
@@ -96,5 +98,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	///#ifndef IR_IP

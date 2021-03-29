@@ -24,6 +24,8 @@ namespace ir
 ///@}
 }
 
+#endif	//#ifndef IR_FNV1A
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_FNV1A) : !defined(IR_EXCLUDE_FNV1A)
 	#ifndef IR_INCLUDE
 
@@ -34,5 +36,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_FNV1A

@@ -125,6 +125,8 @@ namespace ir
 ///@}
 }
 
+#endif	//#ifndef IR_MATRIX
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_MATRIX) : !defined(IR_EXCLUDE_MATRIX)
 	#ifndef IR_INCLUDE
 		#ifndef IR_MATRIX_INLINE_SOURCE
@@ -151,5 +153,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_MATRIX

@@ -43,6 +43,8 @@ namespace ir
 ///@}
 }
 
+#endif //#ifndef IR_BLOCK
+
 #ifndef IR_BLOCK_SOURCE
 	#define IR_BLOCK_SOURCE
 	#if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_BLOCK) : !defined(IR_EXCLUDE_BLOCK)
@@ -51,5 +53,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif //#ifndef IR_BLOCK

@@ -82,6 +82,8 @@ namespace ir
 ///@}
 }
 
+#endif	//#ifndef IR_PARALLEL
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_PARALLEL) : !defined(IR_EXCLUDE_PARALLEL)
 	#ifndef IR_INCLUDE
 	#elif IR_INCLUDE == 'a'
@@ -91,5 +93,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_PARALLEL

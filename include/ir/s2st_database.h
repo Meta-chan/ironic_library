@@ -100,11 +100,17 @@ namespace ir
 		ec _init(const schar *filepath, create_mode mode, bool opposite)		noexcept;
 		S2STDatabase(const schar *filepath, create_mode mode, ec *code, bool)	noexcept;
 	public:
-		///Creates a database
+		///Creates empty database
+		S2STDatabase()															noexcept;
+		///Creates database
 		///@param filepath Relative or absolute path to database files
 		///@param mode Creation mode
 		///@param code Pointer to ir::ec that receives return status if is not `nullptr`
 		S2STDatabase(const schar *filepath, create_mode mode, ec *code)			noexcept;
+		///Initializes database
+		///@param filepath Relative or absolute path to database files
+		///@param mode Creation mode
+		ec init(const schar *filepath, create_mode mode)						noexcept;
 		///Returns whether database is ok
 		bool ok()																const noexcept;
 		///Asks if identifier exists and can be read if no supernatural error occurs. Is thread-safe if `set_ram_mode(true, true)` was done
@@ -148,12 +154,16 @@ namespace ir
 		ec set_ram_mode(bool holdfile, bool holdmeta)							noexcept;
 		///Optimizes database for size
 		ec optimize()															noexcept;
+		///Finalized database and frees resources
+		void finalize()															noexcept;
 		///Destroys database and writes files kept in RAM to hard drive
 		~S2STDatabase()															noexcept;
 	};
 	
 ///@}	
 }
+
+#endif	//#ifndef IR_S2ST_DATABASE
 
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_S2ST_DATABASE) : !defined(IR_EXCLUDE_S2ST_DATABASE)
 	#ifndef IR_INCLUDE
@@ -165,5 +175,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_S2ST_DATABASE

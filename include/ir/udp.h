@@ -89,6 +89,8 @@ namespace ir
 ///@}
 }
 
+#endif	//#ifndef IR_UDP
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_UDP) : !defined(IR_EXCLUDE_UDP)
 	#ifndef IR_INCLUDE
 
@@ -99,5 +101,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_UDP

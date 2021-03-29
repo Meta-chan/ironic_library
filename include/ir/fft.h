@@ -34,6 +34,8 @@ namespace ir
 ///@}
 }
 
+#endif	//#ifndef IR_FFT
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_FFT) : !defined(IR_EXCLUDE_FFT)
 	#ifndef IR_INCLUDE
 		#ifndef IR_FFT_TEMPLATE_SOURCE
@@ -47,5 +49,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_FFT

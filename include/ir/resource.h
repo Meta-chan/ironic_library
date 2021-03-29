@@ -51,6 +51,8 @@ namespace ir
 ///@}
 }
 
+#endif //#ifndef IR_RESOURCE
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_RESOURCE) : !defined(IR_EXCLUDE_RESOURCE)
 	#ifndef IR_INCLUDE
 		#ifndef IR_RESOURCE_TEMPLATE_SOURCE
@@ -64,5 +66,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif //#ifndef IR_RESOURCE

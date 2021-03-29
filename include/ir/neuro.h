@@ -98,6 +98,8 @@ namespace ir
 ///@}
 }
 
+#endif	//#ifndef IR_NEURO
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_NEURO) : !defined(IR_EXCLUDE_NEURO)
 	#ifndef IR_INCLUDE
 		#ifndef IR_NEURO_INLINE_SOURCE
@@ -124,5 +126,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_NEURO

@@ -84,6 +84,8 @@ namespace ir
 ///@}
 }
 
+#endif //#ifndef IR_MAP
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_MAP) : !defined(IR_EXCLUDE_MAP)
 	#ifndef IR_INCLUDE
 		#ifndef IR_MAP_INLINE_SOURCE
@@ -110,5 +112,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif //#ifndef IR_MAP

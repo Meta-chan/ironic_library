@@ -144,6 +144,8 @@ namespace ir
 ///@}
 }
 
+#endif	//#ifndef IR_TCP
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_TCP) : !defined(IR_EXCLUDE_TCP)
 	#ifndef IR_INCLUDE
 
@@ -154,5 +156,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_TCP

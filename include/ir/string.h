@@ -240,6 +240,8 @@ namespace ir
 ///@}
 }
 
+#endif //#ifndef IR_STRING
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_STRING) : !defined(IR_EXCLUDE_STRING)
 	#ifndef IR_INCLUDE
 		#ifndef IR_STRING_INLINE_SOURCE
@@ -266,5 +268,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif //#ifndef IR_STRING

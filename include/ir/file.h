@@ -53,6 +53,8 @@ namespace ir
 ///@}
 }
 
+#endif	//#ifndef IR_FILE
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_FILE) : !defined(IR_EXCLUDE_FILE)
 	#ifndef IR_INCLUDE
 		
@@ -63,5 +65,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_FILE

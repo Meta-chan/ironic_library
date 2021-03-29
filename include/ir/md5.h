@@ -27,6 +27,8 @@ namespace ir
 ///@}
 }
 
+#endif //#ifndef IR_MD5
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_MD5) : !defined(IR_EXCLUDE_MD5)
 	#ifndef IR_INCLUDE
 
@@ -37,5 +39,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif //#ifndef IR_MD5

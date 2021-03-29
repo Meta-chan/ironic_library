@@ -96,6 +96,8 @@ namespace ir
 ///@}
 }
 
+#endif //#ifndef IR_VECTOR
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_VECTOR) : !defined(IR_EXCLUDE_VECTOR)
 	#ifndef IR_INCLUDE
 		#ifndef IR_VECTOR_INLINE_SOURCE
@@ -122,5 +124,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif //#ifndef IR_VECTOR

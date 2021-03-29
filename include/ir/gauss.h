@@ -29,6 +29,8 @@ namespace ir
 ///@}
 }
 
+#endif	//#ifndef IR_GAUSS
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_GAUSS) : !defined(IR_EXCLUDE_GAUSS)
 	#ifndef IR_INCLUDE
 		#ifndef IR_GAUSS_TEMPLATE_SOURCE
@@ -42,5 +44,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_GAUSS

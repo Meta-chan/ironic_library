@@ -25,7 +25,7 @@ namespace ir
 ///@addtogroup file File utilities
 ///@{
 
-	///Cache structure needed by ir::openmap
+	///Mapping utility
 	class Mapping
 	{
 	public:
@@ -80,6 +80,8 @@ namespace ir
 ///@}
 }
 
+#endif	//#ifndef IR_MAPPING
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_MAPPING) : !defined(IR_EXCLUDE_MAPPING)
 	#ifndef IR_INCLUDE
 
@@ -90,5 +92,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_MAPPING

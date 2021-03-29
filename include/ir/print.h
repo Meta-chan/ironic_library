@@ -58,6 +58,8 @@ namespace ir
 	#endif
 }
 
+#endif	//#ifndef IR_PRINT
+
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_PRINT) : !defined(IR_EXCLUDE_PRINT)
 	#ifndef IR_INCLUDE
 		#ifndef IR_PRINT_INLINE_SOURCE
@@ -76,5 +78,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-#endif	//#ifndef IR_PRINT

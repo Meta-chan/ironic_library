@@ -396,11 +396,21 @@ ir::S2STDatabase::S2STDatabase(const schar *filepath, create_mode createmode, ec
 	if (code != nullptr) *code = c;
 }
 
+//Same as in N2NT
+ir::S2STDatabase::S2STDatabase() noexcept
+{}
+
 //Same as in N2ST
 ir::S2STDatabase::S2STDatabase(const schar *filepath, create_mode createmode, ec *code) noexcept
 {
-	ec c = _init(filepath, createmode, false);
-	if (code != nullptr) *code = c;
+	if (code != nullptr) *code = init(filepath, createmode);
+}
+
+//Same as in N2ST
+ir::ec ir::S2STDatabase::init(const schar *filepath, create_mode createmode) noexcept
+{
+	finalize();
+	return _init(filepath, createmode, false);
 }
 
 bool ir::S2STDatabase::ok() const noexcept
@@ -696,7 +706,7 @@ ir::ec ir::S2STDatabase::optimize() noexcept
 	return ec::ok;
 }
 
-ir::S2STDatabase::~S2STDatabase() noexcept
+void ir::S2STDatabase::finalize() noexcept
 {
 	_mapping.close();
 	set_ram_mode(false, false);
@@ -711,8 +721,33 @@ ir::S2STDatabase::~S2STDatabase() noexcept
 			header.used = _file.used;
 			fseek(_meta.file, 0, SEEK_SET);
 			fwrite(&header, sizeof(MetaHeader), 1, _meta.file);
-			
+
 		}
 		fclose(_meta.file);
 	}
+	
+	_file.hold = false;
+	_file.pointer = 0;
+	_file.size = 0;
+	_file.file = nullptr;
+	_file.changed = false;
+	_file.ram.clear();
+	_file.used = 0;
+	_meta.hold = false;
+	_meta.pointer = 0;
+	_meta.size = 0;
+	_meta.file = nullptr;
+	_meta.changed = false;
+	_meta.ram.clear();
+	_meta.count = 0;
+	_meta.delcount = 0;
+	_path.clear();
+	_beta = false;
+	_ok = false;
+	_writeaccess = false;
+}
+
+ir::S2STDatabase::~S2STDatabase() noexcept
+{
+	finalize();
 }

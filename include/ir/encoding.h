@@ -121,8 +121,11 @@ namespace ir
 		///Clear internal buffer
 		static void clear() noexcept;
 	};
+
 ///@}
 }
+
+#endif	//#ifndef IR_ENCODING
 
 #if defined(IR_EXCLUDE) ? defined(IR_INCLUDE_ENCODING) : !defined(IR_EXCLUDE_ENCODING)
 	#ifndef IR_INCLUDE
@@ -154,6 +157,3 @@ namespace ir
 		#endif
 	#endif
 #endif
-
-///@}
-#endif	//#ifndef IR_ENCODING
